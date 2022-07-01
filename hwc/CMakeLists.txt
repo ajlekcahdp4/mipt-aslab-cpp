@@ -42,6 +42,7 @@ set(CMAKE_C_CLANG_TIDY
     clang-tidy;
     -checks=google-*,cppcoreguidelines-*
 )
+
 else()
 message(WARNING "Unable to find clang-tidy, linter disabled")
 endif()

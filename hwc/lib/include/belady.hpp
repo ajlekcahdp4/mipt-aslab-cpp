@@ -10,11 +10,8 @@
 
 #pragma once
 
-#include <algorithm>
 #include <cassert>
 #include <deque>
-#include <iostream>
-#include <limits>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -23,36 +20,13 @@ namespace caches {
 
 namespace detail {
 
-template <typename U> class occurence_deque_t {
-  std::deque<U> m_deque;
-
-public:
-  occurence_deque_t() : m_deque{} {
-  }
-
-  void push_back(const U p_val) {
-    m_deque.push_back(p_val);
-  }
-
-  U first_used() const {
-    return m_deque.front();
-  }
-
-  bool is_empty() const {
-    return m_deque.empty();
-  }
-
-  void erase_first() {
-    m_deque.pop_front();
-  }
-};
-
 template <typename T> class occurence_map_t {
-  std::unordered_map<T, occurence_deque_t<std::size_t>> m_map;
+  std::unordered_map<T, std::deque<std::size_t>> m_map;
 
 public:
   occurence_map_t(const std::vector<T> &p_vec) : m_map{} {
     for (std::size_t si = 0, ei = p_vec.size(); si != ei; ++si) {
+      // Fill up corresponding vectors with occurence number in sorted order.
       const T &curr = p_vec[si];
       m_map[curr].push_back(si + 1);
     }
@@ -69,9 +43,9 @@ public:
         return s;
       }
 
-      occurence_deque_t<std::size_t> &deq = (found->second);
-      if (deq.first_used() > latest_occur) {
-        latest_occur = deq.first_used();
+      std::deque<std::size_t> &deq = (found->second);
+      if (deq.front() > latest_occur) {
+        latest_occur = deq.front();
         latest = &s;
       }
     }
@@ -89,10 +63,10 @@ public:
       return;
     }
 
-    occurence_deque_t<std::size_t> &deq = found->second;
-    deq.erase_first();
+    std::deque<std::size_t> &deq = found->second;
+    deq.pop_front();
 
-    if (deq.is_empty()) {
+    if (deq.empty()) {
       m_map.erase(p_elem);
     }
   }
@@ -107,12 +81,6 @@ template <typename T> class ideal_t {
   const std::vector<T> &m_vec;
   occurence_map_t<T> m_occur_map;
   std::size_t m_size, m_hits;
-
-public:
-  ideal_t(std::size_t p_size, const std::vector<T> &p_vec)
-      : m_set{}, m_vec{p_vec}, m_occur_map{p_vec}, m_size{p_size}, m_hits{0} {
-    m_set.reserve(p_size);
-  }
 
   bool is_full() const {
     return (m_set.size() == m_size);
@@ -138,12 +106,21 @@ public:
     m_occur_map.erase_first(p_elem);
   }
 
+public:
+  ideal_t(std::size_t p_size, const std::vector<T> &p_vec)
+      : m_set{}, m_vec{p_vec}, m_occur_map{p_vec}, m_size{p_size}, m_hits{0} {
+    m_set.reserve(p_size);
+  }
+
   std::size_t count_hits() {
     for (const auto &v : m_vec) {
       lookup_elem(v);
     }
 
+    // After all elements of vector have been iterated through, occurence map
+    // should be empty.
     assert(m_occur_map.is_empty());
+
     return m_hits;
   }
 };
