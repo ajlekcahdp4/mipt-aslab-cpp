@@ -1,32 +1,37 @@
-#include "belady.hpp"
-#include "lfu.hpp"
-#include "lfuda.hpp"
+#include "caches.hpp"
 
 struct slow_getter_t {
-  std::string operator()() {
-    return "123";
+  int operator()() {
+    // The answer to “the Ultimate Question of Life, the Universe, and
+    // Everything.”
+    return 42;
   }
 };
 
 int main() {
-  std::vector<int> vec{};
   std::size_t n, m;
 
   if (!std::cin || !std::cout) {
-    std::terminate();
+    std::abort();
   }
 
   std::cin >> m >> n;
 
   if (n == 0 || m == 0) {
-    std::terminate();
+    std::abort();
   }
 
+  std::vector<int> vec{};
   vec.reserve(n);
-  caches::lfu_t<std::string, int> cache{m};
+
+  caches::lfuda_t<int, int> cache{m};
   slow_getter_t g{};
 
   for (unsigned i = 0; i < n; ++i) {
+    if (!std::cin || !std::cout) {
+      std::abort();
+    }
+
     int temp{};
     std::cin >> temp;
     vec.push_back(temp);
