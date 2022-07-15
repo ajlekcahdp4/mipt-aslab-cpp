@@ -24,7 +24,7 @@ int main() {
   std::vector<int> vec{};
   vec.reserve(n);
 
-  caches::lfuda_t<int, int> cache{m};
+  caches::lfu_t<int, int> cache{m};
   slow_getter_t g{};
 
   for (unsigned i = 0; i < n; ++i) {

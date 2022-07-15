@@ -407,6 +407,7 @@ public:
 };
 }; // namespace detail
 
+#if 0
 template <typename U, typename K = int> class lfuda_t {
   std::size_t m_size, m_hits, m_curr, m_age;
 
@@ -475,5 +476,7 @@ public:
     return val;
   }
 };
+
+#endif
 
 }; // namespace caches
