@@ -21,9 +21,6 @@ int main() {
     std::abort();
   }
 
-  std::vector<int> vec{};
-  vec.reserve(n);
-
   caches::lfu_t<int, int> cache{m};
   slow_getter_t g{};
 
@@ -34,10 +31,8 @@ int main() {
 
     int temp{};
     std::cin >> temp;
-    vec.push_back(temp);
     cache.lookup(temp, g);
   }
 
   std::cout << cache.get_hits() << std::endl;
-  std::cout << caches::get_optimal_hits(m, vec) << std::endl;
 }

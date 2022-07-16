@@ -204,11 +204,25 @@ public:
     m_map.insert({p_elem->key(), m_list.begin()});
   }
 
+  void splice_upfront(local_list_t<K, U, W, N> &p_other, it p_elem,
+                      K p_new_key) {
+    // Erase "p_elem" from other list's lookup map.
+    p_other.m_map.erase(p_elem->key());
+    // Move "p_elem" to the beginning of the "p_other".
+    m_list.splice(m_list.begin(), p_other.m_list, p_elem);
+    // Insert the element's key into current lookup map with updated key.
+    m_map.insert({p_new_key, m_list.begin()});
+    p_elem->key() = p_new_key;
+  }
+
   it lookup(const K p_key) const {
     auto found = m_map.find(p_key);
     // An element with key p_key will always be contained in a corresponding
     // local list.
     assert(found != m_map.end());
+    // For safety's sake assert that list constains the same number of elements
+    // as the map.
+    assert(m_list.size() == m_map.size());
     return found->second;
   }
 
@@ -361,11 +375,10 @@ public:
       remove_if_empty(least);
 
       // Reuse the local list node.
-      to_evict->key() = p_key;
       to_evict->value() = val;
 
       // Move the now evicted node to the bucket with weight "1".
-      first_weight_node()->splice_upfront(*least, to_evict);
+      first_weight_node()->splice_upfront(*least, to_evict, p_key);
 
       // Insert the new entry into the key-weight map.
       m_weight_map.insert({p_key, least_weight_node()});
