@@ -7,16 +7,14 @@ if((${PROJECT_SOURCE_DIR} STREQUAL ${PROJECT_BINARY_DIR}) AND NOT ${INSOURCEBUIL
     message(FATAL_ERROR "In-source building disabled. Provide -DINSOURCEBUILD option if you are sure about it.")
 endif()
 
+set(CMAKE_CXX_STANDARD 17)
+
 # Possibly support windows and MSVC compiler
 if(MSVC)
     add_compile_options(/W3)
 else()
     add_compile_options(-Wall -Wextra)
 endif()
-
-# Common include directories and install directory
-set(LFUDA_COMMON_DIR ${CMAKE_CURRENT_SOURCE_DIR}/common)
-set(LFUDA_BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 
 find_package(GTest)
 set(NOGTEST OFF CACHE BOOL "Disable GoogleTest")

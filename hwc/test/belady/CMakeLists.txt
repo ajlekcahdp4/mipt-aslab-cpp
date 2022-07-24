@@ -3,7 +3,7 @@ set(BELADY_SOURCES
 )
 
 add_executable(belady ${BELADY_SOURCES})
-target_link_libraries(belady caches Boost::program_options)
+target_link_libraries(belady caches)
 
 install(TARGETS belady DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 
