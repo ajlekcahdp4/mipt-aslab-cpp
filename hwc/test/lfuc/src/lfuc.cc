@@ -56,16 +56,23 @@ int main(int argc, char *argv[]) {
   caches::lfu_t<int, int> cache{m};
   slow_getter_t g{};
 
-  for (unsigned i = 0; i < n; ++i) {
+  for (unsigned i = 0; i < n; i++) {
     if (!std::cin || !std::cout) {
       std::abort();
     }
 
     int temp{};
     std::cin >> temp;
+
+    if (std::cin.fail()) {
+      std::abort();
+    }
+    
     cache.lookup(temp, g);
 #ifdef BOOST_FOUND__
-    vec.push_back(temp);
+    if (verbose) {
+      vec.push_back(temp);
+    }
 #endif
   }
 

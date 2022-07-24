@@ -26,6 +26,11 @@ int main() {
 
     int temp{};
     std::cin >> temp;
+
+    if (std::cin.fail()) {
+      std::abort();
+    }
+    
     vec.push_back(temp);
   }
 
