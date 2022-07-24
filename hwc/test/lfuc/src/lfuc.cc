@@ -1,7 +1,9 @@
+#include <iostream>
+
 #include "caches.hpp"
 
 struct slow_getter_t {
-  int operator()() {
+  int operator()(int p_key) {
     // The answer to “the Ultimate Question of Life, the Universe, and
     // Everything.”
     return 42;

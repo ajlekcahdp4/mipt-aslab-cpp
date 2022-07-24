@@ -14,7 +14,7 @@ import os
 import numpy as np
 
 
-class lfuda:
+class lfu:
     def __init__(self, p_size: int) -> None:
         self.m_size = p_size
         self.m_freq_map = {}
@@ -61,7 +61,7 @@ class lfuda:
 
 
 def get_lfu_hits(p_list: list, p_size: int) -> int:
-    cache = lfuda(p_size)
+    cache = lfu(p_size)
 
     for i in p_list:
         cache.lookup(i)

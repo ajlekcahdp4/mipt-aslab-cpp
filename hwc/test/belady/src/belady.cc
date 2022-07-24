@@ -1,4 +1,7 @@
-#include "caches.hpp"
+#include <iostream>
+#include <vector>
+
+#include "belady.hpp"
 
 int main() {
   std::size_t n, m;

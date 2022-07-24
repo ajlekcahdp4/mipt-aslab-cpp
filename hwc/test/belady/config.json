@@ -6,14 +6,14 @@
     "length": 4096
   },
   "triangle": {
-    "number": 32,
+    "number": 16,
     "left": 0,
     "right": 128,
     "mode": 16,
-    "length": 1024
+    "length": 65536
   },
   "uniform": {
-    "number": 16,
+    "number": 64,
     "lower": 0,
     "upper": 128,
     "length": 16384

@@ -13,7 +13,6 @@
 #include <cassert>
 #include <deque>
 #include <functional>
-#include <iostream>
 #include <iterator>
 #include <list>
 #include <map>
@@ -22,124 +21,6 @@
 #include <vector>
 
 namespace caches {
-
-namespace detail {
-
-template <typename T> class occurence_map_t {
-  std::unordered_map<T, std::deque<std::size_t>> m_map;
-
-public:
-  occurence_map_t(const std::vector<T> &p_vec) : m_map{} {
-    for (std::size_t si = 0, ei = p_vec.size(); si != ei; ++si) {
-      // Fill up corresponding vectors with occurence number in sorted order.
-      const T &curr = p_vec[si];
-      m_map[curr].push_back(si + 1);
-    }
-  }
-
-  const T &find_latest_used(const std::unordered_set<T> &p_curr_set) {
-    std::size_t latest_occur = 0;
-    const T *latest = nullptr;
-
-    for (const auto &s : p_curr_set) {
-      const auto found = m_map.find(s);
-
-      if (found == m_map.end()) {
-        return s;
-      }
-
-      std::deque<std::size_t> &deq = (found->second);
-      if (deq.front() > latest_occur) {
-        latest_occur = deq.front();
-        latest = &s;
-      }
-    }
-
-    assert(latest);
-
-    return *latest;
-  }
-
-  void erase_first(const T &p_elem) {
-    auto found = m_map.find(p_elem);
-
-    if (found == m_map.end()) {
-      return;
-    }
-
-    std::deque<std::size_t> &deq = found->second;
-    deq.pop_front();
-
-    if (deq.empty()) {
-      m_map.erase(p_elem);
-    }
-  }
-
-  bool is_empty() const {
-    return m_map.empty();
-  }
-};
-
-template <typename T> class ideal_t {
-  std::unordered_set<T> m_set;
-  const std::vector<T> &m_vec;
-  occurence_map_t<T> m_occur_map;
-  std::size_t m_size, m_hits;
-
-  bool is_full() const {
-    return (m_set.size() == m_size);
-  }
-
-  void lookup_elem(const T &p_elem) {
-    assert(m_set.size() <= m_size);
-
-    if (m_set.find(p_elem) != m_set.end()) {
-      m_hits++;
-    }
-
-    else if (!is_full()) {
-      m_set.emplace(p_elem);
-    }
-
-    else {
-      const T &latest = m_occur_map.find_latest_used(m_set);
-      m_set.erase(latest);
-      m_set.emplace(p_elem);
-    }
-
-    m_occur_map.erase_first(p_elem);
-  }
-
-public:
-  ideal_t(std::size_t p_size, const std::vector<T> &p_vec)
-      : m_set{}, m_vec{p_vec}, m_occur_map{p_vec}, m_size{p_size}, m_hits{0} {
-    m_set.reserve(p_size);
-  }
-
-  std::size_t count_hits() {
-    for (const auto &v : m_vec) {
-      lookup_elem(v);
-    }
-
-    // After all elements of vector have been iterated through, occurence map
-    // should be empty.
-    assert(m_occur_map.is_empty());
-
-    return m_hits;
-  }
-};
-
-} // namespace detail
-
-// Implementation of Belady's algorithm. Returns the number of maximum possible
-// hits for a cache of size "size" and "vec" of requests.
-template <typename T>
-std::size_t get_optimal_hits(std::size_t size, std::vector<T> &vec) {
-  using namespace detail;
-
-  ideal_t<T> cache{size, vec};
-  return cache.count_hits();
-}
 
 namespace detail {
 
@@ -170,8 +51,8 @@ public:
 
 template <typename K, typename U, typename W, typename N> class local_list_t {
 public:
-  using it = typename std::list<N>::iterator;
   using const_it = typename std::list<N>::const_iterator;
+  using it = typename std::list<N>::iterator;
 
 private:
   std::list<N> m_list;
@@ -190,39 +71,29 @@ public:
     return m_list.empty();
   }
 
-  void push_front(K p_key, U p_val) {
-    m_list.emplace_front(p_key, p_val);
-    m_map.insert({p_key, m_list.begin()});
+  void push_front(N p_node) {
+    m_list.push_front(p_node);
+    m_map.insert({p_node.key(), m_list.begin()});
   }
 
   void splice_upfront(local_list_t<K, U, W, N> &p_other, const_it p_elem) {
-    // Erase "p_elem" from other list's lookup map.
-    p_other.m_map.erase(p_elem->key());
-    // Move "p_elem" to the beginning of the "p_other".
-    m_list.splice(m_list.begin(), p_other.m_list, p_elem);
-    // Insert the element's key into current lookup map.
-    m_map.insert({p_elem->key(), m_list.begin()});
+    p_other.m_map.erase(p_elem->key());                    // Erase "p_elem" from other list's lookup map.
+    m_list.splice(m_list.begin(), p_other.m_list, p_elem); // Move "p_elem" to the beginning of the "p_other".
+    m_map.insert({p_elem->key(), m_list.begin()});         // Insert the element's key into current lookup map.
   }
 
-  void splice_upfront(local_list_t<K, U, W, N> &p_other, it p_elem,
-                      K p_new_key) {
-    // Erase "p_elem" from other list's lookup map.
-    p_other.m_map.erase(p_elem->key());
-    // Move "p_elem" to the beginning of the "p_other".
-    m_list.splice(m_list.begin(), p_other.m_list, p_elem);
-    // Insert the element's key into current lookup map with updated key.
-    m_map.insert({p_new_key, m_list.begin()});
+  void splice_upfront(local_list_t<K, U, W, N> &p_other, it p_elem, const K &p_new_key) {
+    p_other.m_map.erase(p_elem->key());                    // Erase "p_elem" from other list's lookup map.
+    m_list.splice(m_list.begin(), p_other.m_list, p_elem); // Move "p_elem" to the beginning of the "p_other".
+    m_map.insert({p_new_key, m_list.begin()}); // Insert the element's key into current lookup map with updated key.
     p_elem->key() = p_new_key;
   }
 
-  it lookup(const K p_key) const {
+  it lookup(const K &p_key) {
     auto found = m_map.find(p_key);
     // An element with key p_key will always be contained in a corresponding
     // local list.
     assert(found != m_map.end());
-    // For safety's sake assert that list constains the same number of elements
-    // as the map.
-    assert(m_list.size() == m_map.size());
     return found->second;
   }
 
@@ -237,25 +108,23 @@ public:
 
 template <typename U, typename K = int> class lfu_t {
   std::size_t m_size, m_hits, m_curr;
-  // detail::freq_list_t<K, U, std::size_t> m_freq_list;
 
   using W = std::size_t;
 
-  using freq_list_node_t =
-      detail::local_list_t<K, U, W, detail::local_node_lfu_t<K, U>>;
-  using freq_node_it = typename std::list<freq_list_node_t>::iterator;
+  using freq_list_node_t__ = detail::local_list_t<K, U, W, detail::local_node_lfu_t<K, U>>;
+  using freq_node_it__ = typename std::list<freq_list_node_t__>::iterator;
 
-  std::list<freq_list_node_t> m_freq_list;
-  std::unordered_map<K, freq_node_it> m_weight_map;
+  std::list<freq_list_node_t__> m_freq_list;
+  std::unordered_map<K, freq_node_it__> m_weight_map;
 
-  bool is_last(freq_node_it p_iter) const {
+  bool is_last(freq_node_it__ p_iter) const {
     return (std::next(p_iter) == m_freq_list.end());
   }
 
   // Returns node with weight "1" or create a new node with corresponding weight
   // if it doesn't already exist.
-  freq_node_it first_weight_node() {
-    freq_node_it front = m_freq_list.begin();
+  freq_node_it__ first_weight_node() {
+    auto front = m_freq_list.begin();
 
     // In case the list isn't empty and front node has weight "1".
     if (!m_freq_list.empty() && front->weight() == 1) {
@@ -268,7 +137,7 @@ template <typename U, typename K = int> class lfu_t {
 
   // Returns node with the least weight. Because the list is created in an
   // ascending sorted order it is the head of the list.
-  freq_node_it least_weight_node() {
+  freq_node_it__ least_weight_node() {
     // As this function will only be called on a non-empty list, it's safe to
     // call "begin()" that will never return "end".
     assert(!m_freq_list.empty());
@@ -278,14 +147,15 @@ template <typename U, typename K = int> class lfu_t {
   // This function creates a "frequency node" after "p_prev" with
   // "p_prev->weight() + 1" key in case it does not exists. Otherwise and
   // returns an incremented iterator.
-  freq_node_it next_weight_node(freq_node_it p_prev) {
+  freq_node_it__ next_weight_node(freq_node_it__ p_prev) {
+    W next_weight = p_prev->weight() + 1;
+
     if (is_last(p_prev)) {
-      m_freq_list.emplace_back(p_prev->weight() + 1);
+      m_freq_list.emplace_back(next_weight);
       return std::next(p_prev);
     }
 
-    freq_node_it next_it = std::next(p_prev);
-    W prev_weight = p_prev->weight(), next_weight = prev_weight + 1;
+    freq_node_it__ next_it = std::next(p_prev);
 
     if (next_it->weight() == next_weight) {
       return next_it;
@@ -295,7 +165,7 @@ template <typename U, typename K = int> class lfu_t {
   }
 
   // Removes the node of a list if the "local list" is empty.
-  void remove_if_empty(freq_node_it p_it) {
+  void remove_if_empty(freq_node_it__ p_it) {
     if (p_it->is_empty()) {
       m_freq_list.erase(p_it);
     }
@@ -303,34 +173,51 @@ template <typename U, typename K = int> class lfu_t {
 
   // Helper function for Case 1 of "lookup". It promotes the the element
   // "p_key" according to LFU policy.
-  U promote_element(K p_key) {
-    // Lookup which local list "p_key" is present in.
-    auto found_weight = m_weight_map.find(p_key);
+  U promote(const K &p_key) {
+    auto found_weight = m_weight_map.find(p_key); // Lookup which local list "p_key" is present in.
     assert(found_weight != m_weight_map.end());
 
     // Corresponding iterator of "frequency list" and an node with incremented
     // weight.
-    auto freq_it = found_weight->second;
-    auto next_it = next_weight_node(freq_it);
+    freq_node_it__ freq_it = found_weight->second;
+    freq_node_it__ next_it = next_weight_node(freq_it);
 
-    // Update weight map.
-    found_weight->second = next_it;
+    found_weight->second = next_it; // Update weight map.
 
-    // Move "p_key" to the next local list.
     auto elem_it = freq_it->lookup(p_key);
-    next_it->splice_upfront(*freq_it, elem_it);
+    next_it->splice_upfront(*freq_it, elem_it); // Move "p_key" to the next local list.
     remove_if_empty(freq_it);
 
     return elem_it->value();
   }
 
-  bool is_present(K p_key) const {
+  void insert(const K &p_key, U p_val) {
+    auto first = first_weight_node();
+    first->push_front({p_key, p_val});
+    m_weight_map.insert({p_key, first});
+    m_curr++;
+  }
+
+  void evict_and_replace(const K &p_key, U p_val) {
+    // First we choose the "to_evict" entry by looking up the tail of a local list with the least weight.
+    auto least = least_weight_node();
+    auto to_evict = least->last();
+
+    m_weight_map.erase(to_evict->key()); // Erase the entry from key-weight map.
+    to_evict->value() = p_val;           // Reuse the local list node.
+
+    // Move the now evicted node to the bucket with weight "1".
+    first_weight_node()->splice_upfront(*least, to_evict, p_key);
+    remove_if_empty(least); // Clean up the frequency list, if "to_evict" was the only element in the local list.
+    m_weight_map.insert({p_key, least_weight_node()}); // Insert the new entry into the key-weight map.
+  }
+
+  bool is_present(const K &p_key) const {
     return (m_weight_map.find(p_key) != m_weight_map.end());
   }
 
 public:
-  lfu_t(std::size_t p_size)
-      : m_size{p_size}, m_hits{0}, m_curr{0}, m_freq_list{}, m_weight_map{} {
+  lfu_t(std::size_t p_size) : m_size{p_size}, m_hits{0}, m_curr{0}, m_freq_list{}, m_weight_map{} {
   }
 
   bool is_full() const {
@@ -341,47 +228,26 @@ public:
     return m_hits;
   }
 
-  template <typename F> U lookup(K p_key, F p_slow_get) {
+  template <typename F> U lookup(const K &p_key, F p_slow_get) {
     // Case 1. The entry is present in the cache. Then it gets promoted.
     if (is_present(p_key)) {
       m_hits++;
-      return promote_element(p_key);
+      return promote(p_key);
     }
 
-    U val = p_slow_get();
+    U val = p_slow_get(p_key);
 
     // Case 2. If the entry is not present at the moment, and cache is not full.
     // Then it gets inserted into a frequency bucket with weight "1" and pushed
     // into the beginning of the corresponding frequency list;
     if (!is_full()) {
-      auto first = first_weight_node();
-      first->push_front(p_key, val);
-      m_weight_map.insert({p_key, first});
-      m_curr++;
+      insert(p_key, val);
     }
 
     // Case 3. If we get here, then the cache is full and we need to choose an
     // entry to evict, that the new entry will replace.
     else {
-      // First we choose the "to_evict" entry by looking up the tail of a local
-      // list with the least weight.
-      auto least = least_weight_node();
-      auto to_evict = least->last();
-
-      // Erase the entry from key-weight map.
-      m_weight_map.erase(to_evict->key());
-      // Clean up the frequency list, if "to_evict" was the only element in the
-      // local list.
-      remove_if_empty(least);
-
-      // Reuse the local list node.
-      to_evict->value() = val;
-
-      // Move the now evicted node to the bucket with weight "1".
-      first_weight_node()->splice_upfront(*least, to_evict, p_key);
-
-      // Insert the new entry into the key-weight map.
-      m_weight_map.insert({p_key, least_weight_node()});
+      evict_and_replace(p_key, val);
     }
 
     return val;
@@ -389,13 +255,11 @@ public:
 };
 
 namespace detail {
-template <typename K, typename U, typename W>
-class local_node_lfuda_t : public local_node_lfu_t<K, U> {
+template <typename K, typename U, typename W> class local_node_lfuda_t : public local_node_lfu_t<K, U> {
   W m_freq;
 
 public:
-  local_node_lfuda_t(K p_key, U p_val)
-      : local_node_lfu_t<K, U>{p_key, p_val}, m_freq{0} {
+  local_node_lfuda_t(K p_key, U p_val, W p_freq = 1) : local_node_lfu_t<K, U>{p_key, p_val}, m_freq{p_freq} {
   }
 
   W &frequency() {
@@ -407,54 +271,91 @@ public:
   }
 };
 
-template <typename K, typename U, typename W> class freq_map_t {
-  using freq_t = local_list_t<K, U, W, local_node_lfuda_t<K, U, W>>;
-
-  std::map<W, freq_t> m_freq_map;
-
-public:
-  using it = typename std::map<W, freq_t>::iterator;
-
-  freq_map_t() : m_freq_map{} {
-  }
-};
 }; // namespace detail
 
-#if 0
 template <typename U, typename K = int> class lfuda_t {
-  std::size_t m_size, m_hits, m_curr, m_age;
-
   using W = std::size_t;
 
-  using freq_node_t =
-      detail::local_list_t<K, U, W, detail::local_node_lfuda_t<K, U, W>>;
-  using freq_node_it = typename std::map<W, freq_node_t>::iterator;
+  std::size_t m_size, m_hits, m_curr;
+  W m_age;
 
-  std::map<W, freq_node_t> m_freq_map;
+  using local_node_t__ = typename detail::local_node_lfuda_t<K, U, W>;
+  using freq_node_t__ = detail::local_list_t<K, U, W, local_node_t__>;
+
+  std::map<W, freq_node_t__> m_freq_map;
   std::unordered_map<K, W> m_weight_map;
 
-  bool is_present(K p_key) {
+  bool is_present(K p_key) const {
     return (m_weight_map.find(p_key) != m_weight_map.end());
   }
 
-  U promote_element(K p_key) {
-    auto found_weight = m_weight_map.find(p_key);
-    // Can't promote an element not present in the cache.
-    assert(found_weight != m_weight_map.end());
+  freq_node_t__ &freq_node_with_weight(W p_weight) {
+    auto inserted = m_freq_map.emplace(p_weight, p_weight);
+    return inserted.first->second;
+  }
 
-    W weight = found_weight->second;
+  W calculate_next_weight(const local_node_t__ &p_node) const noexcept {
+    return p_node.frequency() + m_age;
+  }
 
-    auto found_freq = m_freq_map.find(weight);
-    assert(found_freq != m_freq_map.end());
+  void remove_if_empty(const W p_weight) {
+    auto found = m_freq_map.find(p_weight);
+    assert(found != m_freq_map.end());
+    auto freq_list = found->second;
+    if (freq_list.is_empty()) {
+      m_freq_map.erase(p_weight);
+    }
+  }
 
-    freq_node_it freq_it = found_freq->second;
+  U promote(const K &p_key) {
+    auto found = m_weight_map.find(p_key);
+    assert(found != m_weight_map.end());
 
-    assert(weight == freq_it->weight());
+    W &old_weight = found->second; // Lookup the weight and frequency node in the frequency list.
+    auto &[ignored_1, old_freq_node] = *m_freq_map.find(old_weight);
+
+    // Lookup the node in corresponding local list which has to be promoted.
+    auto node_to_promote = old_freq_node.lookup(p_key);
+
+    node_to_promote->frequency()++; // Increment the frequency and calculate next weight.
+    W new_weight = calculate_next_weight(*node_to_promote);
+    freq_node_t__ &new_freq_node = freq_node_with_weight(new_weight);
+
+    new_freq_node.splice_upfront(old_freq_node, node_to_promote); // Move the node to the next list.
+    remove_if_empty(old_weight);                                  // Clean up after ourselves.
+
+    old_weight = new_weight; // Update the value stored in map.
+    return node_to_promote->value();
+  }
+
+  void insert(const K &p_key, U p_val) {
+    auto to_insert = local_node_t__{p_key, p_val};
+    W new_weight = calculate_next_weight(to_insert);
+    freq_node_with_weight(new_weight).push_front({p_key, p_val});
+    m_weight_map.insert({p_key, new_weight});
+    m_curr++;
+  }
+
+  void evict_and_replace(const K &p_key, U p_val) {
+    assert(m_freq_map.size()); // Cache should contain some elements or I've made an oopsie somewhere.
+    auto &[least_weight, least_node] = *m_freq_map.begin();
+
+    m_age = least_weight; // Upadte weight to the evicted entry's weight.
+    auto to_evict = least_node.last();
+    m_weight_map.erase(to_evict->key());
+
+    to_evict->value() = p_val; // Reuse the entry for the newly inserted element.
+    to_evict->frequency() = 1; //
+
+    W new_weight = calculate_next_weight(*to_evict);
+    freq_node_with_weight(new_weight).splice_upfront(least_node, to_evict, p_key);
+    remove_if_empty(least_weight); // As always, cleanup after yourself.
+
+    m_weight_map.insert({p_key, new_weight});
   }
 
 public:
-  lfuda_t(std::size_t p_size)
-      : m_size{p_size}, m_hits{0}, m_curr{0}, m_age{0}, m_freq_map{} {
+  lfuda_t(std::size_t p_size) : m_size{p_size}, m_hits{0}, m_curr{0}, m_age{0}, m_freq_map{} {
   }
 
   bool is_full() const {
@@ -469,27 +370,26 @@ public:
     // Case 1. The entry is present in the cache. Then it gets promoted.
     if (is_present(p_key)) {
       m_hits++;
-      return promote_element(p_key);
+      return promote(p_key);
     }
 
-    U val = p_slow_get();
+    U val = p_slow_get(p_key);
 
     // Case 2. If the entry is not present at the moment, and cache is not full.
-    // Then it gets inserted into a frequency bucket with weight "1" and pushed
-    // into the beginning of the corresponding frequency list;
+    // Then it gets inserted into a weight bucket with weight "m_age + 1" and pushed
+    // into the beginning of the corresponding weight list;
     if (!is_full()) {
-      m_curr++;
+      insert(p_key, val);
     }
 
     // Case 3. If we get here, then the cache is full and we need to choose an
     // entry to evict, that the new entry will replace.
     else {
+      evict_and_replace(p_key, val);
     }
 
     return val;
   }
 };
-
-#endif
 
 }; // namespace caches
