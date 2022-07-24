@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
 
 #ifdef BOOST_FOUND__
   if (verbose) {
-    auto optimal_hits = caches::get_optimal_hits(m, vec);
+    auto optimal_hits = caches::get_optimal_hits<int>(m, vec.begin(), vec.end());
     std::cout << "LFU hits: " << cache.get_hits() << "\nMaximum possible hits: " << optimal_hits << "\n";
     return 0;
   }

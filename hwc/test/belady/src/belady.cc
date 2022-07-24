@@ -4,7 +4,7 @@
 #include "belady.hpp"
 
 int main() {
-  std::size_t n, m;
+  std::size_t n{}, m{};
 
   if (!std::cin || !std::cout) {
     std::abort();
@@ -29,5 +29,5 @@ int main() {
     vec.push_back(temp);
   }
 
-  std::cout << caches::get_optimal_hits(m, vec) << std::endl;
+  std::cout << caches::get_optimal_hits<int>(m, vec.begin(), vec.end()) << std::endl;
 }

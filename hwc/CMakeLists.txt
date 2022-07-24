@@ -27,7 +27,7 @@ else()
     message(WARNING "Google Test disabled")
 endif()
 
-set(NOLINT ON CACHE BOOL "Disable clang-tidy")
+set(NOLINT OFF CACHE BOOL "Disable clang-tidy")
 
 if(NOT ${NOLINT})
 find_program(CLANG_TIDY_COMMAND clang-tidy)

@@ -27,8 +27,8 @@ template <typename T> class occurence_map_t {
   map_t__ m_map;
 
 public:
-  explicit occurence_map_t(const std::vector<T> &p_vec) : m_map{} {
-    std::for_each(p_vec.begin(), p_vec.end(),
+  template<typename t_iterator> occurence_map_t(t_iterator p_begin, t_iterator p_end) : m_map{} {
+    std::for_each(p_begin, p_end,
                   [this, i = 0](const T &element) mutable { m_map[element].push_back(i++); });
   }
 
@@ -73,7 +73,7 @@ public:
 
 template <typename T> class ideal_t {
   std::unordered_set<T> m_set;
-  const std::vector<T> &m_vec;
+  std::vector<T> m_vec;
   occurence_map_t<T> m_occur_map;
   std::size_t m_size, m_hits;
 
@@ -99,8 +99,9 @@ template <typename T> class ideal_t {
   }
 
 public:
-  ideal_t(std::size_t p_size, const std::vector<T> &p_vec)
-      : m_set{}, m_vec{p_vec}, m_occur_map{p_vec}, m_size{p_size}, m_hits{0} {
+  template<typename t_iterator> ideal_t(std::size_t p_size, t_iterator p_begin, t_iterator p_end)
+      : m_set{}, m_vec{}, m_occur_map{p_begin, p_end}, m_size{p_size}, m_hits{0} {
+    std::copy(p_begin, p_end, std::back_inserter(m_vec));
     m_set.reserve(p_size);
   }
 
@@ -117,14 +118,14 @@ public:
 
 // Implementation of Belady's algorithm. Returns the number of maximum possible
 // hits for a cache of size "size" and "vec" of requests.
-template <typename T> std::size_t get_optimal_hits(std::size_t p_size, std::vector<T> &p_vec) {
+template <typename T, typename t_iterator> std::size_t get_optimal_hits(std::size_t p_size, t_iterator p_begin, t_iterator p_end) {
   using namespace detail;
 
-  if (!p_size || !p_vec.size()) {
+  if (!p_size || !std::distance(p_begin, p_end)) {
     throw std::invalid_argument{"get_optiomal_hits()"};
   }
 
-  ideal_t<T> cache{p_size, p_vec};
+  ideal_t<T> cache{p_size, p_begin, p_end};
   return cache.count_hits();
 }
 
