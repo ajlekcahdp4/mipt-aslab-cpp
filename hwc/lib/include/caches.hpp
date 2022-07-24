@@ -24,28 +24,11 @@ namespace caches {
 
 namespace detail {
 
-template <typename K, typename U> class local_node_lfu_t {
+template <typename K, typename U> struct local_node_lfu_t {
   K m_key;
   U m_value;
 
-public:
-  local_node_lfu_t(K p_key, U p_val) : m_key{p_key}, m_value{p_val} {
-  }
-
-  const U &value() const {
-    return m_value;
-  }
-
-  U &value() {
-    return m_value;
-  }
-
-  const K &key() const {
-    return m_key;
-  }
-
-  K &key() {
-    return m_key;
+  explicit local_node_lfu_t(K p_key, U p_val) : m_key{p_key}, m_value{p_val} {
   }
 };
 
@@ -60,7 +43,7 @@ private:
   W m_weight;
 
 public:
-  local_list_t(W p_weight) : m_list{}, m_map{}, m_weight{p_weight} {
+  explicit local_list_t(W p_weight) : m_list{}, m_map{}, m_weight{p_weight} {
   }
 
   const W &weight() const {
@@ -73,20 +56,20 @@ public:
 
   void push_front(N p_node) {
     m_list.push_front(p_node);
-    m_map.insert({p_node.key(), m_list.begin()});
+    m_map.insert({p_node.m_key, m_list.begin()});
   }
 
   void splice_upfront(local_list_t<K, U, W, N> &p_other, const_it p_elem) {
-    p_other.m_map.erase(p_elem->key());                    // Erase "p_elem" from other list's lookup map.
+    p_other.m_map.erase(p_elem->m_key);                    // Erase "p_elem" from other list's lookup map.
     m_list.splice(m_list.begin(), p_other.m_list, p_elem); // Move "p_elem" to the beginning of the "p_other".
-    m_map.insert({p_elem->key(), m_list.begin()});         // Insert the element's key into current lookup map.
+    m_map.insert({p_elem->m_key, m_list.begin()});         // Insert the element's key into current lookup map.
   }
 
   void splice_upfront(local_list_t<K, U, W, N> &p_other, it p_elem, const K &p_new_key) {
-    p_other.m_map.erase(p_elem->key());                    // Erase "p_elem" from other list's lookup map.
+    p_other.m_map.erase(p_elem->m_key);                    // Erase "p_elem" from other list's lookup map.
     m_list.splice(m_list.begin(), p_other.m_list, p_elem); // Move "p_elem" to the beginning of the "p_other".
     m_map.insert({p_new_key, m_list.begin()}); // Insert the element's key into current lookup map with updated key.
-    p_elem->key() = p_new_key;
+    p_elem->m_key = p_new_key;
   }
 
   it lookup(const K &p_key) {
@@ -111,7 +94,8 @@ template <typename U, typename K = int> class lfu_t {
 
   using W = std::size_t;
 
-  using freq_list_node_t__ = detail::local_list_t<K, U, W, detail::local_node_lfu_t<K, U>>;
+  using local_node_t__ = typename detail::local_node_lfu_t<K, U>;
+  using freq_list_node_t__ = detail::local_list_t<K, U, W, local_node_t__>;
   using freq_node_it__ = typename std::list<freq_list_node_t__>::iterator;
 
   std::list<freq_list_node_t__> m_freq_list;
@@ -160,7 +144,7 @@ template <typename U, typename K = int> class lfu_t {
     if (next_it->weight() == next_weight) {
       return next_it;
     } else {
-      return m_freq_list.insert(next_it, next_weight);
+      return m_freq_list.insert(next_it, freq_list_node_t__{next_weight});
     }
   }
 
@@ -188,13 +172,13 @@ template <typename U, typename K = int> class lfu_t {
     next_it->splice_upfront(*freq_it, elem_it); // Move "p_key" to the next local list.
     remove_if_empty(freq_it);
 
-    return elem_it->value();
+    return elem_it->m_value;
   }
 
   void insert(const K &p_key, U p_val) {
     auto first = first_weight_node();
-    first->push_front({p_key, p_val});
-    m_weight_map.insert({p_key, first});
+    first->push_front(local_node_t__{p_key, p_val});
+    m_weight_map.insert(std::make_pair(p_key, first));
     m_curr++;
   }
 
@@ -203,8 +187,8 @@ template <typename U, typename K = int> class lfu_t {
     auto least = least_weight_node();
     auto to_evict = least->last();
 
-    m_weight_map.erase(to_evict->key()); // Erase the entry from key-weight map.
-    to_evict->value() = p_val;           // Reuse the local list node.
+    m_weight_map.erase(to_evict->m_key); // Erase the entry from key-weight map.
+    to_evict->m_value = p_val;           // Reuse the local list node.
 
     // Move the now evicted node to the bucket with weight "1".
     first_weight_node()->splice_upfront(*least, to_evict, p_key);
@@ -217,7 +201,7 @@ template <typename U, typename K = int> class lfu_t {
   }
 
 public:
-  lfu_t(std::size_t p_size) : m_size{p_size}, m_hits{0}, m_curr{0}, m_freq_list{}, m_weight_map{} {
+  explicit lfu_t(std::size_t p_size) : m_size{p_size}, m_hits{0}, m_curr{0}, m_freq_list{}, m_weight_map{} {
   }
 
   bool is_full() const {
@@ -255,19 +239,10 @@ public:
 };
 
 namespace detail {
-template <typename K, typename U, typename W> class local_node_lfuda_t : public local_node_lfu_t<K, U> {
+template <typename K, typename U, typename W> struct local_node_lfuda_t : public local_node_lfu_t<K, U> {
   W m_freq;
 
-public:
-  local_node_lfuda_t(K p_key, U p_val, W p_freq = 1) : local_node_lfu_t<K, U>{p_key, p_val}, m_freq{p_freq} {
-  }
-
-  W &frequency() {
-    return m_freq;
-  }
-
-  const W &frequency() const {
-    return m_freq;
+  explicit local_node_lfuda_t(K p_key, U p_val, W p_freq = 1) : local_node_lfu_t<K, U>{p_key, p_val}, m_freq{p_freq} {
   }
 };
 
@@ -295,7 +270,7 @@ template <typename U, typename K = int> class lfuda_t {
   }
 
   W calculate_next_weight(const local_node_t__ &p_node) const noexcept {
-    return p_node.frequency() + m_age;
+    return p_node.m_freq + m_age;
   }
 
   void remove_if_empty(const W p_weight) {
@@ -317,7 +292,7 @@ template <typename U, typename K = int> class lfuda_t {
     // Lookup the node in corresponding local list which has to be promoted.
     auto node_to_promote = old_freq_node.lookup(p_key);
 
-    node_to_promote->frequency()++; // Increment the frequency and calculate next weight.
+    node_to_promote->m_freq++; // Increment the frequency and calculate next weight.
     W new_weight = calculate_next_weight(*node_to_promote);
     freq_node_t__ &new_freq_node = freq_node_with_weight(new_weight);
 
@@ -325,13 +300,13 @@ template <typename U, typename K = int> class lfuda_t {
     remove_if_empty(old_weight);                                  // Clean up after ourselves.
 
     old_weight = new_weight; // Update the value stored in map.
-    return node_to_promote->value();
+    return node_to_promote->m_value;
   }
 
   void insert(const K &p_key, U p_val) {
     auto to_insert = local_node_t__{p_key, p_val};
     W new_weight = calculate_next_weight(to_insert);
-    freq_node_with_weight(new_weight).push_front({p_key, p_val});
+    freq_node_with_weight(new_weight).push_front(to_insert);
     m_weight_map.insert({p_key, new_weight});
     m_curr++;
   }
@@ -342,10 +317,10 @@ template <typename U, typename K = int> class lfuda_t {
 
     m_age = least_weight; // Upadte weight to the evicted entry's weight.
     auto to_evict = least_node.last();
-    m_weight_map.erase(to_evict->key());
+    m_weight_map.erase(to_evict->m_key);
 
-    to_evict->value() = p_val; // Reuse the entry for the newly inserted element.
-    to_evict->frequency() = 1; //
+    to_evict->m_value = p_val; // Reuse the entry for the newly inserted element.
+    to_evict->m_freq = 1; //
 
     W new_weight = calculate_next_weight(*to_evict);
     freq_node_with_weight(new_weight).splice_upfront(least_node, to_evict, p_key);
@@ -355,7 +330,7 @@ template <typename U, typename K = int> class lfuda_t {
   }
 
 public:
-  lfuda_t(std::size_t p_size) : m_size{p_size}, m_hits{0}, m_curr{0}, m_age{0}, m_freq_map{} {
+  explicit lfuda_t(std::size_t p_size) : m_size{p_size}, m_hits{0}, m_curr{0}, m_age{0}, m_freq_map{} {
   }
 
   bool is_full() const {
