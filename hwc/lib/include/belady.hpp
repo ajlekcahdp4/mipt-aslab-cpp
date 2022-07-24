@@ -117,14 +117,14 @@ public:
 
 // Implementation of Belady's algorithm. Returns the number of maximum possible
 // hits for a cache of size "size" and "vec" of requests.
-template <typename T> std::size_t get_optimal_hits(std::size_t size, std::vector<T> &vec) {
+template <typename T> std::size_t get_optimal_hits(std::size_t p_size, std::vector<T> &p_vec) {
   using namespace detail;
 
-  if (!size || !vec.size()) {
+  if (!p_size || !p_vec.size()) {
     throw std::invalid_argument{"get_optiomal_hits()"};
   }
 
-  ideal_t<T> cache{size, vec};
+  ideal_t<T> cache{p_size, p_vec};
   return cache.count_hits();
 }
 

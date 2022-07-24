@@ -3,7 +3,7 @@ set(LFUDAC_SOURCES
 )
 
 add_executable(lfudac ${LFUDAC_SOURCES})
-target_link_libraries(lfudac caches)
+target_link_libraries(lfudac caches Boost::program_options)
 
 install(TARGETS lfudac DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 
