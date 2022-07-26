@@ -28,7 +28,7 @@ template <typename K, typename U> struct local_node_lfu_t {
   K m_key;
   U m_value;
 
-  explicit local_node_lfu_t(K p_key, U p_val) noexcept : m_key{p_key}, m_value{p_val}  {
+  local_node_lfu_t(K p_key, U p_val) : m_key{p_key}, m_value{p_val}  {
   }
 };
 
@@ -72,7 +72,7 @@ public:
     p_elem->m_key = p_new_key;
   }
 
-  it lookup(const K &p_key) noexcept {
+  it lookup(const K &p_key) {
     auto found = m_map.find(p_key);
     // An element with key p_key will always be contained in a corresponding
     // local list.
@@ -80,7 +80,7 @@ public:
     return found->second;
   }
 
-  it last() noexcept {
+  it last() {
     // Local lists should never be empty if "last" is called.
     assert(!is_empty());
     return std::prev(m_list.end());
@@ -149,7 +149,7 @@ template <typename U, typename K = int> class lfu_t {
   }
 
   // Removes the node of a list if the "local list" is empty.
-  void remove_if_empty(freq_node_it__ p_it) noexcept {
+  void remove_if_empty(freq_node_it__ p_it) {
     if (p_it->is_empty()) {
       m_freq_list.erase(p_it);
     }
@@ -196,7 +196,7 @@ template <typename U, typename K = int> class lfu_t {
     m_weight_map.insert({p_key, least_weight_node()}); // Insert the new entry into the key-weight map.
   }
 
-  bool is_present(const K &p_key) const noexcept {
+  bool is_present(const K &p_key) const {
     return (m_weight_map.find(p_key) != m_weight_map.end());
   }
 
@@ -245,7 +245,7 @@ namespace detail {
 template <typename K, typename U, typename W> struct local_node_lfuda_t : public local_node_lfu_t<K, U> {
   W m_freq;
 
-  explicit local_node_lfuda_t(K p_key, U p_val, W p_freq = 1) noexcept : local_node_lfu_t<K, U>{p_key, p_val}, m_freq{p_freq} {
+  local_node_lfuda_t(K p_key, U p_val, W p_freq = 1) : local_node_lfu_t<K, U>{p_key, p_val}, m_freq{p_freq} {
   }
 };
 
@@ -263,7 +263,7 @@ template <typename U, typename K = int> class lfuda_t {
   std::map<W, freq_node_t__> m_freq_map;
   std::unordered_map<K, W> m_weight_map;
 
-  bool is_present(K p_key) const noexcept {
+  bool is_present(K p_key) const {
     return (m_weight_map.find(p_key) != m_weight_map.end());
   }
 
@@ -276,7 +276,7 @@ template <typename U, typename K = int> class lfuda_t {
     return p_node.m_freq + m_age;
   }
 
-  void remove_if_empty(const W p_weight) noexcept {
+  void remove_if_empty(const W p_weight) {
     auto found = m_freq_map.find(p_weight);
     assert(found != m_freq_map.end());
     auto freq_list = found->second;
@@ -290,7 +290,7 @@ template <typename U, typename K = int> class lfuda_t {
     assert(found != m_weight_map.end());
 
     W &old_weight = found->second; // Lookup the weight and frequency node in the frequency list.
-    auto &[ignored_1, old_freq_node] = *m_freq_map.find(old_weight);
+    auto &old_freq_node = m_freq_map.find(old_weight)->second;
 
     // Lookup the node in corresponding local list which has to be promoted.
     auto node_to_promote = old_freq_node.lookup(p_key);
