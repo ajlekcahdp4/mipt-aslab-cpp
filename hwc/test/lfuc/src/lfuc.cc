@@ -1,3 +1,4 @@
+#include <chrono>
 #include <iostream>
 
 #ifdef BOOST_FOUND__
@@ -6,8 +7,8 @@
 namespace po = boost::program_options;
 #endif
 
-#include "caches.hpp"
 #include "belady.hpp"
+#include "caches.hpp"
 
 struct slow_getter_t {
   int operator()(int p_key) {
@@ -24,7 +25,7 @@ int main(int argc, char *argv[]) {
 
 #ifdef BOOST_FOUND__
   po::options_description desc("Available options");
-  desc.add_options()("help,h", "Print this help message")("verbose,v", "Output verbose");
+  desc.add_options()("help,h", "Print this help message")("verbose,v", "Output verbose")("count-time,t", "Print perfomance metrics");
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -46,16 +47,11 @@ int main(int argc, char *argv[]) {
 
 #ifdef BOOST_FOUND__
   std::vector<int> vec{};
+  vec.reserve(n);
+
   bool verbose = vm.count("verbose");
 
-  if (verbose) {
-    vec.reserve(n);
-  }
-
 #endif
-  caches::lfu_t<int, int> cache{m};
-  slow_getter_t g{};
-
   for (unsigned i = 0; i < n; i++) {
     if (!std::cin || !std::cout) {
       std::abort();
@@ -67,18 +63,38 @@ int main(int argc, char *argv[]) {
     if (std::cin.fail()) {
       std::abort();
     }
-    
-    cache.lookup(temp, g);
-#ifdef BOOST_FOUND__
-    if (verbose) {
-      vec.push_back(temp);
-    }
-#endif
+
+    vec.push_back(temp);
   }
 
+  caches::lfu_t<int, int> cache{m};
+  slow_getter_t g{};
+
+  auto lfu_start = std::chrono::high_resolution_clock::now();
+
+  for (const auto &elem : vec) {
+    cache.lookup(elem, g);
+  }
+
+  auto lfu_finish = std::chrono::high_resolution_clock::now();
+  auto lfu_elapsed = std::chrono::duration<double, std::milli>(lfu_finish - lfu_start);
+
 #ifdef BOOST_FOUND__
+  bool count_time = vm.count("count-time");
+  if (count_time) {
+    std::cout << "Time elapsed for LFU: " << lfu_elapsed.count() << " ms\n";
+  }
+
   if (verbose) {
+    auto optimal_start = std::chrono::high_resolution_clock::now();
     auto optimal_hits = caches::get_optimal_hits<int>(m, vec.begin(), vec.end());
+    auto optimal_finish = std::chrono::high_resolution_clock::now();
+    auto optimal_elapsed = std::chrono::duration<double, std::milli>(optimal_finish - optimal_start);
+    
+    if (count_time) {
+      std::cout << "Time elapsed for Belady: " << optimal_elapsed.count() << " ms\n";
+    }
+    
     std::cout << "LFU hits: " << cache.get_hits() << "\nMaximum possible hits: " << optimal_hits << "\n";
     return 0;
   }
