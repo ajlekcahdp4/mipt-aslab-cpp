@@ -8,7 +8,7 @@ namespace po = boost::program_options;
 #endif
 
 #include "belady.hpp"
-#include "caches.hpp"
+#include "stl_lfu.hpp"
 
 struct slow_getter_t {
   int operator()(int p_key) {

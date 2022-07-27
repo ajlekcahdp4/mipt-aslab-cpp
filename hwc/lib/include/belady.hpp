@@ -141,7 +141,7 @@ template <typename T> class ideal_t {
 
   void lookup_elem(const T &p_elem) {
     // This is the naive implementation that I tried first. It works reasonably well with small cache sizes, but has a
-    // assymptotic linear complexity with size of cache m. But this complexity is actually ammor tized because a linear
+    // assymptotic linear complexity with size of cache m. But this complexity is actually ammortized because a linear
     // complexity algorithm is called only when there's a cache miss.
 #if 0
     if (m_set.find(p_elem) != m_set.end()) {
