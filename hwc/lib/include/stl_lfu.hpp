@@ -32,21 +32,25 @@ template <typename K, typename U> struct local_node_lfu_t {
   }
 };
 
-template <typename K, typename U, typename N> class local_list_t {
+template <typename K, typename U> class local_list_lfu_t {
+  using node_t__ = local_node_lfu_t<K, U>;
+  using self_t__ = local_list_lfu_t<K, U>;
+
 public:
   using W = std::size_t;
 
-  using const_it = typename std::list<N>::const_iterator;
-  using it = typename std::list<N>::iterator;
+  using const_it__ = typename std::list<node_t__>::const_iterator;
+  using it__ = typename std::list<node_t__>::iterator;
 
 private:
-  std::list<N> m_list;
-  std::unordered_map<K, it> m_map;
+
+  std::list<node_t__> m_list;
+  std::unordered_map<K, it__> m_map;
 
 public:
   W m_weight;
 
-  explicit local_list_t(W p_weight) : m_list{}, m_map{}, m_weight{p_weight} {
+  explicit local_list_lfu_t(W p_weight) : m_list{}, m_map{}, m_weight{p_weight} {
   }
 
   const W &weight() const noexcept {
@@ -61,25 +65,25 @@ public:
     return m_list.empty();
   }
 
-  void push_front(N p_node) {
+  void push_front(node_t__ p_node) {
     m_list.push_front(p_node);
     m_map.insert({p_node.m_key, m_list.begin()});
   }
 
-  void splice_upfront(local_list_t<K, U, N> &p_other, const_it p_elem) {
+  void splice_upfront(self_t__ &p_other, const_it__ p_elem) {
     p_other.m_map.erase(p_elem->m_key);                    // Erase "p_elem" from other list's lookup map.
     m_list.splice(m_list.begin(), p_other.m_list, p_elem); // Move "p_elem" to the beginning of the "p_other".
     m_map.insert({p_elem->m_key, m_list.begin()});         // Insert the element's key into current lookup map.
   }
 
-  void splice_upfront(local_list_t<K, U, N> &p_other, it p_elem, const K &p_new_key) {
+  void splice_upfront(self_t__ &p_other, it__ p_elem, const K &p_new_key) {
     p_other.m_map.erase(p_elem->m_key);                    // Erase "p_elem" from other list's lookup map.
     m_list.splice(m_list.begin(), p_other.m_list, p_elem); // Move "p_elem" to the beginning of the "p_other".
     m_map.insert({p_new_key, m_list.begin()}); // Insert the element's key into current lookup map with updated key.
     p_elem->m_key = p_new_key;
   }
 
-  it lookup(const K &p_key) {
+  it__ lookup(const K &p_key) {
     auto found = m_map.find(p_key);
     // An element with key p_key will always be contained in a corresponding
     // local list.
@@ -87,7 +91,7 @@ public:
     return found->second;
   }
 
-  it last() {
+  it__ last() {
     // Local lists should never be empty if "last" is called.
     assert(!is_empty());
     return std::prev(m_list.end());
@@ -102,7 +106,7 @@ template <typename U, typename K = int> class lfu_t {
   using W = std::size_t;
 
   using local_node_t__ = typename detail::local_node_lfu_t<K, U>;
-  using freq_list_node_t__ = detail::local_list_t<K, U, local_node_t__>;
+  using freq_list_node_t__ = detail::local_list_lfu_t<K, U>;
   using freq_node_it__ = typename std::list<freq_list_node_t__>::iterator;
 
   std::list<freq_list_node_t__> m_freq_list;
