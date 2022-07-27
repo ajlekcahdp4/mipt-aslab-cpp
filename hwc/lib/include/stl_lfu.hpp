@@ -101,7 +101,7 @@ public:
 }; // namespace detail
 
 template <typename U, typename K = int> class lfu_t {
-  std::size_t m_size, m_hits, m_curr;
+  std::size_t m_size, m_hits;
 
   using W = std::size_t;
 
@@ -199,7 +199,6 @@ template <typename U, typename K = int> class lfu_t {
     auto first = first_weight_node();
     first->push_front(local_node_t__{p_key, p_val});
     m_weight_map.insert(std::make_pair(p_key, first));
-    m_curr++;
   }
 
   void evict_and_replace(const K &p_key, U p_val) {
@@ -221,14 +220,14 @@ template <typename U, typename K = int> class lfu_t {
   }
 
 public:
-  explicit lfu_t(std::size_t p_size) : m_size{p_size}, m_hits{0}, m_curr{0}, m_freq_list{}, m_weight_map{} {
+  explicit lfu_t(std::size_t p_size) : m_size{p_size}, m_hits{0}, m_freq_list{}, m_weight_map{} {
     if (!p_size) {
       throw std::invalid_argument("lfu_t()");
     }
   }
 
   bool is_full() const noexcept {
-    return (m_curr == m_size);
+    return (m_weight_map.size() == m_size);
   }
 
   std::size_t get_hits() const noexcept {
