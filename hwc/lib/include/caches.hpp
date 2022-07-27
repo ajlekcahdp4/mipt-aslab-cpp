@@ -28,7 +28,7 @@ template <typename K, typename U> struct local_node_lfu_t {
   K m_key;
   U m_value;
 
-  local_node_lfu_t(K p_key, U p_val) : m_key{p_key}, m_value{p_val}  {
+  local_node_lfu_t(K p_key, U p_val) : m_key{p_key}, m_value{p_val} {
   }
 };
 
@@ -40,14 +40,19 @@ public:
 private:
   std::list<N> m_list;
   std::unordered_map<K, it> m_map;
-  W m_weight;
 
 public:
+  W m_weight;
+
   explicit local_list_t(W p_weight) : m_list{}, m_map{}, m_weight{p_weight} {
   }
 
   const W &weight() const noexcept {
     return m_weight;
+  }
+
+  auto size() const noexcept {
+    return m_list.size();
   }
 
   bool is_empty() const noexcept {
@@ -111,7 +116,7 @@ template <typename U, typename K = int> class lfu_t {
     auto front = m_freq_list.begin();
 
     // In case the list isn't empty and front node has weight "1".
-    if (!m_freq_list.empty() && front->weight() == 1) {
+    if (!m_freq_list.empty() && front->m_weight == 1) {
       return front;
     }
 
@@ -129,10 +134,10 @@ template <typename U, typename K = int> class lfu_t {
   }
 
   // This function creates a "frequency node" after "p_prev" with
-  // "p_prev->weight() + 1" key in case it does not exists. Otherwise and
+  // "p_prev->m_weight + 1" key in case it does not exists. Otherwise and
   // returns an incremented iterator.
   freq_node_it__ next_weight_node(freq_node_it__ p_prev) {
-    W next_weight = p_prev->weight() + 1;
+    W next_weight = p_prev->m_weight + 1;
 
     if (is_last(p_prev)) {
       m_freq_list.emplace_back(next_weight);
@@ -141,7 +146,7 @@ template <typename U, typename K = int> class lfu_t {
 
     freq_node_it__ next_it = std::next(p_prev);
 
-    if (next_it->weight() == next_weight) {
+    if (next_it->m_weight == next_weight) {
       return next_it;
     } else {
       return m_freq_list.insert(next_it, freq_list_node_t__{next_weight});
@@ -164,6 +169,16 @@ template <typename U, typename K = int> class lfu_t {
     // Corresponding iterator of "frequency list" and an node with incremented
     // weight.
     freq_node_it__ freq_it = found_weight->second;
+
+#if 1
+    // Handle the case when *freq_it contains only a single element. In this case promotion would mean incrementing the
+    // weight of node. This way possible allocation and deallocation is bypassed.
+    if (freq_it->size() == 1 && (std::next(freq_it)->m_weight != (freq_it->m_weight + 1))) {
+      freq_it->m_weight++;
+      return freq_it->last()->m_value;
+    }
+#endif
+
     freq_node_it__ next_it = next_weight_node(freq_it);
 
     found_weight->second = next_it; // Update weight map.
@@ -323,7 +338,7 @@ template <typename U, typename K = int> class lfuda_t {
     m_weight_map.erase(to_evict->m_key);
 
     to_evict->m_value = p_val; // Reuse the entry for the newly inserted element.
-    to_evict->m_freq = 1; //
+    to_evict->m_freq = 1;      //
 
     W new_weight = calculate_next_weight(*to_evict);
     freq_node_with_weight(new_weight).splice_upfront(least_node, to_evict, p_key);
