@@ -53,5 +53,11 @@ set(DCMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_program(BASH_PROGRAM bash)
 
+# Add flags for GNU sampling profiler gprof in Debug build and RelWithDebInfo
+add_compile_options("$<$<CONFIG:RelWithDebInfo>:-pg>")
+add_link_options("$<$<CONFIG:RelWithDebInfo>:-pg>")
+add_compile_options("$<$<CONFIG:Debug>:-pg>")
+add_link_options("$<$<CONFIG:Debug>:-pg>")
+
 add_subdirectory(lib)
 add_subdirectory(test)
