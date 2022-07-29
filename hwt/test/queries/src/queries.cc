@@ -29,6 +29,23 @@ int main(int argc, char *argv[]) {
   }
 #endif
 
+  throttle::ranged_set<int> s{};
+  s.insert(1);
+  s.insert(2);
+  s.insert(5);
+  s.insert(-1);
+  s.insert(4);
+
+  auto prev_size = s.size();
+  try {
+    s.insert(-1);
+  } catch (const std::exception& e) {
+
+  }
+  auto next_size = s.size();
+  assert(prev_size == next_size);
+
+  s.dump(std::cout);
 #if 0
   for () {
     if (!std::cin || !std::cout) {
@@ -39,14 +56,14 @@ int main(int argc, char *argv[]) {
       std::abort();
     }
   }
-#endif
 
   auto start = std::chrono::high_resolution_clock::now();
   
   auto finish = std::chrono::high_resolution_clock::now();
   auto elapsed = std::chrono::duration<double, std::milli>(finish - start);
+#endif
 
-#ifdef BOOST_FOUND__
+#if 0
   if (vm.count("count-time")) {
     std::cout << "Time elapsed" << elapsed.count() << " ms\n";
   }
