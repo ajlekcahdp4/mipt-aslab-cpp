@@ -25,7 +25,8 @@ int main(int argc, char *argv[]) {
 
 #ifdef BOOST_FOUND__
   po::options_description desc("Available options");
-  desc.add_options()("help,h", "Print this help message")("verbose,v", "Output verbose")("count-time,t", "Print perfomance metrics");
+  desc.add_options()("help,h", "Print this help message")("verbose,v", "Output verbose")("count-time,t",
+                                                                                         "Print perfomance metrics");
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -45,10 +46,10 @@ int main(int argc, char *argv[]) {
     std::abort();
   }
 
-#ifdef BOOST_FOUND__
   std::vector<int> vec{};
   vec.reserve(n);
 
+#ifdef BOOST_FOUND__
   bool verbose = vm.count("verbose");
 
 #endif
@@ -90,11 +91,11 @@ int main(int argc, char *argv[]) {
     auto optimal_hits = caches::get_optimal_hits<int>(m, vec.begin(), vec.end());
     auto optimal_finish = std::chrono::high_resolution_clock::now();
     auto optimal_elapsed = std::chrono::duration<double, std::milli>(optimal_finish - optimal_start);
-    
+
     if (count_time) {
       std::cout << "Time elapsed for Belady: " << optimal_elapsed.count() << " ms\n";
     }
-    
+
     std::cout << "LFU hits: " << cache.get_hits() << "\nMaximum possible hits: " << optimal_hits << "\n";
     return 0;
   }

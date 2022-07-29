@@ -1,6 +1,6 @@
+#include <chrono>
 #include <iostream>
 #include <vector>
-#include <chrono>
 
 #ifdef BOOST_FOUND__
 #include <boost/program_options.hpp>
@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
     if (std::cin.fail()) {
       std::abort();
     }
-    
+
     vec.push_back(temp);
   }
 
