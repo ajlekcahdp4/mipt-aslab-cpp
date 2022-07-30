@@ -163,8 +163,7 @@ template <typename t_value_type_> struct rb_tree_ranged_node_ : public rb_tree_r
 
   t_value_type_ m_value_;
 
-  rb_tree_ranged_node_(const t_value_type_ &p_key)
-      : rb_tree_ranged_node_base_{k_red_, 1}, m_value_{p_key} {};
+  rb_tree_ranged_node_(const t_value_type_ &p_key) : rb_tree_ranged_node_base_{k_red_, 1}, m_value_{p_key} {};
 };
 
 class rb_tree_ranged_impl_ {
@@ -423,6 +422,29 @@ public:
         curr = parent;
       }
     }
+  }
+
+  const t_value_type &upper_bound() const {}
+
+  const t_value_type &lower_bound() const {}
+
+  // Rank operations that constiture the juice of this whole ordeal.
+  const t_value_type &select_rank(size_type p_rank) const {
+    if (p_rank > size()) throw std::invalid_argument("");
+
+    const_base_ptr_ curr = m_root_;
+    size_type r = link_type_::size(curr->m_left_) + 1;
+    while (r != p_rank) {
+      if (p_rank < r) {
+        curr = curr->m_left_;
+      } else {
+        curr = curr->m_right_;
+        p_rank -= r;
+      }
+      r = link_type_::size(curr->m_left_) + 1;
+    }
+
+    return static_cast<const_node_ptr_>(curr)->m_value_;
   }
 
   void dump(std::ostream &p_ostream) {
