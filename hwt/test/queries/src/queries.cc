@@ -29,23 +29,27 @@ int main(int argc, char *argv[]) {
   }
 #endif
 
-  throttle::ranged_set<int> s{};
-  s.insert(1);
-  s.insert(2);
-  s.insert(5);
-  s.insert(-1);
-  s.insert(4);
-
-  auto prev_size = s.size();
-  try {
-    s.insert(-1);
-  } catch (const std::exception& e) {
-
+  throttle::detail::rb_tree_ranged_<int, std::less<int>> t, p;
+  t = std::move(p);
+  for (int i = 0; i < 100; ++i) {
+    t.insert(i);
   }
-  auto next_size = s.size();
-  assert(prev_size == next_size);
 
-  s.dump(std::cout);
+
+  for (int i = 0; i < 50; i++) {
+    assert(t.contains(i));
+    t.erase(i);
+  }
+  
+  for (int i = 50; i < 100; i++) {
+    assert(t.contains(i));
+  }
+
+  t.dump(std::cout);
+
+  // const throttle::ranged_set<int> s{1, 2, 5, -1, 4};
+
+  // s.dump(std::cout);
 #if 0
   for () {
     if (!std::cin || !std::cout) {

@@ -10,10 +10,13 @@
 
 #pragma once
 
+#include "rb_tree_ranged.hpp"
+
 #include <cassert>
 #include <cstdint>
 #include <exception>
 #include <functional>
+#include <initializer_list>
 #include <iostream>
 #include <tuple>
 #include <utility>
@@ -23,40 +26,6 @@ namespace throttle {
 
 template <typename T, typename t_comp> class ranged_set;
 namespace detail {
-
-template <typename t_node> class rb_tree_dumper__ {
-  typename t_node::size_type m_current_index;
-
-public:
-  rb_tree_dumper__() : m_current_index{} {
-  }
-
-  void dump_helper(t_node *p_node, std::ostream &p_ostream) {
-    if (!p_node) {
-      p_ostream << "\tnode_" << m_current_index++ << " [label = \"NIL\", color = \""
-                << t_node{t_node::color_e::BLACK}.color_name() << "\"];\n";
-      return;
-    }
-
-    auto this_index = m_current_index;
-    p_ostream << "\tnode_" << m_current_index++ << " [label = \"" << p_node->m_key << "\", color = \""
-              << p_node->color_name() << "\"];\n";
-
-    p_ostream << "\tnode_" << this_index << " -> node_" << this_index + 1 << ";\n";
-    dump_helper(p_node->m_left, p_ostream);
-
-    p_ostream << "\tnode_" << this_index << " -> node_" << m_current_index << ";\n";
-    dump_helper(p_node->m_right, p_ostream);
-  }
-
-  void dump(t_node *p_node, std::ostream &p_ostream) {
-    m_current_index = 0;
-
-    p_ostream << "digraph RedBlackTree {\n";
-    dump_helper(p_node, p_ostream);
-    p_ostream << "}\n";
-  }
-};
 
 template <typename T, typename t_size_type> struct rb_tree_ranged_node_t__ {
   using size_type = t_size_type;
@@ -72,39 +41,29 @@ template <typename T, typename t_size_type> struct rb_tree_ranged_node_t__ {
   t_size_type m_count_below;
   T m_key;
 
-  rb_tree_ranged_node_t__(color_e p_color) : m_left{}, m_right{}, m_color{p_color}, m_count_below{} {
-  }
+  rb_tree_ranged_node_t__(color_e p_color) : m_left{}, m_right{}, m_color{p_color}, m_count_below{} {}
 
   rb_tree_ranged_node_t__(T p_key, color_e p_color)
-      : m_left{}, m_right{}, m_color{p_color}, m_count_below{}, m_key{p_key} {
-  }
+      : m_left{}, m_right{}, m_color{p_color}, m_count_below{}, m_key{p_key} {}
 
   constexpr const char *color_name() {
-    using enum color_e;
     switch (m_color) {
-    case BLACK:
-      return "black";
-    case RED:
-      return "red";
+    case color_e::BLACK: return "black";
+    case color_e::RED: return "red";
+    default: return "";
     }
   }
 
-  bool has_parent() const noexcept {
-    return m_parent;
-  }
+  bool has_parent() const noexcept { return m_parent; }
 
   bool is_left_child() const noexcept {
     assert(has_parent());
     return (this == m_parent->m_left);
   }
 
-  bool is_right_child() const noexcept {
-    return !is_left_child();
-  }
+  bool is_right_child() const noexcept { return !is_left_child(); }
 
-  self_t__ *get_sibling() noexcept {
-    return (is_left_child() ? m_parent->m_left : m_parent->m_right);
-  };
+  self_t__ *get_sibling() noexcept { return (is_left_child() ? m_parent->m_left : m_parent->m_right); };
 
   self_t__ *get_uncle();
 };
@@ -127,11 +86,14 @@ private:
   void right_rotate(node_t__ &p_node);
   void rotate_to_parent(node_t__ &p_node);
 
+  struct functor_that_does_nothing {
+    void operator()(const T &) {}
+  };
+
   template <typename F>
-  std::tuple<node_t__ *, node_t__ *, bool> traverse_binary_search(node_t__ *p_root, const T &p_key, F p_functor) {
-    if (!p_root) {
-      return std::make_tuple(nullptr, nullptr, false);
-    }
+  std::tuple<node_t__ *, node_t__ *, bool> traverse_binary_search(node_t__ *p_root, const T &p_key,
+                                                                  F p_functor = functor_that_does_nothing{}) {
+    if (!p_root) { return std::make_tuple(nullptr, nullptr, false); }
 
     node_t__ *curr{p_root}, *prev{};
     bool is_less_than_key{};
@@ -151,11 +113,9 @@ private:
   }
 
   template <typename F>
-  std::tuple<const node_t__ *, const node_t__ *, bool> traverse_binary_search(const node_t__ *p_root, const T &p_key,
-                                                                              F p_functor) const {
-    if (!p_root) {
-      return std::make_tuple(nullptr, nullptr, false);
-    }
+  std::tuple<const node_t__ *, const node_t__ *, bool>
+  traverse_binary_search(const node_t__ *p_root, const T &p_key, F p_functor = functor_that_does_nothing{}) const {
+    if (!p_root) { return std::make_tuple(nullptr, nullptr, false); }
 
     const node_t__ *curr{p_root}, *prev{};
     bool is_less_than_key{};
@@ -174,18 +134,50 @@ private:
     return std::make_tuple(curr, prev, is_less_than_key);
   }
 
-  node_t__ *bst_lookup(const T &p_key) noexcept {
-    auto [found, prev, is_prev_less] = traverse_binary_search(m_root, p_key, [](const node_t__ &) {});
+  template <typename F> void traverse_postorder(node_t__ *p_root, F p_functor) {
+    node_t__ *curr{p_root}, *prev{};
+
+    while (curr) {
+      node_t__ *parent{curr->m_parent}, *left{curr->m_left}, *right{curr->m_right};
+
+      if (prev == parent) {
+        prev = curr;
+        if (left) {
+          curr = left;
+        } else if (right) {
+          curr = right;
+        } else {
+          p_functor(curr);
+          curr = parent;
+        }
+      }
+
+      else if (prev == left) {
+        prev = curr;
+        if (right) {
+          curr = right;
+        } else {
+          p_functor(curr);
+          curr = parent;
+        }
+      }
+
+      else {
+        prev = curr;
+        p_functor(curr);
+        curr = parent;
+      }
+    }
+  }
+
+  template <typename F> node_t__ *bst_lookup(const T &p_key) noexcept {
+    auto [found, prev, is_prev_less] = traverse_binary_search(m_root, p_key);
     return found;
   }
 
   const node_t__ *const bst_lookup(const T &p_key) const noexcept {
-    auto [found, prev, is_prev_less] = traverse_binary_search(m_root, p_key, [](const node_t__ &) {});
+    auto [found, prev, is_prev_less] = traverse_binary_search(m_root, p_key);
     return found;
-  }
-
-  void bst_insert_failed_backtrace(const T &p_key) {
-    traverse_binary_search(p_key, [](node_t__ &p_node) { p_node.m_count_below--; });
   }
 
   node_t__ *bst_insert(const T &p_key) {
@@ -215,72 +207,46 @@ private:
     return to_insert;
   }
 
-  node_t__ *move_to_leaf(node_t__ &p_node) {
-  }
+  node_t__ *move_to_leaf(node_t__ &p_node) {}
 
   void recolor_after_insert(node_t__ &p_leaf);
   void recolor_after_erase(node_t__ &p_leaf);
 
   void prune_leaf(node_t__ *p_leaf);
 
-  bool is_root(const node_t__ &p_node) const noexcept {
-    return (!p_node.m_parent);
-  }
+  bool is_root(const node_t__ &p_node) const noexcept { return (!p_node.m_parent); }
 
 public:
-  ranged_set() : m_root{} {
+  ranged_set() : m_root{} {}
+
+  ranged_set(std::initializer_list<T> p_l) {
+    for (const auto &v : p_l) {
+      insert(v);
+    }
   }
 
   ~ranged_set() {
     // Postorder iterative destructor
-    node_t__ *curr{m_root};
-    while (curr) {
-      if (curr->m_left) {
-        curr = curr->m_left;
-      } else if (curr->m_right) {
-        curr = curr->m_right;
-      } else {
-        node_t__ *parent = curr->m_parent;
-        if (parent) {
-          if (curr->is_left_child()) {
-            parent->m_left = nullptr;
-          } else {
-            parent->m_right = nullptr;
-          }
-        }
-        delete curr;
-        curr = parent;
-      }
-    }
+    traverse_postorder(m_root, [](node_t__ *p_node) { delete p_node; });
   }
 
   ranged_set(const self_t__ &p_other);
   self_t__ &operator=(const self_t__ &p_other);
 
-  bool is_empty() const noexcept {
-    return (!m_root);
-  }
+  bool is_empty() const noexcept { return (!m_root); }
 
-  size_type size() const noexcept {
-    return (is_empty() ? 0 : m_root->m_count_below);
-  }
+  size_type size() const noexcept { return (is_empty() ? 0 : m_root->m_count_below + 1); }
 
-  void insert(const T &p_key) {
-    bst_insert(p_key);
-  }
+  void insert(const T &p_key) { bst_insert(p_key); }
 
   void erase(const T &p_key) {
     node_t__ *leaf = move_to_leaf(p_key);
     prune_leaf(leaf);
   }
 
-  bool contains(const T &p_key) const {
-    return bst_lookup(p_key);
-  }
+  bool contains(const T &p_key) const { return bst_lookup(p_key); }
 
-  void dump(std::ostream &p_ostream) const {
-    detail::rb_tree_dumper__<node_t__>{}.dump(m_root, p_ostream);
-  }
+  void dump(std::ostream &p_ostream) const { detail::rb_tree_dumper__<node_t__>{}.dump(m_root, p_ostream); }
 };
 
 } // namespace throttle
