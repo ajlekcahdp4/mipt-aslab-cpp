@@ -34,8 +34,8 @@ public:
     }
 
     auto this_index = m_current_index;
-    p_ostream << "\tnode_" << m_current_index++ << " [label = \"" << p_node->m_value_ << "\", color = \""
-              << p_node->color_name() << "\"];\n";
+    p_ostream << "\tnode_" << m_current_index++ << " [label = \"" << p_node->m_value_ << ":" << p_node->m_size_
+              << "\", color = \"" << p_node->color_name() << "\"];\n";
 
     p_ostream << "\tnode_" << this_index << " -> node_" << this_index + 1 << ";\n";
     dump_helper(static_cast<t_node *>(p_node->m_left_), p_ostream);
@@ -69,6 +69,10 @@ struct rb_tree_ranged_node_base_ {
   static rb_tree_ranged_color_ get_color_(const_base_ptr_ p_x) { return (p_x ? p_x->m_color_ : k_black_); }
 
   const char *color_name() { return (m_color_ == k_black_ ? "black" : "red"); }
+
+  static size_type size(base_ptr_ p_x) noexcept {
+    return (p_x ? p_x->m_size_ : 0); // By definitions size of "NIL" node is 0;
+  }
 
   static base_ptr_ minimum_(base_ptr_ p_x) noexcept {
     while (p_x->m_left_)
@@ -190,6 +194,7 @@ private:
   using const_node_ptr_ = typename node_type_::const_node_ptr_;
 
   using self_type_ = rb_tree_ranged_<t_value_type, t_comp>;
+  using const_self_type_ = const self_type_;
 
 public:
   bool empty() const noexcept { return !m_root_; }
@@ -250,6 +255,78 @@ private:
     }
 
     return std::make_tuple(p_r, prev, is_less_than_key);
+  }
+
+  template <typename F> void traverse_postorder(base_ptr_ p_r, F p_f) {
+    base_ptr_ prev{};
+
+    while (p_r) {
+      base_ptr_ parent{p_r->m_parent_}, left{p_r->m_left_}, right{p_r->m_right_};
+
+      if (prev == parent) {
+        prev = p_r;
+        if (left) {
+          p_r = left;
+        } else if (right) {
+          p_r = right;
+        } else {
+          p_f(p_r);
+          p_r = parent;
+        }
+      }
+
+      else if (prev == left) {
+        prev = p_r;
+        if (right) {
+          p_r = right;
+        } else {
+          p_f(p_r);
+          p_r = parent;
+        }
+      }
+
+      else {
+        prev = p_r;
+        p_f(p_r);
+        p_r = parent;
+      }
+    }
+  }
+
+  template <typename F> void traverse_postorder(const_base_ptr_ p_r, F p_f) const {
+    const_base_ptr_ prev{};
+
+    while (p_r) {
+      const_base_ptr_ parent{p_r->m_parent_}, left{p_r->m_left_}, right{p_r->m_right_};
+
+      if (prev == parent) {
+        prev = p_r;
+        if (left) {
+          p_r = left;
+        } else if (right) {
+          p_r = right;
+        } else {
+          p_f(p_r);
+          p_r = parent;
+        }
+      }
+
+      else if (prev == left) {
+        prev = p_r;
+        if (right) {
+          p_r = right;
+        } else {
+          p_f(p_r);
+          p_r = parent;
+        }
+      }
+
+      else {
+        prev = p_r;
+        p_f(p_r);
+        p_r = parent;
+      }
+    }
   }
 
   node_ptr_ bst_lookup(const t_value_type &p_key) noexcept {
@@ -324,12 +401,9 @@ public:
     prune_leaf(leaf);
   }
 
-  void dump(std::ostream &p_ostream) {
-    rb_tree_dumper__<node_type_>{}.dump(static_cast<node_ptr_>(m_root_), p_ostream);
-  }
-
-  rb_tree_ranged_() : rb_tree_ranged_impl_{} {}
-  ~rb_tree_ranged_() {
+  void clear() noexcept {
+    // A more optimized version of iterative approach for postorder traversal. In this case node pointers can be used to
+    // indicate which nodes have already been visited.
     base_ptr_ curr = m_root_;
     while (curr) {
       if (curr->m_left_)
@@ -351,16 +425,33 @@ public:
     }
   }
 
-  rb_tree_ranged_(self_type_ &&p_rhs) noexcept {
-    std::cout << "Move constructor";
-    std::swap(m_root_, p_rhs.m_root_);
+  void dump(std::ostream &p_ostream) {
+    rb_tree_dumper__<node_type_>{}.dump(static_cast<node_ptr_>(m_root_), p_ostream);
   }
 
-  self_type_& operator=(self_type_ &&p_rhs) noexcept {
-    std::cout << "Move assigment";
+  rb_tree_ranged_() : rb_tree_ranged_impl_{} {}
+  ~rb_tree_ranged_() { clear(); }
+
+  rb_tree_ranged_(const_self_type_ &p_rhs) {
+    self_type_ temp{};
+    traverse_postorder(static_cast<const_node_ptr_>(p_rhs.m_root_),
+                       [&](const_base_ptr_ p_n) { temp.insert(static_cast<const_node_ptr_>(p_n)->m_value_); });
+    *this = std::move(temp);
+  }
+
+  self_type_ &operator=(const_self_type_ &p_rhs) {
     if (this != &p_rhs) {
-      std::swap(m_root_, p_rhs.m_root_);
+      clear();
+      traverse_postorder(static_cast<const_node_ptr_>(p_rhs.m_root_),
+                         [&](const_base_ptr_ p_n) { insert(static_cast<const_node_ptr_>(p_n)->m_value_); });
     }
+    return *this;
+  }
+
+  rb_tree_ranged_(self_type_ &&p_rhs) noexcept { std::swap(m_root_, p_rhs.m_root_); }
+
+  self_type_ &operator=(self_type_ &&p_rhs) noexcept {
+    if (this != &p_rhs) { std::swap(m_root_, p_rhs.m_root_); }
     return *this;
   }
 };

@@ -29,23 +29,14 @@ int main(int argc, char *argv[]) {
   }
 #endif
 
-  throttle::detail::rb_tree_ranged_<int, std::less<int>> t, p;
-  t = std::move(p);
-  for (int i = 0; i < 100; ++i) {
+  throttle::detail::rb_tree_ranged_<int, std::less<int>> t{}, p{};
+  for (int i = 0; i < 10; ++i) {
     t.insert(i);
   }
 
-
-  for (int i = 0; i < 50; i++) {
-    assert(t.contains(i));
-    t.erase(i);
-  }
-  
-  for (int i = 50; i < 100; i++) {
-    assert(t.contains(i));
-  }
-
-  t.dump(std::cout);
+  //t.dump(std::cout);
+  p = t;
+  p.dump(std::cout);
 
   // const throttle::ranged_set<int> s{1, 2, 5, -1, 4};
 

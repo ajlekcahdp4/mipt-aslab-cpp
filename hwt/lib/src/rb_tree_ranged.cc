@@ -17,7 +17,6 @@ void rb_tree_ranged_impl_::rotate_left_(base_ptr_ p_n) noexcept {
   assert(p_n);
   assert(p_n->m_right_);
 
-  // TODO: Preserve augmented property.
   base_ptr_ root = p_n, rchild = p_n->m_right_;
   root->m_right_ = rchild->m_left_;
   if (rchild->m_left_) { rchild->m_left_->m_parent_ = root; }
@@ -34,6 +33,9 @@ void rb_tree_ranged_impl_::rotate_left_(base_ptr_ p_n) noexcept {
 
   rchild->m_left_ = root;
   root->m_parent_ = rchild;
+
+  rchild->m_size_ = root->m_size_;
+  root->m_size_ = link_type_::size(root->m_left_) + link_type_::size(root->m_right_) + 1;
 }
 
 void rb_tree_ranged_impl_::rotate_right_(base_ptr_ p_n) noexcept {
@@ -57,6 +59,9 @@ void rb_tree_ranged_impl_::rotate_right_(base_ptr_ p_n) noexcept {
 
   lchild->m_right_ = root;
   root->m_parent_ = lchild;
+
+  lchild->m_size_ = root->m_size_;
+  root->m_size_ = link_type_::size(root->m_left_) + link_type_::size(root->m_right_) + 1;
 }
 
 void rb_tree_ranged_impl_::rotate_to_parent_(base_ptr_ p_n) noexcept {
