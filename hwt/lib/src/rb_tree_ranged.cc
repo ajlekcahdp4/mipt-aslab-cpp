@@ -42,7 +42,6 @@ void rb_tree_ranged_impl_::rotate_right_(base_ptr_ p_n) noexcept {
   assert(p_n);
   assert(p_n->m_left_);
 
-  // TODO: Preserve augmented property.
   base_ptr_ root = p_n, lchild = p_n->m_left_;
   root->m_left_ = lchild->m_right_;
   if (lchild->m_right_) { lchild->m_right_->m_parent_ = root; }

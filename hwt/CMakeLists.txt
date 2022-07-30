@@ -21,6 +21,7 @@ set(NOGTEST OFF CACHE BOOL "Disable GoogleTest")
 
 enable_testing()
 if(NOT NOGTEST AND GTEST_FOUND AND CMAKE_MINOR_VERSION GREATER_EQUAL 20)
+    set(ENABLE_GTEST ON)
 else()
     message(WARNING "Google Test disabled")
 endif()
