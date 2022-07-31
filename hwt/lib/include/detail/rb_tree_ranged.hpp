@@ -389,7 +389,7 @@ public:
     }
   }
 
-  const t_value_type &lower_bound(const t_value_type &p_key) const {
+  const t_value_type &closest_left(const t_value_type &p_key) const {
     base_ptr_ curr = m_root_, bound = nullptr;
 
     while (curr) {
@@ -406,7 +406,7 @@ public:
     return static_cast<node_ptr_>(bound)->m_value_;
   }
 
-  const t_value_type &upper_bound(const t_value_type &p_key) const {
+  const t_value_type &closest_right(const t_value_type &p_key) const {
     base_ptr_ curr = m_root_, bound = nullptr;
 
     while (curr) {

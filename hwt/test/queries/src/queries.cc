@@ -37,9 +37,9 @@ int main(int argc, char *argv[]) {
     case 'k': t.insert(key); break;
     case 'm': std::cout << t.select_rank(key) << " "; break;
     case 'n':
-      auto lower_bound = t.lower_bound(key);
-      auto bound_rank = t.get_rank_of(lower_bound);
-      std::cout << (lower_bound == key ? bound_rank - 1 : bound_rank) << " ";
+      auto closest = t.closest_left(key);
+      auto closest_rank = t.get_rank_of(closest);
+      std::cout << (closest == key ? closest_rank - 1 : closest_rank) << " ";
       break;
     }
   }

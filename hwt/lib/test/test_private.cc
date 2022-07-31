@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <functional>
 #include <gtest/gtest.h>
+#include <set>
 
 #define private public
 #define protected public
@@ -163,19 +164,21 @@ TEST(test_rb_tree_private, test_7) {
   t.insert(21);
   t.insert(276);
 
-  ASSERT_EQ(t.upper_bound(4), 5);
-  ASSERT_EQ(t.upper_bound(1), 5);
-  ASSERT_EQ(t.upper_bound(14), 18);
-  ASSERT_EQ(t.upper_bound(17), 18);
-  ASSERT_EQ(t.upper_bound(42), 276);
+  ASSERT_EQ(t.closest_right(4), 5);
+  ASSERT_EQ(t.closest_right(1), 5);
+  ASSERT_EQ(t.closest_right(14), 18);
+  ASSERT_EQ(t.closest_right(17), 18);
+  ASSERT_EQ(t.closest_right(42), 276);
 
   bool thrown = false;
   try {
-    t.upper_bound(276);
+    t.closest_right(276);
   } catch (...) {
     thrown = true;
   }
   ASSERT_TRUE(thrown);
+
+  
 }
 
 TEST(test_rb_tree_private, test_8) {
@@ -190,15 +193,15 @@ TEST(test_rb_tree_private, test_8) {
   t.insert(21);
   t.insert(276);
 
-  ASSERT_EQ(t.lower_bound(4), 1);
-  ASSERT_EQ(t.lower_bound(1), 1);
-  ASSERT_EQ(t.lower_bound(5), 5);
-  ASSERT_EQ(t.lower_bound(7), 5);
-  ASSERT_EQ(t.lower_bound(276), 276);
-  ASSERT_EQ(t.lower_bound(1000), 276);
-  ASSERT_EQ(t.lower_bound(20), 18);
+  ASSERT_EQ(t.closest_left(4), 1);
+  ASSERT_EQ(t.closest_left(1), 1);
+  ASSERT_EQ(t.closest_left(5), 5);
+  ASSERT_EQ(t.closest_left(7), 5);
+  ASSERT_EQ(t.closest_left(276), 276);
+  ASSERT_EQ(t.closest_left(1000), 276);
+  ASSERT_EQ(t.closest_left(20), 18);
 
-  ASSERT_EQ(t.get_rank_of(t.lower_bound(15)), 5);
+  ASSERT_EQ(t.get_rank_of(t.closest_left(15)), 5);
 }
 
 int main(int argc, char *argv[]) {
