@@ -390,6 +390,7 @@ public:
         curr = parent;
       }
     }
+    m_root_ = nullptr;
   }
 
   const t_value_type &closest_left(const t_value_type &p_key) const {

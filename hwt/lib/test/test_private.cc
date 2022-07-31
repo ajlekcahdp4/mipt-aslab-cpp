@@ -212,6 +212,25 @@ TEST(test_rb_tree_private, test_8) {
   ASSERT_EQ(t.get_rank_of(t.closest_left(15)), 5);
 }
 
+TEST(test_rb_tree_private, test_9) {
+  rb_tree_ranged_<int, std::less<int>> t;
+
+  for (int i = 0; i < 128; i++) {
+    t.insert(i);
+  }
+
+  rb_tree_ranged_<int, std::less<int>> c;
+  c.insert(0);
+
+  c = t;
+  ASSERT_EQ(c.size(), t.size());
+
+  for (int i = 0; i < 128; i++) {
+    ASSERT_TRUE(c.contains(i));
+  }
+}
+
+
 int main(int argc, char *argv[]) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
