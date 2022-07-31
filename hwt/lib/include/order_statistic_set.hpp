@@ -8,7 +8,7 @@
  * ----------------------------------------------------------------------------
  */
 
-#include "rb_tree_ranged.hpp"
+#include "detail/rb_tree_ranged.hpp"
 #include <functional>
 #include <initializer_list>
 

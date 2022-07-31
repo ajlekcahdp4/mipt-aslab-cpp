@@ -3,7 +3,7 @@ set(LIBRARY_SOURCES
 )
 
 add_library(throttle ${LIBRARY_SOURCES})
-target_include_directories(throttle PUBLIC include src)
+target_include_directories(throttle PUBLIC include)
 
 set(RBT_RANGED_SOURCES
   test/test_private.cc

@@ -5,7 +5,7 @@
 
 #define private public
 #define protected public
-#include "rb_tree_ranged.hpp"
+#include "detail/rb_tree_ranged.hpp"
 #undef private
 #undef protected
 

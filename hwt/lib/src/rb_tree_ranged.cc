@@ -8,7 +8,7 @@
  * ----------------------------------------------------------------------------
  */
 
-#include "rb_tree_ranged.hpp"
+#include "detail/rb_tree_ranged.hpp"
 #include <cassert>
 
 // This file implements part of the red black order statistic tree respondisble for rebalaincing and ensuring that red-black and size invariants are kept after insert and erase operations. 
