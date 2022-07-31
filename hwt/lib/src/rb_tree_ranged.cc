@@ -11,6 +11,9 @@
 #include "rb_tree_ranged.hpp"
 #include <cassert>
 
+// This file implements part of the red black order statistic tree respondisble for rebalaincing and ensuring that red-black and size invariants are kept after insert and erase operations. 
+// For more information consult "Introduction to Algorithms" by T.H. Cormen or Wiki: https://en.wikipedia.org/wiki/Order_statistic_tree.
+
 namespace throttle {
 namespace detail {
 void rb_tree_ranged_impl_::rotate_left_(base_ptr_ p_n) noexcept {

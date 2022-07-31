@@ -164,7 +164,7 @@ template <typename t_value_type_> struct rb_tree_ranged_node_ : public rb_tree_r
   t_value_type_ m_value_;
 
   rb_tree_ranged_node_(const t_value_type_ &p_key)
-      : rb_tree_ranged_node_base_{k_red_, 1, nullptr, nullptr, nullptr}, m_value_{p_key} {};
+      : rb_tree_ranged_node_base_{k_red_, 1}, m_value_{p_key} {};
 };
 
 class rb_tree_ranged_impl_ {
