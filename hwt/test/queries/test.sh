@@ -7,22 +7,18 @@ reset=`tput sgr0`
 current_folder=${2:-./}
 passed=true
 
-for file in ${current_folder}/${base_folder}/test*.dat; do
-
-    # Total number of the tests found
-    count=`echo $file | egrep -o [0-9]+`
-
+for file in ${current_folder}/${base_folder}/*.dat; do
     echo -n "Testing ${green}${file}${reset} ... "
 
     # Check if an argument to executable location has been passed to the program
     if [ -z "$1" ]; then
-        bin/queries < $file > ${current_folder}/$base_folder/temp.dat
+        bin/queries < $file > ${current_folder}/$base_folder/temp.tmp
     else
-        $1 < $file > ${current_folder}/$base_folder/temp.dat
+        $1 < $file > ${current_folder}/$base_folder/temp.tmp
     fi
 
     # Compare inputs
-    if diff -Z ${current_folder}/${base_folder}/ans${count}.dat ${current_folder}/${base_folder}/temp.dat; then
+    if diff -Z ${file}.ans ${current_folder}/${base_folder}/temp.tmp; then
         echo "${green}Passed${reset}"
     else
         echo "${red}Failed${reset}"
