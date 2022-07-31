@@ -50,38 +50,25 @@ bool validate_size_helper(base_node_ptr p_base) {
 
 TEST(test_rb_tree_private, test_1) {
   rb_tree_ranged_<int, std::less<int>> t;
-  bool thrown = false;
 
-  try {
-    for (int i = 0; i < 131072; i++) {
-      t.insert(i);
-    }
-  } catch (...) { thrown = true; }
-
-  EXPECT_EQ(validate_red_black_helper(t.m_root_).second && !thrown, true);
-  thrown = false;
-
-  try {
-    for (int i = 0; i < 32768; i++) {
-      t.erase(i);
-    }
-  } catch (...) { thrown = true; }
-
-  EXPECT_EQ(validate_red_black_helper(t.m_root_).second && !thrown, true);
+  EXPECT_NO_THROW(for (int i = 0; i < 256; i++) { t.insert(i); });
+  EXPECT_EQ(validate_red_black_helper(t.m_root_).second, true);
+  EXPECT_NO_THROW(for (int i = 0; i < 128; i++) { t.erase(i); });
+  EXPECT_EQ(validate_red_black_helper(t.m_root_).second, true);
+  EXPECT_EQ(t.size(), 128);
+  EXPECT_EQ(validate_size_helper(t.m_root_), true);
 }
 
 TEST(test_rb_tree_private, test_2) {
   rb_tree_ranged_<int, std::less<int>> t;
   bool thrown = false;
 
-  try {
-    for (int i = 0; i < 65536; i++) {
-      int temp = std::rand();
-      if (!t.contains(temp)) { t.insert(temp); }
-    }
-  } catch (...) { thrown = true; }
+  EXPECT_NO_THROW(for (int i = 0; i < 65536; i++) {
+    int temp = std::rand();
+    if (!t.contains(temp)) { t.insert(temp); }
+  });
 
-  EXPECT_EQ(validate_size_helper(t.m_root_) && !thrown, true);
+  EXPECT_EQ(validate_size_helper(t.m_root_), true);
 }
 
 TEST(test_rb_tree_private, test_3) {
@@ -90,6 +77,8 @@ TEST(test_rb_tree_private, test_3) {
     t.insert(i);
   }
 
+  EXPECT_EQ(validate_size_helper(t.m_root_), true);
+
   for (int i = 0; i < 1024; i++) {
     ASSERT_TRUE(t.contains(i));
   }
@@ -97,13 +86,10 @@ TEST(test_rb_tree_private, test_3) {
   t.erase(666);
   ASSERT_FALSE(t.contains(666));
 
-  bool thrown = false;
-  try {
-    t.erase(666);
-  } catch (...) {
-    thrown = true;
-  }
-  ASSERT_TRUE(thrown);
+  EXPECT_EQ(validate_size_helper(t.m_root_), true);
+  ASSERT_THROW(t.erase(666), std::out_of_range);
+
+  EXPECT_EQ(validate_size_helper(t.m_root_), true);
 }
 
 TEST(test_rb_tree_private, test_4) {
@@ -117,11 +103,17 @@ TEST(test_rb_tree_private, test_4) {
   for (int i = 1; i < 131072; i++) {
     ASSERT_EQ(t.select_rank(i), i);
   }
+
+  for (int i = 1; i < 4096; i++) {
+    t.erase(i);
+  }
+
+  EXPECT_EQ(validate_size_helper(t.m_root_), true);
 }
 
 TEST(test_rb_tree_private, test_5) {
   rb_tree_ranged_<int, std::less<int>> t;
-  
+
   t.insert(1);
   t.insert(5);
   t.insert(10);
@@ -140,7 +132,7 @@ TEST(test_rb_tree_private, test_5) {
 
 TEST(test_rb_tree_private, test_6) {
   rb_tree_ranged_<int, std::less<int>> t;
-  
+
   t.insert(1);
   t.insert(5);
   t.insert(10);
@@ -162,7 +154,7 @@ TEST(test_rb_tree_private, test_6) {
 
 TEST(test_rb_tree_private, test_7) {
   rb_tree_ranged_<int, std::less<int>> t;
-  
+
   t.insert(1);
   t.insert(5);
   t.insert(10);
@@ -178,20 +170,12 @@ TEST(test_rb_tree_private, test_7) {
   ASSERT_EQ(t.closest_right(17), 18);
   ASSERT_EQ(t.closest_right(42), 276);
 
-  bool thrown = false;
-  try {
-    t.closest_right(276);
-  } catch (...) {
-    thrown = true;
-  }
-  ASSERT_TRUE(thrown);
-
-  
+  ASSERT_THROW(t.closest_right(276), std::out_of_range);
 }
 
 TEST(test_rb_tree_private, test_8) {
   rb_tree_ranged_<int, std::less<int>> t;
-  
+
   t.insert(1);
   t.insert(5);
   t.insert(10);
@@ -230,6 +214,61 @@ TEST(test_rb_tree_private, test_9) {
   }
 }
 
+TEST(test_rb_tree_private, test_10) {
+  rb_tree_ranged_<int, std::less<int>> t;
+
+  for (int i = 0; i < 128; i++) {
+    t.insert(i);
+  }
+  t.clear();
+
+  rb_tree_ranged_<int, std::less<int>> c;
+  c.insert(0);
+
+  c = t;
+  ASSERT_EQ(c.size(), 0);
+
+  for (int i = 0; i < 128; i++) {
+    c.insert(i);
+  }
+
+  ASSERT_EQ(c.size(), 128);
+  c.clear();
+}
+
+TEST(test_rb_tree_private, test_11) {
+  rb_tree_ranged_<int, std::less<int>> t;
+
+  for (int i = 0; i < 128; i++) {
+    t.insert(i);
+  }
+
+  rb_tree_ranged_<int, std::less<int>> c;
+  c.insert(0);
+  c.insert(1);
+  c.insert(-1);
+  c.insert(5);
+  c.insert(10);
+
+  ASSERT_EQ(c.size(), 5);
+
+  t = std::move(c);
+  ASSERT_EQ(t.size(), 5);
+
+  ASSERT_TRUE(t.contains(0));
+  ASSERT_TRUE(t.contains(1));
+  ASSERT_TRUE(t.contains(-1));
+  ASSERT_TRUE(t.contains(5));
+  ASSERT_TRUE(t.contains(10));
+
+  t = std::move(t);
+
+  ASSERT_TRUE(t.contains(0));
+  ASSERT_TRUE(t.contains(1));
+  ASSERT_TRUE(t.contains(-1));
+  ASSERT_TRUE(t.contains(5));
+  ASSERT_TRUE(t.contains(10));
+}
 
 int main(int argc, char *argv[]) {
   ::testing::InitGoogleTest(&argc, argv);

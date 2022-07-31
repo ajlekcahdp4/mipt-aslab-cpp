@@ -34,8 +34,6 @@ struct rb_tree_ranged_node_base_ {
 
   static rb_tree_ranged_color_ get_color_(const_base_ptr_ p_x) { return (p_x ? p_x->m_color_ : k_black_); }
 
-  const char *color_name() { return (m_color_ == k_black_ ? "black" : "red"); }
-
   static size_type size(base_ptr_ p_x) noexcept {
     return (p_x ? p_x->m_size_ : 0); // By definitions size of "NIL" node is 0;
   }
@@ -324,7 +322,7 @@ private:
     if (found) {
       traverse_binary_search(static_cast<node_ptr_>(m_root_), p_key, [](node_type_ &p_node) { p_node.m_size_--; });
       delete to_insert;
-      throw std::invalid_argument("");
+      throw std::out_of_range("");
     }
 
     to_insert->m_parent_ = prev;
@@ -337,12 +335,32 @@ private:
     return to_insert;
   }
 
-  node_ptr_ move_to_leaf(node_ptr_ p_node) noexcept(std::is_nothrow_swappable_v<t_value_type>) {
+  base_ptr_ successor_for_erase(base_ptr_ p_node) {
+    p_node->m_size_--;
+    p_node = p_node->m_right_;
+    while (p_node->m_left_) {
+      p_node->m_size_--;
+      p_node = p_node->m_left_;
+    }
+    return p_node;
+  }
+
+  base_ptr_ predecessor_for_erase(base_ptr_ p_node) {
+    p_node->m_size_--;
+    p_node = p_node->m_left_;
+    while (p_node->m_right_) {
+      p_node->m_size_--;
+      p_node = p_node->m_right_;
+    }
+    return p_node;
+  }
+
+  node_ptr_ move_to_leaf_for_erase(node_ptr_ p_node) noexcept(std::is_nothrow_swappable_v<t_value_type>) {
     node_ptr_ node = p_node;
 
     while (node->m_right_ || node->m_left_) {
       node_ptr_ next =
-          static_cast<node_ptr_>(node->m_right_ ? link_type_::successor_(node) : link_type_::predecessor_(node));
+          static_cast<node_ptr_>(node->m_right_ ? successor_for_erase(node) : predecessor_for_erase(node));
       std::swap(node->m_value_, next->m_value_);
       node = next;
     }
@@ -361,10 +379,16 @@ public:
   }
 
   void erase(const t_value_type &p_key) {
-    node_ptr_ node = bst_lookup(p_key);
-    if (!node) { throw std::invalid_argument(""); }
-    node_ptr_ leaf = move_to_leaf(node);
+    auto [node, prev, pred] = traverse_binary_search(static_cast<node_ptr_>(m_root_), p_key, [](node_type_ &p_node) {p_node.m_size_--;});
+    if (!node) {
+      traverse_binary_search(static_cast<node_ptr_>(m_root_), p_key, [](node_type_ &p_node) {p_node.m_size_++;});
+      throw std::out_of_range(""); 
+    }
+
+    node_ptr_ leaf = move_to_leaf_for_erase(node);
+    leaf->m_size_ = 0;
     rebalance_after_erase_(leaf);
+
     prune_leaf(leaf);
   }
 
@@ -406,7 +430,7 @@ public:
       }
     }
 
-    if (!bound) throw std::invalid_argument("");
+    if (!bound) throw std::out_of_range("");
     return static_cast<node_ptr_>(bound)->m_value_;
   }
 
@@ -423,13 +447,13 @@ public:
       }
     }
 
-    if (!bound) throw std::invalid_argument("");
+    if (!bound) throw std::out_of_range("");
     return static_cast<node_ptr_>(bound)->m_value_;
   }
 
   // Rank operations that constiture the juice of this whole ordeal.
   const t_value_type &select_rank(size_type p_rank) const {
-    if (p_rank > size()) throw std::invalid_argument("");
+    if (p_rank > size()) throw std::out_of_range("");
 
     const_base_ptr_ curr = m_root_;
     size_type r = link_type_::size(curr->m_left_) + 1;
@@ -448,7 +472,7 @@ public:
 
   size_type get_rank_of(const t_value_type &p_elem) {
     base_ptr_ node = bst_lookup(p_elem);
-    if (!node) throw std::invalid_argument("");
+    if (!node) throw std::out_of_range("");
 
     size_type rank = link_type_::size(node->m_left_) + 1;
     while (node != m_root_) {
