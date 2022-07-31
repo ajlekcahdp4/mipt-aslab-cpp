@@ -110,6 +110,47 @@ TEST(test_rb_tree_private, test_4) {
   }
 }
 
+TEST(test_rb_tree_private, test_5) {
+  rb_tree_ranged_<int, std::less<int>> t;
+  
+  t.insert(1);
+  t.insert(5);
+  t.insert(10);
+  t.insert(12);
+  t.insert(14);
+  t.insert(18);
+  t.insert(21);
+  t.insert(276);
+
+  ASSERT_EQ(t.select_rank(1), 1);
+  ASSERT_EQ(t.select_rank(4), 12);
+  ASSERT_EQ(t.select_rank(8), 276);
+  ASSERT_EQ(t.select_rank(5), 14);
+  ASSERT_EQ(t.select_rank(7), 21);
+}
+
+TEST(test_rb_tree_private, test_6) {
+  rb_tree_ranged_<int, std::less<int>> t;
+  
+  t.insert(1);
+  t.insert(5);
+  t.insert(10);
+  t.insert(12);
+  t.insert(14);
+  t.insert(18);
+  t.insert(21);
+  t.insert(276);
+
+  ASSERT_EQ(t.get_rank_of(1), 1);
+  ASSERT_EQ(t.get_rank_of(5), 2);
+  ASSERT_EQ(t.get_rank_of(10), 3);
+  ASSERT_EQ(t.get_rank_of(12), 4);
+  ASSERT_EQ(t.get_rank_of(14), 5);
+  ASSERT_EQ(t.get_rank_of(18), 6);
+  ASSERT_EQ(t.get_rank_of(21), 7);
+  ASSERT_EQ(t.get_rank_of(276), 8);
+}
+
 int main(int argc, char *argv[]) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

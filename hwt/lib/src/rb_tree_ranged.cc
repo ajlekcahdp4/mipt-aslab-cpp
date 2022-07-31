@@ -67,13 +67,17 @@ void rb_tree_ranged_impl_::rotate_right_(base_ptr_ p_n) noexcept {
 }
 
 void rb_tree_ranged_impl_::rotate_to_parent_(base_ptr_ p_n) noexcept {
-  if (link_type_::is_left_child_(p_n))
+  if (link_type_::is_left_child_(p_n)) {
     rotate_right_(p_n->m_parent_);
-  else
+  }
+  else {
     rotate_left_(p_n->m_parent_);
+  }
 }
 
 void rb_tree_ranged_impl_::rebalance_after_insert_(base_ptr_ p_node) noexcept {
+  if (!p_node->m_parent_ || !p_node->m_parent_->m_parent_) { return; }
+
   while (link_type_::get_color_(p_node->m_parent_) == k_red_) {
     if (p_node == m_root_ || (p_node->m_parent_ && p_node->m_parent_->m_color_ == k_black_)) { break; }
 

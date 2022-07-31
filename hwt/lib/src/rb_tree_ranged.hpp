@@ -18,41 +18,6 @@
 
 namespace throttle {
 namespace detail {
-
-template <typename t_node> class rb_tree_dumper__ {
-  typename t_node::size_type m_current_index;
-
-public:
-  rb_tree_dumper__() : m_current_index{} {}
-
-  void dump_helper(t_node *p_node, std::ostream &p_ostream) {
-    if (!p_node) {
-      p_ostream << "\tnode_" << m_current_index++ << " [label = \"NIL\", color = \""
-                << "black"
-                << "\"];\n";
-      return;
-    }
-
-    auto this_index = m_current_index;
-    p_ostream << "\tnode_" << m_current_index++ << " [label = \"" << p_node->m_value_ << ":" << p_node->m_size_
-              << "\", color = \"" << p_node->color_name() << "\"];\n";
-
-    p_ostream << "\tnode_" << this_index << " -> node_" << this_index + 1 << ";\n";
-    dump_helper(static_cast<t_node *>(p_node->m_left_), p_ostream);
-
-    p_ostream << "\tnode_" << this_index << " -> node_" << m_current_index << ";\n";
-    dump_helper(static_cast<t_node *>(p_node->m_right_), p_ostream);
-  }
-
-  void dump(t_node *p_node, std::ostream &p_ostream) {
-    m_current_index = 0;
-
-    p_ostream << "digraph RedBlackTree {\n";
-    dump_helper(p_node, p_ostream);
-    p_ostream << "}\n";
-  }
-};
-
 enum rb_tree_ranged_color_ { k_black_, k_red_ };
 
 struct rb_tree_ranged_node_base_ {
@@ -163,7 +128,7 @@ template <typename t_value_type_> struct rb_tree_ranged_node_ : public rb_tree_r
 
   t_value_type_ m_value_;
 
-  rb_tree_ranged_node_(const t_value_type_ &p_key) : rb_tree_ranged_node_base_{k_red_, 1}, m_value_{p_key} {};
+  rb_tree_ranged_node_(const t_value_type_ &p_key) : rb_tree_ranged_node_base_{k_red_, 1, nullptr, nullptr, nullptr}, m_value_{p_key} {};
 };
 
 class rb_tree_ranged_impl_ {
@@ -390,7 +355,6 @@ public:
 
   void insert(const t_value_type &p_key) {
     node_ptr_ leaf = bst_insert(p_key);
-    if (!leaf->m_parent_ || !leaf->m_parent_->m_parent_) { return; }
     rebalance_after_insert_(leaf);
   }
 
@@ -447,8 +411,17 @@ public:
     return static_cast<const_node_ptr_>(curr)->m_value_;
   }
 
-  void dump(std::ostream &p_ostream) {
-    rb_tree_dumper__<node_type_>{}.dump(static_cast<node_ptr_>(m_root_), p_ostream);
+  size_type get_rank_of(const t_value_type &p_elem) {
+    base_ptr_ node = bst_lookup(p_elem);
+    if (!node) throw std::invalid_argument("");
+    
+    size_type rank = link_type_::size(node->m_left_) + 1;
+    while (node != m_root_) {
+      if (link_type_::is_right_child_(node)) rank += link_type_::size(node->m_parent_->m_left_) + 1;
+      node = node->m_parent_;
+    }
+
+    return rank;
   }
 
   rb_tree_ranged_() : rb_tree_ranged_impl_{} {}
