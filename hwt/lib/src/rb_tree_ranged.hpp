@@ -128,7 +128,8 @@ template <typename t_value_type_> struct rb_tree_ranged_node_ : public rb_tree_r
 
   t_value_type_ m_value_;
 
-  rb_tree_ranged_node_(const t_value_type_ &p_key) : rb_tree_ranged_node_base_{k_red_, 1, nullptr, nullptr, nullptr}, m_value_{p_key} {};
+  rb_tree_ranged_node_(const t_value_type_ &p_key)
+      : rb_tree_ranged_node_base_{k_red_, 1, nullptr, nullptr, nullptr}, m_value_{p_key} {};
 };
 
 class rb_tree_ranged_impl_ {
@@ -388,9 +389,39 @@ public:
     }
   }
 
-  const t_value_type &upper_bound() const {}
+  const t_value_type &lower_bound(const t_value_type &p_key) const {
+    base_ptr_ curr = m_root_, bound = nullptr;
 
-  const t_value_type &lower_bound() const {}
+    while (curr) {
+      bool is_key_less = t_comp{}(p_key, static_cast<node_ptr_>(curr)->m_value_);
+      if (is_key_less) {
+        curr = curr->m_left_;
+      } else {
+        bound = curr;
+        curr = curr->m_right_;
+      }
+    }
+
+    if (!bound) throw std::invalid_argument("");
+    return static_cast<node_ptr_>(bound)->m_value_;
+  }
+
+  const t_value_type &upper_bound(const t_value_type &p_key) const {
+    base_ptr_ curr = m_root_, bound = nullptr;
+
+    while (curr) {
+      bool is_key_less = t_comp{}(p_key, static_cast<node_ptr_>(curr)->m_value_);
+      if (is_key_less) {
+        bound = curr;
+        curr = curr->m_left_;
+      } else {
+        curr = curr->m_right_;
+      }
+    }
+
+    if (!bound) throw std::invalid_argument("");
+    return static_cast<node_ptr_>(bound)->m_value_;
+  }
 
   // Rank operations that constiture the juice of this whole ordeal.
   const t_value_type &select_rank(size_type p_rank) const {
@@ -414,7 +445,7 @@ public:
   size_type get_rank_of(const t_value_type &p_elem) {
     base_ptr_ node = bst_lookup(p_elem);
     if (!node) throw std::invalid_argument("");
-    
+
     size_type rank = link_type_::size(node->m_left_) + 1;
     while (node != m_root_) {
       if (link_type_::is_right_child_(node)) rank += link_type_::size(node->m_parent_->m_left_) + 1;

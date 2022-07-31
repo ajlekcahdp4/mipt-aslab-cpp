@@ -151,6 +151,56 @@ TEST(test_rb_tree_private, test_6) {
   ASSERT_EQ(t.get_rank_of(276), 8);
 }
 
+TEST(test_rb_tree_private, test_7) {
+  rb_tree_ranged_<int, std::less<int>> t;
+  
+  t.insert(1);
+  t.insert(5);
+  t.insert(10);
+  t.insert(12);
+  t.insert(14);
+  t.insert(18);
+  t.insert(21);
+  t.insert(276);
+
+  ASSERT_EQ(t.upper_bound(4), 5);
+  ASSERT_EQ(t.upper_bound(1), 5);
+  ASSERT_EQ(t.upper_bound(14), 18);
+  ASSERT_EQ(t.upper_bound(17), 18);
+  ASSERT_EQ(t.upper_bound(42), 276);
+
+  bool thrown = false;
+  try {
+    t.upper_bound(276);
+  } catch (...) {
+    thrown = true;
+  }
+  ASSERT_TRUE(thrown);
+}
+
+TEST(test_rb_tree_private, test_8) {
+  rb_tree_ranged_<int, std::less<int>> t;
+  
+  t.insert(1);
+  t.insert(5);
+  t.insert(10);
+  t.insert(12);
+  t.insert(14);
+  t.insert(18);
+  t.insert(21);
+  t.insert(276);
+
+  ASSERT_EQ(t.lower_bound(4), 1);
+  ASSERT_EQ(t.lower_bound(1), 1);
+  ASSERT_EQ(t.lower_bound(5), 5);
+  ASSERT_EQ(t.lower_bound(7), 5);
+  ASSERT_EQ(t.lower_bound(276), 276);
+  ASSERT_EQ(t.lower_bound(1000), 276);
+  ASSERT_EQ(t.lower_bound(20), 18);
+
+  ASSERT_EQ(t.get_rank_of(t.lower_bound(15)), 5);
+}
+
 int main(int argc, char *argv[]) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
