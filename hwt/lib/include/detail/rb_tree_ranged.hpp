@@ -15,6 +15,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <tuple>
+#include <type_traits>
 
 namespace throttle {
 namespace detail {
@@ -154,6 +155,8 @@ protected:
 
 template <typename t_value_type, typename t_comp> class rb_tree_ranged_ : public rb_tree_ranged_impl_ {
 private:
+  static_assert(std::is_swappable_v<t_value_type>, "t_value_type must be swappable");
+
   using node_type_ = rb_tree_ranged_node_<t_value_type>;
   using node_ptr_ = typename node_type_::node_ptr_;
   using const_node_ptr_ = typename node_type_::const_node_ptr_;
@@ -334,10 +337,8 @@ private:
     return to_insert;
   }
 
-  node_ptr_ move_to_leaf(const t_value_type &p_key) {
-    node_ptr_ node = bst_lookup(p_key);
-
-    if (!node) { throw std::invalid_argument(""); }
+  node_ptr_ move_to_leaf(node_ptr_ p_node) noexcept(std::is_nothrow_swappable_v<t_value_type>) {
+    node_ptr_ node = p_node;
 
     while (node->m_right_ || node->m_left_) {
       node_ptr_ next =
@@ -360,7 +361,9 @@ public:
   }
 
   void erase(const t_value_type &p_key) {
-    node_ptr_ leaf = move_to_leaf(p_key);
+    node_ptr_ node = bst_lookup(p_key);
+    if (!node) { throw std::invalid_argument(""); }
+    node_ptr_ leaf = move_to_leaf(node);
     rebalance_after_erase_(leaf);
     prune_leaf(leaf);
   }

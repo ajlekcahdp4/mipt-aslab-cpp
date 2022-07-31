@@ -96,6 +96,14 @@ TEST(test_rb_tree_private, test_3) {
 
   t.erase(666);
   ASSERT_FALSE(t.contains(666));
+
+  bool thrown = false;
+  try {
+    t.erase(666);
+  } catch (...) {
+    thrown = true;
+  }
+  ASSERT_TRUE(thrown);
 }
 
 TEST(test_rb_tree_private, test_4) {
