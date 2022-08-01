@@ -148,6 +148,9 @@ protected:
   void rebalance_after_insert_(base_ptr_) noexcept;
   void rebalance_after_erase_(base_ptr_) noexcept;
 
+  base_ptr_ successor_for_erase_(base_ptr_) noexcept;
+  base_ptr_ predecessor_for_erase_(base_ptr_) noexcept;
+
   rb_tree_ranged_impl_() : m_root_{} {}
 };
 
@@ -335,32 +338,11 @@ private:
     return to_insert;
   }
 
-  base_ptr_ successor_for_erase(base_ptr_ p_node) {
-    p_node->m_size_--;
-    p_node = p_node->m_right_;
-    while (p_node->m_left_) {
-      p_node->m_size_--;
-      p_node = p_node->m_left_;
-    }
-    return p_node;
-  }
-
-  base_ptr_ predecessor_for_erase(base_ptr_ p_node) {
-    p_node->m_size_--;
-    p_node = p_node->m_left_;
-    while (p_node->m_right_) {
-      p_node->m_size_--;
-      p_node = p_node->m_right_;
-    }
-    return p_node;
-  }
-
   node_ptr_ move_to_leaf_for_erase(node_ptr_ p_node) noexcept(std::is_nothrow_swappable_v<t_value_type>) {
     node_ptr_ node = p_node;
 
     while (node->m_right_ || node->m_left_) {
-      node_ptr_ next =
-          static_cast<node_ptr_>(node->m_right_ ? successor_for_erase(node) : predecessor_for_erase(node));
+      node_ptr_ next = static_cast<node_ptr_>(node->m_right_ ? successor_for_erase_(node) : predecessor_for_erase_(node));
       std::swap(node->m_value_, next->m_value_);
       node = next;
     }
@@ -379,10 +361,11 @@ public:
   }
 
   void erase(const t_value_type &p_key) {
-    auto [node, prev, pred] = traverse_binary_search(static_cast<node_ptr_>(m_root_), p_key, [](node_type_ &p_node) {p_node.m_size_--;});
+    auto [node, prev, pred] =
+        traverse_binary_search(static_cast<node_ptr_>(m_root_), p_key, [](node_type_ &p_node) { p_node.m_size_--; });
     if (!node) {
-      traverse_binary_search(static_cast<node_ptr_>(m_root_), p_key, [](node_type_ &p_node) {p_node.m_size_++;});
-      throw std::out_of_range(""); 
+      traverse_binary_search(static_cast<node_ptr_>(m_root_), p_key, [](node_type_ &p_node) { p_node.m_size_++; });
+      throw std::out_of_range("");
     }
 
     node_ptr_ leaf = move_to_leaf_for_erase(node);

@@ -11,8 +11,9 @@
 #include "detail/rb_tree_ranged.hpp"
 #include <cassert>
 
-// This file implements part of the red black order statistic tree respondisble for rebalaincing and ensuring that red-black and size invariants are kept after insert and erase operations. 
-// For more information consult "Introduction to Algorithms" by T.H. Cormen or Wiki: https://en.wikipedia.org/wiki/Order_statistic_tree.
+// This file implements part of the red black order statistic tree respondisble for rebalaincing and ensuring that
+// red-black and size invariants are kept after insert and erase operations. For more information consult "Introduction
+// to Algorithms" by T.H. Cormen or Wiki: https://en.wikipedia.org/wiki/Order_statistic_tree.
 
 namespace throttle {
 namespace detail {
@@ -69,8 +70,7 @@ void rb_tree_ranged_impl_::rotate_right_(base_ptr_ p_n) noexcept {
 void rb_tree_ranged_impl_::rotate_to_parent_(base_ptr_ p_n) noexcept {
   if (link_type_::is_left_child_(p_n)) {
     rotate_right_(p_n->m_parent_);
-  }
-  else {
+  } else {
     rotate_left_(p_n->m_parent_);
   }
 }
@@ -139,6 +139,26 @@ void rb_tree_ranged_impl_::rebalance_after_erase_(base_ptr_ p_leaf) noexcept {
 
   p_leaf->m_color_ = k_black_;
 }
+
+rb_tree_ranged_impl_::base_ptr_ rb_tree_ranged_impl_::successor_for_erase_(base_ptr_ p_node) noexcept {
+  p_node->m_size_--;
+  p_node = p_node->m_right_;
+  while (p_node->m_left_) {
+    p_node->m_size_--;
+    p_node = p_node->m_left_;
+  }
+  return p_node;
+}
+
+rb_tree_ranged_impl_::base_ptr_ rb_tree_ranged_impl_::predecessor_for_erase_(base_ptr_ p_node) noexcept {
+    p_node->m_size_--;
+    p_node = p_node->m_left_;
+    while (p_node->m_right_) {
+      p_node->m_size_--;
+      p_node = p_node->m_right_;
+    }
+    return p_node;
+  }
 
 } // namespace detail
 } // namespace throttle

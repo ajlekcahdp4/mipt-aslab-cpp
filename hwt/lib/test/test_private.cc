@@ -51,11 +51,11 @@ bool validate_size_helper(base_node_ptr p_base) {
 TEST(test_rb_tree_private, test_1) {
   rb_tree_ranged_<int, std::less<int>> t;
 
-  EXPECT_NO_THROW(for (int i = 0; i < 256; i++) { t.insert(i); });
+  EXPECT_NO_THROW(for (int i = 0; i < 256000; i++) { t.insert(i); });
   EXPECT_EQ(validate_red_black_helper(t.m_root_).second, true);
-  EXPECT_NO_THROW(for (int i = 0; i < 128; i++) { t.erase(i); });
+  EXPECT_NO_THROW(for (int i = 0; i < 100000; i++) { t.erase(i); });
   EXPECT_EQ(validate_red_black_helper(t.m_root_).second, true);
-  EXPECT_EQ(t.size(), 128);
+  EXPECT_EQ(t.size(), 256000 - 100000);
   EXPECT_EQ(validate_size_helper(t.m_root_), true);
 }
 
