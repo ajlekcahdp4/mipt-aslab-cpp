@@ -342,7 +342,8 @@ private:
     node_ptr_ node = p_node;
 
     while (node->m_right_ || node->m_left_) {
-      node_ptr_ next = static_cast<node_ptr_>(node->m_right_ ? successor_for_erase_(node) : predecessor_for_erase_(node));
+      node_ptr_ next =
+          static_cast<node_ptr_>(node->m_right_ ? successor_for_erase_(node) : predecessor_for_erase_(node));
       std::swap(node->m_value_, next->m_value_);
       node = next;
     }
@@ -485,7 +486,10 @@ public:
     return *this;
   }
 
-  rb_tree_ranged_(self_type_ &&p_rhs) noexcept { std::swap(m_root_, p_rhs.m_root_); }
+  rb_tree_ranged_(self_type_ &&p_rhs) noexcept {
+    m_root_ = p_rhs.m_root_;
+    p_rhs.m_root_ = nullptr;
+  }
 
   self_type_ &operator=(self_type_ &&p_rhs) noexcept {
     if (this != &p_rhs) { std::swap(m_root_, p_rhs.m_root_); }
