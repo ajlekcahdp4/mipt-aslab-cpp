@@ -437,7 +437,7 @@ public:
 
   // Rank operations that constiture the juice of this whole ordeal.
   const t_value_type &select_rank(size_type p_rank) const {
-    if (p_rank > size()) throw std::out_of_range("");
+    if (p_rank > size() || !(p_rank > 0)) throw std::out_of_range("");
 
     const_base_ptr_ curr = m_root_;
     size_type r = link_type_::size(curr->m_left_) + 1;
