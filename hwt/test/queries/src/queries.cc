@@ -14,9 +14,23 @@ int main(int argc, char *argv[]) {
     if (!(std::cin >> query_type >> key)) { break; }
 
     switch (query_type) {
-    case 'k': t.insert(key); break;
-    case 'm': std::cout << t.select_rank(key) << " "; break;
+    case 'k': {
+      t.insert(key);
+      break;
+    }
+
+    case 'm': {
+      std::cout << t.select_rank(key) << " ";
+      break;
+    }
+
     case 'n':
+      auto min = t.min();
+      if (key <= min) {
+        std::cout << 0 << " ";
+        break;
+      }
+
       auto closest = t.closest_left(key);
       auto closest_rank = t.get_rank_of(closest);
       std::cout << (closest == key ? closest_rank - 1 : closest_rank) << " ";

@@ -13,6 +13,7 @@
 #include <cassert>
 #include <cstddef>
 #include <iostream>
+#include <optional>
 #include <stdexcept>
 #include <tuple>
 #include <type_traits>
@@ -451,7 +452,7 @@ public:
       r = link_type_::size(curr->m_left_) + 1;
     }
 
-    return static_cast<const_node_ptr_>(curr)->m_value_;
+    return {static_cast<const_node_ptr_>(curr)->m_value_};
   }
 
   size_type get_rank_of(const t_value_type &p_elem) {
@@ -465,6 +466,16 @@ public:
     }
 
     return rank;
+  }
+
+  const t_value_type &min() {
+    if (!m_root_) throw std::out_of_range("");
+    return static_cast<node_ptr_>(link_type_::minimum_(m_root_))->m_value_;
+  }
+
+  const t_value_type &max() {
+    if (!m_root_) throw std::out_of_range("");
+    return static_cast<node_ptr_>(link_type_::maximum_(m_root_))->m_value_;
   }
 
   rb_tree_ranged_() : rb_tree_ranged_impl_{} {}
