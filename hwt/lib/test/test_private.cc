@@ -3,12 +3,17 @@
 #include <functional>
 #include <gtest/gtest.h>
 #include <set>
+#include <string>
 
 #define private public
 #define protected public
 #include "detail/rb_tree_ranged.hpp"
 #undef private
 #undef protected
+
+// Implicit instantiation for testing puproses
+template class throttle::detail::rb_tree_ranged_<int, std::less<int>>;
+template class throttle::detail::rb_tree_ranged_<std::string, std::less<std::string>>;
 
 using namespace throttle::detail;
 
