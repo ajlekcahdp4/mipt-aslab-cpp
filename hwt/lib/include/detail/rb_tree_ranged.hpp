@@ -326,7 +326,7 @@ private:
     if (found) {
       traverse_binary_search(static_cast<node_ptr_>(m_root_), p_key, [](node_type_ &p_node) { p_node.m_size_--; });
       delete to_insert;
-      throw std::out_of_range("");
+      throw std::out_of_range("Double insert");
     }
 
     to_insert->m_parent_ = prev;
@@ -367,7 +367,7 @@ public:
         traverse_binary_search(static_cast<node_ptr_>(m_root_), p_key, [](node_type_ &p_node) { p_node.m_size_--; });
     if (!node) {
       traverse_binary_search(static_cast<node_ptr_>(m_root_), p_key, [](node_type_ &p_node) { p_node.m_size_++; });
-      throw std::out_of_range("");
+      throw std::out_of_range("Can't erase element a non-present element");
     }
 
     node_ptr_ leaf = move_to_leaf_for_erase(node);
@@ -415,7 +415,7 @@ public:
       }
     }
 
-    if (!bound) throw std::out_of_range("");
+    if (!bound) throw std::out_of_range("Leftmost element has no predecessor");
     return static_cast<node_ptr_>(bound)->m_value_;
   }
 
@@ -432,13 +432,13 @@ public:
       }
     }
 
-    if (!bound) throw std::out_of_range("");
+    if (!bound) throw std::out_of_range("Rightmost element has no successor");
     return static_cast<node_ptr_>(bound)->m_value_;
   }
 
   // Rank operations that constiture the juice of this whole ordeal.
   const t_value_type &select_rank(size_type p_rank) const {
-    if (p_rank > size() || !(p_rank > 0)) throw std::out_of_range("");
+    if (p_rank > size() || !(p_rank > 0)) throw std::out_of_range("Rank is greater than size");
 
     const_base_ptr_ curr = m_root_;
     size_type r = link_type_::size(curr->m_left_) + 1;
@@ -457,7 +457,7 @@ public:
 
   size_type get_rank_of(const t_value_type &p_elem) {
     base_ptr_ node = bst_lookup(p_elem);
-    if (!node) throw std::out_of_range("");
+    if (!node) throw std::out_of_range("Element not present");
 
     size_type rank = link_type_::size(node->m_left_) + 1;
     while (node != m_root_) {
@@ -469,12 +469,12 @@ public:
   }
 
   const t_value_type &min() {
-    if (!m_root_) throw std::out_of_range("");
+    if (!m_root_) throw std::out_of_range("Container is empty");
     return static_cast<node_ptr_>(link_type_::minimum_(m_root_))->m_value_;
   }
 
   const t_value_type &max() {
-    if (!m_root_) throw std::out_of_range("");
+    if (!m_root_) throw std::out_of_range("Container is empty");
     return static_cast<node_ptr_>(link_type_::maximum_(m_root_))->m_value_;
   }
 
