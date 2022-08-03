@@ -438,7 +438,7 @@ public:
 
   // Rank operations that constiture the juice of this whole ordeal.
   const t_value_type &select_rank(size_type p_rank) const {
-    if (p_rank > size() || !(p_rank > 0)) throw std::out_of_range("Rank is greater than size");
+    if (p_rank > size() || !(p_rank > 0)) throw std::out_of_range("Rank is greater than size or is zero");
 
     const_base_ptr_ curr = m_root_;
     size_type r = link_type_::size(curr->m_left_) + 1;
@@ -455,8 +455,8 @@ public:
     return {static_cast<const_node_ptr_>(curr)->m_value_};
   }
 
-  size_type get_rank_of(const t_value_type &p_elem) {
-    base_ptr_ node = bst_lookup(p_elem);
+  size_type get_rank_of(const t_value_type &p_elem) const {
+    const_base_ptr_ node = bst_lookup(p_elem);
     if (!node) throw std::out_of_range("Element not present");
 
     size_type rank = link_type_::size(node->m_left_) + 1;
@@ -468,12 +468,12 @@ public:
     return rank;
   }
 
-  const t_value_type &min() {
+  const t_value_type &min() const {
     if (!m_root_) throw std::out_of_range("Container is empty");
     return static_cast<node_ptr_>(link_type_::minimum_(m_root_))->m_value_;
   }
 
-  const t_value_type &max() {
+  const t_value_type &max() const {
     if (!m_root_) throw std::out_of_range("Container is empty");
     return static_cast<node_ptr_>(link_type_::maximum_(m_root_))->m_value_;
   }

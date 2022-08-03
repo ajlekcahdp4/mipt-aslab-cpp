@@ -3,11 +3,23 @@
 
 #include <order_statistic_set.hpp>
 
+template <typename T>
+typename throttle::order_statistic_set<T>::size_type get_count_less_than(const throttle::order_statistic_set<T> &p_set,
+                                                                         const T &p_key) {
+  if (p_set.empty()) { return 0; }
+  auto min = p_set.min();
+  if (p_key <= min) { return 0; }
+  auto bound = p_set.closest_left(p_key);
+  auto rank = p_set.get_rank_of(bound);
+  return (bound == p_key ? rank - 1 : rank);
+}
+
 int main(int argc, char *argv[]) {
   if (!std::cin || !std::cout) { std::abort(); }
   throttle::order_statistic_set<int> t{};
 
-  while (true) {
+  bool valid = true;
+  while (valid) {
     char query_type{};
     int key{};
 
@@ -15,32 +27,10 @@ int main(int argc, char *argv[]) {
 
     try {
       switch (query_type) {
-      case 'k': {
-        t.insert(key);
-        break;
-      }
-
-      case 'm': {
-        std::cout << t.select_rank(key) << " ";
-        break;
-      }
-
-      case 'n':
-        if (t.empty()) {
-          std::cout << 0 << " ";
-          break;
-        }
-
-        auto min = t.min();
-        if (key <= min) {
-          std::cout << 0 << " ";
-          break;
-        }
-
-        auto closest = t.closest_left(key);
-        auto closest_rank = t.get_rank_of(closest);
-        std::cout << (closest == key ? closest_rank - 1 : closest_rank) << " ";
-        break;
+      case 'k': t.insert(key); break;
+      case 'm': std::cout << t.select_rank(key) << " "; break;
+      case 'n': std::cout << get_count_less_than(t, key) << " "; break;
+      default: std::cout << "Invalid operation"; valid = false;
       }
     } catch (std::exception &e) {
       std::cout << e.what();
