@@ -7,7 +7,7 @@
 
 #define private public
 #define protected public
-#include "detail/rb_tree_ranged.hpp"
+#include "order_statistic_set.hpp"
 #undef private
 #undef protected
 
@@ -273,6 +273,15 @@ TEST(test_rb_tree_private, test_11) {
   ASSERT_TRUE(t.contains(-1));
   ASSERT_TRUE(t.contains(5));
   ASSERT_TRUE(t.contains(10));
+}
+
+TEST(test_rb_tree_private, test_12) {
+  throttle::order_statistic_set<int> t{1, 2, 3, 4, 5};
+
+  EXPECT_EQ(t.size(), 5);
+  for (int i = 1; i <= 5; ++i) {
+    EXPECT_TRUE(t.contains(i));
+  }
 }
 
 int main(int argc, char *argv[]) {

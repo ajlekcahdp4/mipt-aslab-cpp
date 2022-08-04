@@ -352,6 +352,13 @@ private:
     return node;
   }
 
+  template <typename t_iter>
+  void insert_range(t_iter p_start, t_iter p_finish) {
+    for (t_iter its = p_start, ite = p_finish; its != ite; ++its) {
+      insert(*its);
+    }
+  }
+
 public:
   using value_type = t_value_type;
   using comp = t_comp;

@@ -21,9 +21,7 @@ public:
   }
 
   order_statistic_set(std::initializer_list<T> p_list) : detail::rb_tree_ranged_<T, t_comp>{} {
-    for (const auto &v : p_list) {
-      insert(v);
-    }
+    this->insert_range(p_list.begin(), p_list.end());
   }
 };
 } // namespace throttle
