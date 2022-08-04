@@ -29,7 +29,7 @@ void rb_tree_ranged_impl_::rotate_left_(base_ptr_ p_n) noexcept {
 
   if (!root->m_parent_) {
     m_root_ = rchild;
-  } else if (link_type_::is_left_child_(root)) {
+  } else if (root->is_left_child_()) {
     root->m_parent_->m_left_ = rchild;
   } else {
     root->m_parent_->m_right_ = rchild;
@@ -54,7 +54,7 @@ void rb_tree_ranged_impl_::rotate_right_(base_ptr_ p_n) noexcept {
 
   if (!root->m_parent_) {
     m_root_ = lchild;
-  } else if (link_type_::is_right_child_(root)) {
+  } else if (root->is_right_child_()) {
     root->m_parent_->m_right_ = lchild;
   } else {
     root->m_parent_->m_left_ = lchild;
@@ -68,7 +68,7 @@ void rb_tree_ranged_impl_::rotate_right_(base_ptr_ p_n) noexcept {
 }
 
 void rb_tree_ranged_impl_::rotate_to_parent_(base_ptr_ p_n) noexcept {
-  if (link_type_::is_left_child_(p_n)) {
+  if (p_n->is_left_child_()) {
     rotate_right_(p_n->m_parent_);
   } else {
     rotate_left_(p_n->m_parent_);
@@ -81,14 +81,14 @@ void rb_tree_ranged_impl_::rebalance_after_insert_(base_ptr_ p_node) noexcept {
   while (link_type_::get_color_(p_node->m_parent_) == k_red_) {
     if (p_node == m_root_ || (p_node->m_parent_ && p_node->m_parent_->m_color_ == k_black_)) { break; }
 
-    base_ptr_ uncle = link_type_::get_uncle_(p_node);
+    base_ptr_ uncle = p_node->get_uncle_();
     if (link_type_::get_color_(uncle) == k_red_) {
       p_node->m_parent_->m_color_ = k_black_;
       uncle->m_color_ = k_black_;
       p_node->m_parent_->m_parent_->m_color_ = k_red_;
       p_node = p_node->m_parent_->m_parent_;
     } else {
-      if (!link_type_::is_linear(p_node)) {
+      if (!p_node->is_linear()) {
         base_ptr_ old = p_node->m_parent_;
         rotate_to_parent_(p_node);
         p_node = old;
@@ -106,7 +106,7 @@ void rb_tree_ranged_impl_::rebalance_after_erase_(base_ptr_ p_leaf) noexcept {
   while (link_type_::get_color_(p_leaf) != k_red_) {
     if (!p_leaf->m_parent_) { break; }
 
-    base_ptr_ sibling = link_type_::get_sibling_(p_leaf);
+    base_ptr_ sibling = p_leaf->get_sibling_();
     if (link_type_::get_color_(sibling) == k_red_) {
       p_leaf->m_parent_->m_color_ = k_red_;
       sibling->m_color_ = k_black_;

@@ -39,85 +39,51 @@ struct rb_tree_ranged_node_base_ {
     return (p_x ? p_x->m_size_ : 0); // By definitions size of "NIL" node is 0;
   }
 
-  static base_ptr_ minimum_(base_ptr_ p_x) noexcept {
-    while (p_x->m_left_)
-      p_x = p_x->m_left_;
-    return p_x;
+  base_ptr_ minimum_() noexcept {
+    base_ptr_ curr = this;
+    while (curr->m_left_)
+      curr = curr->m_left_;
+    return curr;
   }
 
-  static const_base_ptr_ minimum_(const_base_ptr_ p_x) noexcept {
-    while (p_x->m_left_)
-      p_x = p_x->m_left_;
-    return p_x;
+  base_ptr_ maximum_() noexcept {
+    base_ptr_ curr = this;
+    while (curr->m_right_)
+      curr = curr->m_right_;
+    return curr;
   }
 
-  static base_ptr_ maximum_(base_ptr_ p_x) noexcept {
-    while (p_x->m_right_)
-      p_x = p_x->m_right_;
-    return p_x;
-  }
-
-  static const_base_ptr_ maximum_(const_base_ptr_ p_x) noexcept {
-    while (p_x->m_right_)
-      p_x = p_x->m_right_;
-    return p_x;
-  }
-
-  static base_ptr_ successor_(base_ptr_ p_x) noexcept {
-    if (p_x->m_right_) return minimum_(p_x->m_right_);
+  base_ptr_ successor_() noexcept {
+    if (m_right_) return (m_right_)->minimum_();
     return nullptr;
   }
 
-  static const_base_ptr_ successor_(const_base_ptr_ p_x) noexcept {
-    if (p_x->m_right_) return minimum_(p_x->m_right_);
+  base_ptr_ predecessor_() noexcept {
+    if (m_left_) return (m_left_)->maximum_();
     return nullptr;
   }
 
-  static base_ptr_ predecessor_(base_ptr_ p_x) noexcept {
-    if (p_x->m_left_) return maximum_(p_x->m_left_);
-    return nullptr;
-  }
-
-  static const_base_ptr_ predecessor_(const_base_ptr_ p_x) noexcept {
-    if (p_x->m_left_) return maximum_(p_x->m_left_);
-    return nullptr;
-  }
-
-  static base_ptr_ get_sibling_(base_ptr_ p_x) noexcept {
-    if (is_left_child_(p_x))
-      return p_x->m_parent_->m_right_;
+  base_ptr_ get_sibling_() noexcept {
+    if (is_left_child_())
+      return m_parent_->m_right_;
     else
-      return p_x->m_parent_->m_left_;
+      return m_parent_->m_left_;
   }
 
-  static const_base_ptr_ get_sibling_(const_base_ptr_ p_x) noexcept {
-    if (is_left_child_(p_x))
-      return p_x->m_parent_->m_right_;
+  base_ptr_ get_uncle_() noexcept {
+    if (m_parent_->is_right_child_())
+      return m_parent_->m_parent_->m_left_;
     else
-      return p_x->m_parent_->m_left_;
+      return m_parent_->m_parent_->m_right_;
   }
 
-  static base_ptr_ get_uncle_(base_ptr_ p_x) noexcept {
-    if (is_right_child_(p_x->m_parent_))
-      return p_x->m_parent_->m_parent_->m_left_;
-    else
-      return p_x->m_parent_->m_parent_->m_right_;
-  }
+  bool is_left_child_() const noexcept { return (this == m_parent_->m_left_); }
 
-  static const_base_ptr_ get_uncle_(const_base_ptr_ p_x) noexcept {
-    if (is_right_child_(p_x->m_parent_))
-      return p_x->m_parent_->m_parent_->m_left_;
-    else
-      return p_x->m_parent_->m_parent_->m_right_;
-  }
+  bool is_right_child_() const noexcept { return (this == m_parent_->m_right_); }
 
-  static bool is_left_child_(const_base_ptr_ p_x) noexcept { return (p_x == p_x->m_parent_->m_left_); }
-
-  static bool is_right_child_(const_base_ptr_ p_x) noexcept { return (p_x == p_x->m_parent_->m_right_); }
-
-  static bool is_linear(const_base_ptr_ p_x) noexcept {
-    return ((is_left_child_(p_x) && is_left_child_(p_x->m_parent_)) ||
-            (is_right_child_(p_x) && is_right_child_(p_x->m_parent_)));
+  bool is_linear() noexcept {
+    return ((is_left_child_() && m_parent_->is_left_child_()) ||
+            (is_right_child_() && m_parent_->is_right_child_()));
   }
 };
 
@@ -175,7 +141,7 @@ private:
   void prune_leaf(node_ptr_ p_n) {
     if (!p_n->m_parent_) {
       m_root_ = nullptr;
-    } else if (link_type_::is_left_child_(p_n)) {
+    } else if (p_n->is_left_child_()) {
       p_n->m_parent_->m_left_ = nullptr;
     } else {
       p_n->m_parent_->m_right_ = nullptr;
@@ -397,7 +363,7 @@ public:
       else {
         base_ptr_ parent = curr->m_parent_;
         if (parent) {
-          if (link_type_::is_left_child_(curr))
+          if (curr->is_left_child_())
             parent->m_left_ = nullptr;
           else
             parent->m_right_ = nullptr;
@@ -468,7 +434,7 @@ public:
 
     size_type rank = link_type_::size(node->m_left_) + 1;
     while (node != m_root_) {
-      if (link_type_::is_right_child_(node)) rank += link_type_::size(node->m_parent_->m_left_) + 1;
+      if (node->is_right_child_()) rank += link_type_::size(node->m_parent_->m_left_) + 1;
       node = node->m_parent_;
     }
 
@@ -477,12 +443,12 @@ public:
 
   const t_value_type &min() const {
     if (!m_root_) throw std::out_of_range("Container is empty");
-    return static_cast<node_ptr_>(link_type_::minimum_(m_root_))->m_value_;
+    return static_cast<node_ptr_>(m_root_->minimum_())->m_value_;
   }
 
   const t_value_type &max() const {
     if (!m_root_) throw std::out_of_range("Container is empty");
-    return static_cast<node_ptr_>(link_type_::maximum_(m_root_))->m_value_;
+    return static_cast<node_ptr_>(m_root_->maximum_())->m_value_;
   }
 
   rb_tree_ranged_() : rb_tree_ranged_impl_{} {}
