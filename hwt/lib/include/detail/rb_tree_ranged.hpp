@@ -490,9 +490,8 @@ public:
 
   self_type_ &operator=(const_self_type_ &p_rhs) {
     if (this != &p_rhs) {
-      clear();
-      traverse_postorder(static_cast<const_node_ptr_>(p_rhs.m_root_),
-                         [&](const_base_ptr_ p_n) { insert(static_cast<const_node_ptr_>(p_n)->m_value_); });
+      self_type_ temp{p_rhs};
+      *this = std::move(temp);
     }
     return *this;
   }

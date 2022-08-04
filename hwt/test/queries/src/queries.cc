@@ -14,14 +14,14 @@ typename throttle::order_statistic_set<T>::size_type get_count_less_than(const t
   return (bound == p_key ? rank - 1 : rank);
 }
 
-int main(int argc, char *argv[]) {
+int main() {
   if (!std::cin || !std::cout) { std::abort(); }
   throttle::order_statistic_set<int> t{};
 
   bool valid = true;
   while (valid) {
-    char query_type{};
-    int key{};
+    char query_type;
+    int key;
 
     if (!(std::cin >> query_type >> key)) { break; }
 
