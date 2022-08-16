@@ -55,7 +55,6 @@ set(DCMAKE_EXPORT_COMPILE_COMMANDS ON)
 find_program(BASH_PROGRAM bash)
 
 # Add flags for GNU sampling profiler gprof in Debug build and RelWithDebInfo
-
 option(PROFILE OFF)
 if (PROFILE)
     add_compile_options(-pg)

@@ -1,5 +1,5 @@
 set(QUERIES_SOURCES
-  src/queries.cc
+  src/intersect.cc
 )
 
 add_executable(queries ${QUERIES_SOURCES})
