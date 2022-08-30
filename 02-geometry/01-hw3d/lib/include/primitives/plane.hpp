@@ -23,10 +23,13 @@ template <typename T> struct plane {
   vec_type m_normal; // Normalized normal vector
   T m_dist;          // Distance from origin
 
-  plane() : m_normal{}, m_dist{} {}
-  plane(const point_type &p_point, const vec_type &p_u, const vec_type &p_v) {}
+  plane(const point_type &p_point, const vec_type &p_u, const vec_type &p_v) {
+    
+  }
 
-  plane(const point_type &p_a, const point_type &p_b, const point_type &p_c) {}
+  plane(const point_type &p_a, const point_type &p_b, const point_type &p_c) {
+
+  }
 };
 
 } // namespace geometry

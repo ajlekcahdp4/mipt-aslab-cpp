@@ -25,7 +25,6 @@ template <typename T> struct triangle {
   point_type m_b;
   point_type m_c;
 
-  triangle() : m_a{}, m_b{}, m_c{} {}
   triangle(const point_type &p_a, const point_type &p_b, const point_type &p_c) : m_a{p_a}, m_b{p_b}, m_c{p_c} {}
 
   T signed_distance(const point_type &p_point) {}

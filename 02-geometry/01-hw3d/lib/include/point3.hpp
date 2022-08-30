@@ -21,7 +21,6 @@ template <typename T> struct point3 {
   T m_y;
   T m_z;
 
-  point3() : m_x{}, m_y{}, m_z{} {}
   point3(T p_x, T p_y, T p_z) : m_x{p_x}, m_y{p_y}, m_z{p_z} {}
 };
 

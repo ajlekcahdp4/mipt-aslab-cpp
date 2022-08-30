@@ -5,13 +5,15 @@ set(LIBRARY_SOURCES
 add_library(throttle ${LIBRARY_SOURCES})
 target_include_directories(throttle PUBLIC include)
 
-# set(SPLAY_TREE_TEST
-  
-# )
+set(UNIT_TEST_SOURCES
+  test/main.cc
+  test/test_equal.cc
+  test/test_vec.cc
+)
 
 if (ENABLE_GTEST)
-  # add_executable(splay_order_test ${SPLAY_TREE_TEST})
-  # target_include_directories(splay_order_test PRIVATE src include)
-  # target_link_libraries(splay_order_test throttle ${GTEST_BOTH_LIBRARIES})
-  # gtest_discover_tests(splay_order_test)
+  add_executable(unit_test ${UNIT_TEST_SOURCES})
+  target_include_directories(unit_test PRIVATE src include)
+  target_link_libraries(unit_test throttle ${GTEST_BOTH_LIBRARIES})
+  gtest_discover_tests(unit_test)
 endif()

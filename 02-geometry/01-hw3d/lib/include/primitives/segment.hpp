@@ -24,6 +24,7 @@ template <typename T> struct segment {
   point_type m_b;
 
   segment(const point_type &p_a, const point_type &p_b) : m_a{p_a}, m_b{p_b} {}
+  
   segment(const point_type &p_start, const vec_type &p_dir) : m_a{p_start}, m_b{p_start + p_dir} {}
 };
 
