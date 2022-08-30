@@ -16,9 +16,9 @@
 #include <numeric>
 
 #include "equal.hpp"
+using namespace throttle::geometry;
 
 TEST(test_equal, test_1) {
-  using namespace throttle::geometry;
   static constexpr float epsilon_flt = 1.0e-6f;
   EXPECT_FALSE(is_roughly_equal(1.0f, 1.0e-7f, epsilon_flt));
   EXPECT_TRUE(is_roughly_equal(1.0f, 1.0000000001f, epsilon_flt));

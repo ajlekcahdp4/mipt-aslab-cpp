@@ -20,8 +20,7 @@ template <typename T> struct vec3 {
   T m_y;
   T m_z;
 
-  vec3(T p_x, T p_y, T p_z) : m_x{p_x}, m_y{p_y}, m_z{p_z} {}
-
+  // Static pseudoconstructors.
   static vec3 axis_i() {
     return vec3{1, 0, 0};
   }
@@ -38,17 +37,9 @@ template <typename T> struct vec3 {
     return vec3{m_x * -1, m_y * -1, m_z * -1};
   }
 
-  vec3 norm() const {
-    T length = length();
-    return vec3{m_x / length, m_y / length, m_z / length};
-  }
-
+  // Scalar and Cross products
   T dot(const vec3 &p_rhs) const {
     return m_x * p_rhs.m_x + m_y * p_rhs.m_y + m_z * p_rhs.m_z;
-  }
-
-  vec3 project(const vec3 &p_axis) {
-    return dot(p_axis) / p_axis.length_sq() * p_axis;
   }
 
   // clang-format off
@@ -59,12 +50,21 @@ template <typename T> struct vec3 {
   }
   // clang-format on
 
+  vec3 norm() const {
+    T length = vec3::length();
+    return vec3{m_x / length, m_y / length, m_z / length};
+  }
+
   T length_sq() const {
     return dot(*this);
   }
 
   T length() const {
     return std::sqrt(length_sq());
+  }
+
+  vec3 project(const vec3 &p_axis) {
+    return dot(p_axis) / p_axis.length_sq() * p_axis;
   }
 
   vec3 &operator+=(const vec3 &p_rhs) {
@@ -87,6 +87,14 @@ template <typename T> struct vec3 {
   }
 };
 
+template <typename T> T dot(vec3<T> p_lhs, vec3<T> p_rhs) {
+  return p_lhs.dot(p_rhs);
+}
+
+template <typename T> vec3<T> cross(vec3<T> p_lhs, vec3<T> p_rhs) {
+  return p_lhs.cross(p_rhs);
+}
+
 template <typename T> vec3<T> operator+(const vec3<T> &p_lhs, const vec3<T> &p_rhs) {
   return vec3<T>{p_lhs} += p_rhs;
 }
@@ -107,12 +115,17 @@ template <typename T> vec3<T> operator/(const vec3<T> &p_lhs, T p_rhs) {
   return vec3<T>{p_lhs.m_x / p_rhs, p_lhs.m_y / p_rhs, p_lhs.m_z / p_rhs};
 }
 
-template <typename T> T dot(vec3<T> p_lhs, vec3<T> p_rhs) {
-  return p_lhs.dot(p_rhs);
-}
+} // namespace geometry
+} // namespace throttle
 
-template <typename T> vec3<T> cross(vec3<T> p_lhs, vec3<T> p_rhs) {
-  return p_lhs.cross(p_rhs);
+#include "equal.hpp"
+
+namespace throttle {
+namespace geometry {
+
+template <typename T>
+bool colinear(const vec3<T> &p_lhs, const vec3<T> &p_rhs, T p_tolerance = ::throttle::geometry::default_precision<T>::m_prec) {
+  return is_roughly_equal(cross(p_lhs, p_rhs), vec3<T>{}, p_tolerance);
 }
 
 } // namespace geometry

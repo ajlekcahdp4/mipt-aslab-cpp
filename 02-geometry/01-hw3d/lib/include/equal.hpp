@@ -13,8 +13,6 @@
 #include <cmath>
 #include <type_traits>
 
-#include "vec3.hpp"
-
 namespace throttle {
 namespace geometry {
 
@@ -30,6 +28,13 @@ bool is_roughly_equal(T p_first, T p_second, T p_precision = default_precision<T
   return (abs(p_first - p_second) <= epsilon * max({abs(p_first), abs(p_second), T{1.0}}));
 };
 
+} // namespace geometry
+} // namespace throttle
+
+#include "vec3.hpp"
+
+namespace throttle {
+namespace geometry {
 template <typename T, typename = std::enable_if_t<std::is_floating_point_v<T>>>
 bool is_roughly_equal(vec3<T> p_first, vec3<T> p_second, T p_precision = default_precision<T>::m_prec) {
   return is_roughly_equal(p_first.m_x, p_second.m_x, p_precision) &&

@@ -20,8 +20,6 @@ template <typename T> struct point3 {
   T m_x;
   T m_y;
   T m_z;
-
-  point3(T p_x, T p_y, T p_z) : m_x{p_x}, m_y{p_y}, m_z{p_z} {}
 };
 
 template <typename T> vec3<T> operator-(const point3<T> &p_lhs, const point3<T> &p_rhs) {
