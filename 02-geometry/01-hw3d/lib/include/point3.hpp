@@ -25,15 +25,15 @@ template <typename T> struct point3 {
 };
 
 template <typename T> vec3<T> operator-(const point3<T> &lhs, const point3<T> &rhs) {
-  return vec3{lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z};
+  return {lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z};
 }
 
 template <typename T> point3<T> operator+(const point3<T> &lhs, const vec3<T> &rhs) {
-  return point3{lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z};
+  return {lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z};
 }
 
 template <typename T> point3<T> operator+(const vec3<T> &lhs, const point3<T> &rhs) {
-  return point3{lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z};
+  return {lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z};
 }
 
 } // namespace geometry

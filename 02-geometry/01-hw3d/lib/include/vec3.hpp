@@ -22,21 +22,21 @@ template <typename T> struct vec3 {
   T z;
 
   // Static pseudoconstructors.
-  static vec3 zero() { return vec3{0, 0, 0}; }
-  static vec3 axis_i() { return vec3{1, 0, 0}; }
-  static vec3 axis_j() { return vec3{0, 1, 0}; }
-  static vec3 axis_k() { return vec3{0, 0, 1}; }
+  static vec3 zero() { return {0, 0, 0}; }
+  static vec3 axis_i() { return {1, 0, 0}; }
+  static vec3 axis_j() { return {0, 1, 0}; }
+  static vec3 axis_k() { return {0, 0, 1}; }
 
   vec3 neg() const { return vec3{x * -1, y * -1, z * -1}; }
-  vec3 norm() const { T length = vec3::length(); return vec3{x / length, y / length, z / length}; }
+  vec3 norm() const { T length = vec3::length(); return {x / length, y / length, z / length}; }
 
   T length_sq() const { return dot(*this); }
   T length() const { return std::sqrt(length_sq()); }
 
   T dot(const vec3 &rhs) const { return x * rhs.x + y * rhs.y + z * rhs.z; }
-  vec3 cross(const vec3 rhs) const { return vec3{y * rhs.z - z * rhs.y, 
-                                                  -(x * rhs.z - z * rhs.x), 
-                                                  x * rhs.y - y * rhs.x}; }
+  vec3 cross(const vec3 rhs) const { return {y * rhs.z - z * rhs.y, 
+                                            -(x * rhs.z - z * rhs.x), 
+                                            x * rhs.y - y * rhs.x}; }
 
   vec3 project(const vec3 &p_axis) { return dot(p_axis) / p_axis.length_sq() * p_axis; }
 
