@@ -15,105 +15,48 @@
 namespace throttle {
 namespace geometry {
 
+// clang-format off
 template <typename T> struct vec3 {
-  T m_x;
-  T m_y;
-  T m_z;
+  T x;
+  T y;
+  T z;
 
   // Static pseudoconstructors.
-  static vec3 axis_i() {
-    return vec3{1, 0, 0};
-  }
+  static vec3 zero() { return vec3{0, 0, 0}; }
+  static vec3 axis_i() { return vec3{1, 0, 0}; }
+  static vec3 axis_j() { return vec3{0, 1, 0}; }
+  static vec3 axis_k() { return vec3{0, 0, 1}; }
 
-  static vec3 axis_j() {
-    return vec3{0, 1, 0};
-  }
+  vec3 neg() const { return vec3{x * -1, y * -1, z * -1}; }
+  vec3 norm() const { T length = vec3::length(); return vec3{x / length, y / length, z / length}; }
 
-  static vec3 axis_k() {
-    return vec3{0, 0, 1};
-  }
+  T length_sq() const { return dot(*this); }
+  T length() const { return std::sqrt(length_sq()); }
 
-  vec3 neg() const {
-    return vec3{m_x * -1, m_y * -1, m_z * -1};
-  }
+  T dot(const vec3 &rhs) const { return x * rhs.x + y * rhs.y + z * rhs.z; }
+  vec3 cross(const vec3 rhs) const { return vec3{y * rhs.z - z * rhs.y, 
+                                                  -(x * rhs.z - z * rhs.x), 
+                                                  x * rhs.y - y * rhs.x}; }
 
-  // Scalar and Cross products
-  T dot(const vec3 &p_rhs) const {
-    return m_x * p_rhs.m_x + m_y * p_rhs.m_y + m_z * p_rhs.m_z;
-  }
+  vec3 project(const vec3 &p_axis) { return dot(p_axis) / p_axis.length_sq() * p_axis; }
 
-  // clang-format off
-  vec3 cross(const vec3 p_rhs) const {
-    return vec3{m_y * p_rhs.m_z - m_z * p_rhs.m_y, 
-                -(m_x * p_rhs.m_z - m_z * p_rhs.m_x),
-                m_x * p_rhs.m_y - m_y * p_rhs.m_x};
-  }
-  // clang-format on
-
-  vec3 norm() const {
-    T length = vec3::length();
-    return vec3{m_x / length, m_y / length, m_z / length};
-  }
-
-  T length_sq() const {
-    return dot(*this);
-  }
-
-  T length() const {
-    return std::sqrt(length_sq());
-  }
-
-  vec3 project(const vec3 &p_axis) {
-    return dot(p_axis) / p_axis.length_sq() * p_axis;
-  }
-
-  vec3 &operator+=(const vec3 &p_rhs) {
-    m_x += p_rhs.m_x;
-    m_y += p_rhs.m_y;
-    m_z += p_rhs.m_z;
-    return *this;
-  }
-
-  vec3 &operator-=(const vec3 &p_rhs) {
-    return *this += p_rhs.neg();
-  }
-
-  bool operator==(const vec3 &p_rhs) const {
-    return (m_x == p_rhs.m_x && m_y == p_rhs.m_y && m_z == p_rhs.m_z);
-  }
-
-  bool operator!=(const vec3 &p_rhs) const {
-    return !(*this == p_rhs);
-  }
+  vec3 &operator+=(const vec3 &rhs) { x += rhs.x; y += rhs.y; z += rhs.z; return *this; }
+  vec3 &operator-=(const vec3 &rhs) { return *this += rhs.neg(); }
+  vec3 operator-() const { return neg(); }
+  bool operator==(const vec3 &rhs) const { return (x == rhs.x && y == rhs.y && z == rhs.z); }
+  bool operator!=(const vec3 &rhs) const { return !(*this == rhs); }
 };
+// clang-format on
 
-template <typename T> T dot(vec3<T> p_lhs, vec3<T> p_rhs) {
-  return p_lhs.dot(p_rhs);
-}
+template <typename T> T       dot(vec3<T> lhs, vec3<T> rhs) { return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z; }
+template <typename T> vec3<T> cross(vec3<T> lhs, vec3<T> rhs) { return lhs.cross(rhs); }
 
-template <typename T> vec3<T> cross(vec3<T> p_lhs, vec3<T> p_rhs) {
-  return p_lhs.cross(p_rhs);
-}
+template <typename T> vec3<T> operator+(const vec3<T> &lhs, const vec3<T> &rhs) { return vec3<T>{lhs} += rhs; }
+template <typename T> vec3<T> operator-(const vec3<T> &lhs, const vec3<T> &rhs) { return vec3<T>{lhs} -= rhs; }
 
-template <typename T> vec3<T> operator+(const vec3<T> &p_lhs, const vec3<T> &p_rhs) {
-  return vec3<T>{p_lhs} += p_rhs;
-}
-
-template <typename T> vec3<T> operator-(const vec3<T> &p_lhs, const vec3<T> &p_rhs) {
-  return vec3<T>{p_lhs} -= p_rhs;
-}
-
-template <typename T> vec3<T> operator*(const vec3<T> &p_lhs, T p_rhs) {
-  return vec3<T>{p_lhs.m_x * p_rhs, p_lhs.m_y * p_rhs, p_lhs.m_z * p_rhs};
-}
-
-template <typename T> vec3<T> operator*(T p_lhs, const vec3<T> &p_rhs) {
-  return vec3<T>{p_rhs.m_x * p_lhs, p_rhs.m_y * p_lhs, p_rhs.m_z * p_lhs};
-}
-
-template <typename T> vec3<T> operator/(const vec3<T> &p_lhs, T p_rhs) {
-  return vec3<T>{p_lhs.m_x / p_rhs, p_lhs.m_y / p_rhs, p_lhs.m_z / p_rhs};
-}
+template <typename T> vec3<T> operator*(const vec3<T> &lhs, T rhs) { return {lhs.x * rhs, lhs.y * rhs, lhs.z * rhs}; }
+template <typename T> vec3<T> operator*(T lhs, const vec3<T> &rhs) { return {rhs.x * lhs, rhs.y * lhs, rhs.z * lhs}; }
+template <typename T> vec3<T> operator/(const vec3<T> &lhs, T rhs) { return {lhs.x / rhs, lhs.y / rhs, lhs.z / rhs}; }
 
 } // namespace geometry
 } // namespace throttle
@@ -124,8 +67,9 @@ namespace throttle {
 namespace geometry {
 
 template <typename T>
-bool colinear(const vec3<T> &p_lhs, const vec3<T> &p_rhs, T p_tolerance = ::throttle::geometry::default_precision<T>::m_prec) {
-  return is_roughly_equal(cross(p_lhs, p_rhs), vec3<T>{}, p_tolerance);
+bool colinear(const vec3<T> &lhs, const vec3<T> &rhs,
+              T p_tolerance = ::throttle::geometry::default_precision<T>::m_prec) {
+  return is_roughly_equal(cross(lhs, rhs), vec3<T>::zero(), p_tolerance);
 }
 
 } // namespace geometry

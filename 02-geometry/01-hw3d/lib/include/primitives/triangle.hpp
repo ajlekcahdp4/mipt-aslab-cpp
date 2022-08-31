@@ -12,6 +12,8 @@
 
 #include <cmath>
 
+#include "primitives/plane.hpp"
+
 #include "point3.hpp"
 #include "vec3.hpp"
 
@@ -20,18 +22,14 @@ namespace geometry {
 
 template <typename T> struct triangle {
   using point_type = point3<T>;
+  using vec_type = vec3<T>;
+  using plane_type = plane<T>;
 
   point_type m_a;
   point_type m_b;
   point_type m_c;
 
-  triangle(const point_type &p_a, const point_type &p_b, const point_type &p_c) : m_a{p_a}, m_b{p_b}, m_c{p_c} {}
-
-  T signed_distance(const point_type &p_point) {}
-  
-  T distance(const point_type &p_point) {
-    return std::abs(signed_distance(p_point));
-  }
+  plane_type plane() { return plane_type{m_a, m_b, m_c}; }
 };
 
 } // namespace geometry

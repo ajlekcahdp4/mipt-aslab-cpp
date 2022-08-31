@@ -25,18 +25,18 @@ using throttle::geometry::is_roughly_equal;
 
 TEST(test_plane, test_1) {
   plane p{plane::point_type{1, 2, 2}, plane::vec_type{1, 0, 0}, plane::vec_type{0, 1, 0}};
-  EXPECT_TRUE(is_roughly_equal(p.distance_to_origin(), 2.0f));
+  EXPECT_TRUE(is_roughly_equal(p.distance_origin(), 2.0f));
 }
 
 TEST(test_plane, test_2) {
   using throttle::geometry::colinear;
 
   plane p{plane::point_type{1, 0, 0}, plane::point_type(0, 1, 0), plane::point_type(0, 0, 1)};
-  EXPECT_TRUE(is_roughly_equal(p.distance_to_origin(), 1.0f / std::sqrt(3.0f)));
+  EXPECT_TRUE(is_roughly_equal(p.distance_origin(), 1.0f / std::sqrt(3.0f)));
   EXPECT_TRUE(colinear(p.normal(), plane::vec_type{1, 1, 1}.norm()));
 
   plane c{plane::point_type{0, -1.0f, 0}, plane::point_type(-0.5f, 0, 0), plane::point_type(0, 0, -1.0f / 3.0f)};
-  EXPECT_TRUE(is_roughly_equal(std::abs(c.distance_to_origin()), 1.0f / std::sqrt(14.0f)));
+  EXPECT_TRUE(is_roughly_equal(std::abs(c.distance_origin()), 1.0f / std::sqrt(14.0f)));
   EXPECT_TRUE(colinear(c.normal(), (-1.0f) * plane::vec_type{2, 1, 3}.norm()));
 
   EXPECT_TRUE(is_roughly_equal(throttle::geometry::distance_from_plane(c, {128.0f, 11.0f, 5.0f}), 283.0f / std::sqrt(14.0f)));

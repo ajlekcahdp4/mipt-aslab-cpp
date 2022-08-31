@@ -23,7 +23,6 @@ template <typename T, typename = std::enable_if_t<std::is_floating_point_v<T>>>
 bool is_roughly_equal(T p_first, T p_second, T p_precision = default_precision<T>::m_prec) {
   using std::abs;
   using std::max;
-
   T epsilon = p_precision;
   return (abs(p_first - p_second) <= epsilon * max({abs(p_first), abs(p_second), T{1.0}}));
 };
@@ -37,9 +36,9 @@ namespace throttle {
 namespace geometry {
 template <typename T, typename = std::enable_if_t<std::is_floating_point_v<T>>>
 bool is_roughly_equal(vec3<T> p_first, vec3<T> p_second, T p_precision = default_precision<T>::m_prec) {
-  return is_roughly_equal(p_first.m_x, p_second.m_x, p_precision) &&
-         is_roughly_equal(p_first.m_y, p_second.m_y, p_precision) &&
-         is_roughly_equal(p_first.m_z, p_second.m_z, p_precision);
+  return is_roughly_equal(p_first.x, p_second.x, p_precision) &&
+         is_roughly_equal(p_first.y, p_second.y, p_precision) &&
+         is_roughly_equal(p_first.z, p_second.z, p_precision);
 };
 
 } // namespace geometry
