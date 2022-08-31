@@ -24,3 +24,8 @@ TEST(test_equal, test_1) {
   EXPECT_TRUE(is_roughly_equal(1.0f, 1.0000000001f, epsilon_flt));
   EXPECT_FALSE(is_roughly_equal(1.0, 1.0e-11, double(epsilon_flt)));
 }
+
+TEST(test_equal, test_2) {
+  EXPECT_FALSE(are_same_sign(1, 2, 3, -1));
+  EXPECT_TRUE(are_same_sign(-1, -5, -1, -2));
+}

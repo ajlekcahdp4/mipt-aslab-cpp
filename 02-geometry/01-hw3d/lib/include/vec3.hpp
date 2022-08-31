@@ -48,7 +48,7 @@ template <typename T> struct vec3 {
 };
 // clang-format on
 
-template <typename T> T       dot(vec3<T> lhs, vec3<T> rhs) { return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z; }
+template <typename T> T       dot(vec3<T> lhs, vec3<T> rhs) { return lhs.dot(rhs); }
 template <typename T> vec3<T> cross(vec3<T> lhs, vec3<T> rhs) { return lhs.cross(rhs); }
 
 template <typename T> vec3<T> operator+(const vec3<T> &lhs, const vec3<T> &rhs) { return vec3<T>{lhs} += rhs; }

@@ -31,6 +31,10 @@ public:
   plane(const point_type &p_point, const vec_type &p_u, const vec_type &p_v) : plane{p_point, cross(p_u, p_v).norm()} {}
   plane(const point_type &p_a, const point_type &p_b, const point_type &p_c) : plane{p_a, p_b - p_a, p_c - p_a} {}
 
+  static plane plane_xy(T p_z = T{0}) { return plane{{0, 0, p_z}, {0, 0, 1}}; }
+  static plane plane_yz(T p_x = T{0}) { return plane{{p_x, 0, 0}, {1, 0, 0}}; }
+  static plane plane_xz(T p_y = T{0}) { return plane{{0, p_y, 0}, {0, 1, 0}}; }
+
   T signed_distance(const point3<T> &p_point) const { return dot(p_point - point_type::origin(), m_normal) - m_dist; }
   T distance(const point3<T> &p_point) const { return std::abs(signed_distance(p_point)); }
   T distance_origin() const { return std::abs(m_dist); }
