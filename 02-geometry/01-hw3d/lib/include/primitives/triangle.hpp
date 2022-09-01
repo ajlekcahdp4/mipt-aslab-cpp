@@ -25,11 +25,15 @@ template <typename T> struct triangle {
   using vec_type = vec3<T>;
   using plane_type = plane<T>;
 
-  point_type m_a;
-  point_type m_b;
-  point_type m_c;
+  point_type a;
+  point_type b;
+  point_type c;
 
-  plane_type plane() { return plane_type{m_a, m_b, m_c}; }
+  plane_type plane_of() { return plane_type{a, b, c}; }
+
+  bool lies_on_one_side(const plane_type &p_plane) const {
+    return lie_on_the_same_side(p_plane, a, b, c);
+  }
 };
 
 } // namespace geometry
