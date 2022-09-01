@@ -27,7 +27,10 @@ bool is_roughly_equal(T p_first, T p_second, T p_precision = default_precision<T
   return (abs(p_first - p_second) <= epsilon * max({abs(p_first), abs(p_second), T{1.0}}));
 };
 
-template <typename... Ts> bool are_all_true(Ts... args) { return (... && args); }
+template <typename... Ts, typename = std::enable_if_t<std::conjunction_v<std::is_convertible<bool, Ts>...>>>
+bool are_all_true(Ts... args) {
+  return (... && args);
+}
 
 template <typename... Ts> bool are_same_sign(Ts... args) {
   return (are_all_true(std::greater{}(args, 0)...) || are_all_true(std::less{}(args, 0)...));

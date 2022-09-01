@@ -46,3 +46,10 @@ TEST(test_plane, test_3) {
   plane p{plane::point_type{1, 0, 0}, plane::point_type(0, 1, 0), plane::point_type(0, 0, 1)};
   EXPECT_TRUE(is_roughly_equal(throttle::geometry::distance_from_plane(p, {-5, 0, 0}), 2 * std::sqrt(3.0f)));
 }
+
+TEST(test_plane, test_4) {
+  plane p = plane::plane_xy();
+  using point = plane::point_type;
+  EXPECT_FALSE(lie_on_the_same_side(p, point{0, 0, 1}, point{0, 2, -1}));
+  EXPECT_TRUE(lie_on_the_same_side(p, point{5, -1, 2.2}, point{-8, 5, 0.1}));
+}

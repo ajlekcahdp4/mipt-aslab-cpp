@@ -52,3 +52,16 @@ template <typename T> T distance_from_plane(const plane<T> &p_plane, const point
 
 } // namespace geometry
 } // namespace throttle
+
+#include "equal.hpp"
+
+namespace throttle {
+namespace geometry {
+
+template <typename T, typename... Ts, typename = std::enable_if_t<std::conjunction_v<std::is_convertible<Ts, point3<T>>...>>>
+bool lie_on_the_same_side(const plane<T> &p_plane, Ts... p_points) {
+  return are_same_sign(p_plane.signed_distance(p_points)...);
+}
+
+} // namespace geometry
+} // namespace throttle
