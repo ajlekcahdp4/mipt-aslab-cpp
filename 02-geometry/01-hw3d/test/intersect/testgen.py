@@ -61,28 +61,62 @@ def generate_test_string(p_triangles: list, p_round: int) -> str:
                 test += fmt_string.format(i[j][k])
     return test
 
+def generate_ans_string(p_ans: list) -> str:
+    ans = ''
+    for i in p_ans:
+        ans += '{} '.format(i)
+    return ans
+
 def generate_ans(p_triangles: list) -> list:
     triangles = []
     objs = []
     # Fill geometry and object lists
-    for tri in p_triangles:
-        geom = fcl.TriangleP(tri[0], tri[1], tri[2])
+    
+    id_index_map = {}
+    obj_index_map = {}
+    for i in range(len(p_triangles)):
+        tri = p_triangles[i]
+        geom = fcl.BVHModel()
+        tris = np.array([[0, 1, 2]])
+        
+        geom.beginModel(len(tri), len(tris))
+        geom.addSubModel(np.array([tri[0], tri[1], tri[2]]), tris)
+        geom.endModel()
+
         obj = fcl.CollisionObject(geom)
         triangles.append(geom)
         objs.append(obj)
-    
-    request = fcl.CollisionRequest()
-    result = fcl.CollisionResult()
 
-    print(fcl.collide(objs[0], objs[1], request, result))
-
+        id_index_map[id(geom)] = i
+        obj_index_map[id(obj)] = i
 
     manager = fcl.DynamicAABBTreeCollisionManager()
     manager.registerObjects(objs)
     manager.setup()
+    
+    crequest = fcl.CollisionRequest(num_max_contacts = len(p_triangles) ^ 2, enable_contact=True)
+    cdata = fcl.CollisionData(crequest, fcl.CollisionResult())
+    manager.collide(cdata, fcl.defaultCollisionCallback)
+    
+    objs_in_collision = set()
+    # for i in range(len(p_triangles)):
+    #     for j in range(i + 1, len(p_triangles)):
+    #         if fcl.collide(objs[i], objs[j]):
+    #             if obj_index_map[id(objs[i])] not in objs_in_collision:
+    #                 objs_in_collision.add(i)
+    #             if obj_index_map[id(objs[j])] not in objs_in_collision:
+    #                 objs_in_collision.add(j)
 
-    cdata = fcl.CollisionData()
-    # manager.collide(cdata, fcl.defaultCollisionCallback)
+    for contact in cdata.result.contacts:
+        coll_geom_0 = contact.o1
+        coll_geom_1 = contact.o2
+
+        if id_index_map[id(coll_geom_0)] not in objs_in_collision:
+            objs_in_collision.add(id_index_map[id(coll_geom_0)])
+        if id_index_map[id(coll_geom_1)] not in objs_in_collision:
+            objs_in_collision.add(id_index_map[id(coll_geom_1)])
+
+    return [x for x in objs_in_collision]
 
 def generate_tests(p_config: dict):
     # Create output directory if it doesn't exist.
@@ -96,8 +130,8 @@ def generate_tests(p_config: dict):
             triangles = []
             for i in range(length):
                 triangles.append(generate_random_triangle(group['mean'], group['std'], halflengths, int(group['round'])))
-            save_test_ans(p_config['output_path'], generate_test_string(triangles, int(group['round'])), "", c, group['test_fmt_string'], group['ans_fmt_string'])
-            generate_ans(triangles)
+            ans = generate_ans(triangles)
+            save_test_ans(p_config['output_path'], generate_test_string(triangles, int(group['round'])), generate_ans_string(ans), c, group['test_fmt_string'], group['ans_fmt_string'])
 
 def main():
     parser = argparse.ArgumentParser(
