@@ -13,6 +13,7 @@ import json
 import os
 import numpy as np
 import glm
+import fcl
 
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -27,7 +28,7 @@ def generate_random_triangle(p_mean: float, p_std: float, p_halfwidths: np.array
     # Create respective vectors for points in a sort 120 degree intervals. TODO[]: Improve
     a = glm.vec3(length_a, 0, 0)
     b = glm.vec3(-np.sqrt(3) / 2 * length_b, length_b / 2, 0)
-    c = glm.vec3(-np.sqrt(3) / 2 * length_b, -length_b / 2, 0)
+    c = glm.vec3(-np.sqrt(3) / 2 * length_c, -length_c / 2, 0)
     
     # Create a transofrmation matrix that moves the points to a random point inside the bounding volume and rotates sporadically
     mat = glm.mat4(1)
@@ -39,8 +40,8 @@ def generate_random_triangle(p_mean: float, p_std: float, p_halfwidths: np.array
     for i in range(3):
         rotating_vec = glm.vec3(np.random.default_rng().uniform(-1, 1, 3))
         mat = glm.rotate(mat, np.random.default_rng().uniform(0, 2 * np.pi), rotating_vec)
-
-    return np.array([mat * a, mat * b, mat * c])
+    
+    return np.array([np.around(np.array(mat * a), p_round), np.around(np.array(mat * b), p_round), np.around(np.array(mat * c), p_round)])
 
 
 def save_test_ans(output_path: str, p_test: str, p_ans: str, p_idx: int, p_test_fmt: str = 'naive{}.dat', p_ans_fmt: str = 'naive{}.dat.ans') -> None:
@@ -51,30 +52,52 @@ def save_test_ans(output_path: str, p_test: str, p_ans: str, p_idx: int, p_test_
         test_fp.write(p_ans)
 
 
-def generate_test_string(p_triangles: list) -> str:
-    test = ''
+def generate_test_string(p_triangles: list, p_round: int) -> str:
+    test = '{} '.format(len(p_triangles))
+    fmt_string = '{{:.{}f}} '.format(p_round)
     for i in p_triangles:
-        test += '{} {} {}'.format(i[0][0], i[0][1], i[0][2])
-        test += '{} {} {}'.format(i[1][0], i[1][1], i[1][2])
-        test += '{} {} {}'.format(i[2][0], i[2][1], i[2][2])
+        for j in range(3):
+            for k in range(3):
+                test += fmt_string.format(i[j][k])
     return test
+
+def generate_ans(p_triangles: list) -> list:
+    triangles = []
+    objs = []
+    # Fill geometry and object lists
+    for tri in p_triangles:
+        geom = fcl.TriangleP(tri[0], tri[1], tri[2])
+        obj = fcl.CollisionObject(geom)
+        triangles.append(geom)
+        objs.append(obj)
+    
+    request = fcl.CollisionRequest()
+    result = fcl.CollisionResult()
+
+    print(fcl.collide(objs[0], objs[1], request, result))
+
+
+    manager = fcl.DynamicAABBTreeCollisionManager()
+    manager.registerObjects(objs)
+    manager.setup()
+
+    cdata = fcl.CollisionData()
+    # manager.collide(cdata, fcl.defaultCollisionCallback)
 
 def generate_tests(p_config: dict):
     # Create output directory if it doesn't exist.
     os.makedirs(p_config['output_path'], exist_ok=True)
     for group in p_config['groups']:
-        c = 0
-        print(group['number'])
-        length = np.random.default_rng().integers(
-          int(group['number']['min']), int(group['number']['max']))
-        triangles = []
         half_dict = group['half']
         halflengths = np.array([half_dict['x'], half_dict['y'], half_dict['z']])
-        for i in range(length):
-            triangles.append(generate_random_triangle(group['mean'], group['std'], halflengths))
-        save_test_ans(p_config['output_path'], generate_test_string(triangles), "", c + 1,)
-        c += 1
-
+        for c in range(group['number']):
+            length = np.random.default_rng().integers(
+            int(group['length']['min']), int(group['length']['max']))
+            triangles = []
+            for i in range(length):
+                triangles.append(generate_random_triangle(group['mean'], group['std'], halflengths, int(group['round'])))
+            save_test_ans(p_config['output_path'], generate_test_string(triangles, int(group['round'])), "", c, group['test_fmt_string'], group['ans_fmt_string'])
+            generate_ans(triangles)
 
 def main():
     parser = argparse.ArgumentParser(
@@ -89,12 +112,11 @@ def main():
 
     with open(config_path) as json_file:
         config_settings = json.load(json_file)
-    print(config_settings)
     generate_tests(config_settings)
 
-    # triangles = []
-    # for i in range(1000):
-    #     triangles.append(generate_random_triangle(75, 15, np.array([1000, 1000, 1000])))
+    triangles = []
+    for i in range(1000):
+        triangles.append(generate_random_triangle(75, 15, np.array([1000, 1000, 1000]), 4))
 
     # ax = plt.gca(projection="3d")
     # ax.add_collection(Poly3DCollection(triangles))
