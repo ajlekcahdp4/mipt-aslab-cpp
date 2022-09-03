@@ -28,7 +28,7 @@ template <typename T> struct vec3 {
   static vec3 axis_k() { return {0, 0, 1}; }
 
   vec3 neg() const { return vec3{x * -1, y * -1, z * -1}; }
-  vec3 norm() const { T length = vec3::length(); return {x / length, y / length, z / length}; }
+  vec3 norm() const { T length = vec3::length(); return (length ? vec3{x / length, y / length, z / length} : *this); }
 
   T length_sq() const { return dot(*this); }
   T length() const { return std::sqrt(length_sq()); }
@@ -38,7 +38,7 @@ template <typename T> struct vec3 {
                                             -(x * rhs.z - z * rhs.x), 
                                             x * rhs.y - y * rhs.x}; }
 
-  vec3 project(const vec3 &p_axis) { return dot(p_axis) / p_axis.length_sq() * p_axis; }
+  vec3 project(const vec3 &p_axis) { T length = p_axis.length_sq(); return ( length ? dot(p_axis) / length * p_axis : zero()); }
 
   vec3 &operator+=(const vec3 &rhs) { x += rhs.x; y += rhs.y; z += rhs.z; return *this; }
   vec3 &operator-=(const vec3 &rhs) { return *this += rhs.neg(); }
