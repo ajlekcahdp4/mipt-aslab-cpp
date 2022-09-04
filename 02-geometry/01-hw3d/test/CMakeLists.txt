@@ -6,4 +6,9 @@ endif()
 
 add_subdirectory(intersect)
 
+option(BUILD_FCL_REFERENCE OFF)
+if(${BUILD_FCL_REFERENCE})
+add_subdirectory(fcl-reference)
+endif()
+
 enable_testing()

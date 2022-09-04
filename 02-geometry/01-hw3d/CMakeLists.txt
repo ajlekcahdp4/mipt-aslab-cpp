@@ -8,6 +8,7 @@ if((${PROJECT_SOURCE_DIR} STREQUAL ${PROJECT_BINARY_DIR}) AND NOT ${INSOURCEBUIL
 endif()
 
 set(CMAKE_CXX_STANDARD 20)
+include(FetchContent)
 
 # Possibly support windows and MSVC compiler
 if(MSVC)
