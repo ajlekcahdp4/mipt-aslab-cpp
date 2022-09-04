@@ -11,6 +11,7 @@ set(UNIT_TEST_SOURCES
   test/test_vec.cc
   test/test_plane.cc
   test/test_triangle.cc
+  test/test_aabb.cc
 )
 
 if (ENABLE_GTEST)

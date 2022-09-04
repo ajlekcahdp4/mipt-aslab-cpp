@@ -21,10 +21,27 @@ template <typename T> struct aabb {
   using point_type = point3<T>;
 
   point_type m_center;
-  T m_halfwidth_x;
-  T m_halfwidth_y;
-  T m_halfwidth_z;
+  T          m_halfwidth_x;
+  T          m_halfwidth_y;
+  T          m_halfwidth_z;
+
+  bool test_intersect(aabb a) const {
+    if (std::abs(m_center.x - a.m_center.x) > (m_halfwidth_x + a.m_halfwidth_x)) return false;
+    if (std::abs(m_center.y - a.m_center.y) > (m_halfwidth_y + a.m_halfwidth_y)) return false;
+    if (std::abs(m_center.z - a.m_center.z) > (m_halfwidth_z + a.m_halfwidth_z)) return false;
+    return true;
+  }
 };
+
+template <typename T> bool operator==(aabb<T> a, aabb<T> b) {
+  return (a.m_center == b.m_center && a.m_halfwidth_x == b.m_halfwidth_x && a.m_halfwidth_y == b.m_halfwidth_y &&
+          a.m_halfwidth_z == b.m_halfwidth_z);
+}
+
+template <typename T> bool operator!=(aabb<T> a, aabb<T> b) { return !(a == b); }
+
+// return true if AABBs intersect.
+template <typename T> bool aabb_aabb_intersect(aabb<T> a, aabb<T> b) { return a.test_intersect(b); }
 
 } // namespace geometry
 } // namespace throttle
