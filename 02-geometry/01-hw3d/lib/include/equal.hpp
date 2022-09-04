@@ -39,12 +39,19 @@ template <typename... Ts> bool are_same_sign(Ts... args) {
 } // namespace geometry
 } // namespace throttle
 
+#include "point3.hpp"
 #include "vec3.hpp"
 
 namespace throttle {
 namespace geometry {
 template <typename T, typename = std::enable_if_t<std::is_floating_point_v<T>>>
 bool is_roughly_equal(vec3<T> p_first, vec3<T> p_second, T p_precision = default_precision<T>::m_prec) {
+  return is_roughly_equal(p_first.x, p_second.x, p_precision) && is_roughly_equal(p_first.y, p_second.y, p_precision) &&
+         is_roughly_equal(p_first.z, p_second.z, p_precision);
+};
+
+template <typename T, typename = std::enable_if_t<std::is_floating_point_v<T>>>
+bool is_roughly_equal(point3<T> p_first, point3<T> p_second, T p_precision = default_precision<T>::m_prec) {
   return is_roughly_equal(p_first.x, p_second.x, p_precision) && is_roughly_equal(p_first.y, p_second.y, p_precision) &&
          is_roughly_equal(p_first.z, p_second.z, p_precision);
 };

@@ -10,7 +10,6 @@
 
 #pragma once
 
-#include "vec3.hpp"
 #include <cmath>
 
 namespace throttle {
@@ -22,9 +21,17 @@ template <typename T> struct point3 {
   T z;
 
   static point3 origin() { return {0, 0, 0}; }
+
+  bool operator==(const point3 &p_other) { return (x == p_other.x && y == p_other.y && z == p_other.z); }
 };
 
-template <typename T> bool operator==(point3<T> a, point3<T> b) { return (a.x == b.x && a.y == b.y && a.z == b.z); }
+} // namespace geometry
+} // namespace throttle
+
+#include "vec3.hpp"
+
+namespace throttle {
+namespace geometry {
 
 template <typename T> vec3<T> operator-(const point3<T> &lhs, const point3<T> &rhs) {
   return {lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z};

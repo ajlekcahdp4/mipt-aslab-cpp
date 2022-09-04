@@ -86,3 +86,13 @@ TEST(TestAABB, test_not_equal) {
   EXPECT_FALSE(a != b);
   EXPECT_TRUE(a != c);
 }
+
+TEST(TestAABB, test_variadic_constructor) {
+  using point = AABB::point_type;
+  AABB a{point{1, 2, 3}, point{4, 5, 6}, point{7, 8, 9}};
+
+  EXPECT_TRUE(is_roughly_equal(a.m_center, {4, 5, 6}));
+  EXPECT_TRUE(is_roughly_equal(a.m_halfwidth_x, 6.0));
+  EXPECT_TRUE(is_roughly_equal(a.m_halfwidth_y, 6.0));
+  EXPECT_TRUE(is_roughly_equal(a.m_halfwidth_z, 6.0));
+}

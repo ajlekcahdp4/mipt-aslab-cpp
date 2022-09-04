@@ -9,6 +9,7 @@
  */
 
 #include <cmath>
+#include <type_traits>
 
 #include "point3.hpp"
 #include "vec3.hpp"
@@ -24,6 +25,18 @@ template <typename T> struct aabb {
   T          m_halfwidth_x;
   T          m_halfwidth_y;
   T          m_halfwidth_z;
+
+  aabb(const point_type &p_center, T half_x, T half_y, T half_z)
+      : m_center{p_center}, m_halfwidth_x{half_x}, m_halfwidth_y{half_y}, m_halfwidth_z{half_z} {}
+
+  aabb(const point_type &first, const point_type &second)
+      : m_center{first + T{0.5f} * (second - first)}, m_halfwidth_x{std::abs(first.x - second.x)},
+        m_halfwidth_y{std::abs(first.y - second.y)}, m_halfwidth_z(std::abs(first.z - second.z)) {}
+
+  template <typename... Ts, typename = std::enable_if_t<std::conjunction_v<std::is_convertible<Ts, point_type>...>>>
+  aabb(Ts... points)
+      : aabb(point_type{std::min({points.x...}), std::min({points.y...}), std::min({points.z...})},
+             point_type{std::max({points.x...}), std::max({points.y...}), std::max({points.z...})}) {}
 
   bool test_intersect(aabb a) const {
     if (std::abs(m_center.x - a.m_center.x) > (m_halfwidth_x + a.m_halfwidth_x)) return false;
@@ -41,7 +54,7 @@ template <typename T> struct aabb {
 };
 
 // return true if AABBs intersect.
-template <typename T> bool aabb_aabb_intersect(aabb<T> a, aabb<T> b) { return a.test_intersect(b); }
+template <typename T> bool aabb_aabb_intersect(const aabb<T> &a, const aabb<T> &b) { return a.test_intersect(b); }
 
 } // namespace geometry
 } // namespace throttle
