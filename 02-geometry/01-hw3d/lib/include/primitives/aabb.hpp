@@ -31,14 +31,14 @@ template <typename T> struct aabb {
     if (std::abs(m_center.z - a.m_center.z) > (m_halfwidth_z + a.m_halfwidth_z)) return false;
     return true;
   }
+
+  bool operator==(const aabb &b) {
+    return (m_center == b.m_center && m_halfwidth_x == b.m_halfwidth_x && m_halfwidth_y == b.m_halfwidth_y &&
+            m_halfwidth_z == b.m_halfwidth_z);
+  }
+
+  bool operator!=(const aabb &b) { return !(*this == b); }
 };
-
-template <typename T> bool operator==(aabb<T> a, aabb<T> b) {
-  return (a.m_center == b.m_center && a.m_halfwidth_x == b.m_halfwidth_x && a.m_halfwidth_y == b.m_halfwidth_y &&
-          a.m_halfwidth_z == b.m_halfwidth_z);
-}
-
-template <typename T> bool operator!=(aabb<T> a, aabb<T> b) { return !(a == b); }
 
 // return true if AABBs intersect.
 template <typename T> bool aabb_aabb_intersect(aabb<T> a, aabb<T> b) { return a.test_intersect(b); }
