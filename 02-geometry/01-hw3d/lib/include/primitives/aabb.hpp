@@ -45,12 +45,12 @@ template <typename T> struct aabb {
     return true;
   }
 
-  bool operator==(const aabb &b) {
+  bool operator==(const aabb &b) const {
     return (m_center == b.m_center && m_halfwidth_x == b.m_halfwidth_x && m_halfwidth_y == b.m_halfwidth_y &&
             m_halfwidth_z == b.m_halfwidth_z);
   }
 
-  bool operator!=(const aabb &b) { return !(*this == b); }
+  bool operator!=(const aabb &b) const { return !(*this == b); }
 };
 
 // return true if AABBs intersect.
