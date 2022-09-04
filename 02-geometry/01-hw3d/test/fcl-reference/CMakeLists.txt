@@ -7,7 +7,6 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/flexible-collision-library/fcl.git
 )
 
-set(BUILD_TESTING OFF)
 FetchContent_GetProperties(fcl)
 if(NOT cmark_POPULATED)
   FetchContent_Populate(fcl)
@@ -23,5 +22,5 @@ endif()
 install(TARGETS intersect_fcl DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 
 if(BASH_PROGRAM)
-  add_test(NAME test.intersect_fcl COMMAND ${BASH_PROGRAM} ${CMAKE_CURRENT_SOURCE_DIR}/test.sh "$<TARGET_FILE:intersect_fcl>" ${CMAKE_CURRENT_SOURCE_DIR})
+  add_test(NAME test.intersect_fcl COMMAND ${BASH_PROGRAM} ${CMAKE_CURRENT_SOURCE_DIR}/test.sh "$<TARGET_FILE:intersect_fcl>" ${CMAKE_CURRENT_SOURCE_DIR} "$<TARGET_FILE:comp>")
 endif()

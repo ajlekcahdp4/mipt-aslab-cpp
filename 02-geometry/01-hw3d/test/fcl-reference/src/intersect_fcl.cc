@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
     }
   }
 #else
-
+  #error "Not yet implemented"
 #endif
 
   for (const auto &v: in_collision) {

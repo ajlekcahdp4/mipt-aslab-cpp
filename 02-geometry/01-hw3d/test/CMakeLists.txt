@@ -5,6 +5,7 @@ if(Boost_FOUND)
 endif()
 
 add_subdirectory(intersect)
+add_subdirectory(comp-unordered)
 
 option(BUILD_FCL_REFERENCE OFF)
 if(${BUILD_FCL_REFERENCE})
