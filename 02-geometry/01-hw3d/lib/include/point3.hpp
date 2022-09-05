@@ -23,7 +23,7 @@ template <typename T> struct point3 {
   static point3 origin() { return {0, 0, 0}; }
 
   bool operator==(const point3 &p_other) const { return (x == p_other.x && y == p_other.y && z == p_other.z); }
-  bool operator==(const point3 &p_other) const { return !(*this == p_other); }
+  bool operator!=(const point3 &p_other) const { return !(*this == p_other); }
 };
 
 } // namespace geometry

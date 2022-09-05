@@ -30,8 +30,8 @@ template <typename T> struct aabb {
       : m_center{p_center}, m_halfwidth_x{half_x}, m_halfwidth_y{half_y}, m_halfwidth_z{half_z} {}
 
   aabb(const point_type &first, const point_type &second)
-      : m_center{first + T{0.5f} * (second - first)}, m_halfwidth_x{std::abs(first.x - second.x)},
-        m_halfwidth_y{std::abs(first.y - second.y)}, m_halfwidth_z(std::abs(first.z - second.z)) {}
+      : m_center{first + T{0.5f} * (second - first)}, m_halfwidth_x{std::abs(first.x - second.x) / T{2.0f}},
+        m_halfwidth_y{std::abs(first.y - second.y) / T{2.0f}}, m_halfwidth_z{std::abs(first.z - second.z) / T{2.0f}} {}
 
   template <typename... Ts, typename = std::enable_if_t<std::conjunction_v<std::is_convertible<Ts, point_type>...>>>
   aabb(Ts... points)

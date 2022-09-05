@@ -92,7 +92,7 @@ TEST(TestAABB, test_variadic_constructor) {
   AABB a{point{1, 2, 3}, point{4, 5, 6}, point{7, 8, 9}};
 
   EXPECT_TRUE(is_roughly_equal(a.m_center, {4, 5, 6}));
-  EXPECT_TRUE(is_roughly_equal(a.m_halfwidth_x, 6.0));
-  EXPECT_TRUE(is_roughly_equal(a.m_halfwidth_y, 6.0));
-  EXPECT_TRUE(is_roughly_equal(a.m_halfwidth_z, 6.0));
+  EXPECT_TRUE(is_roughly_equal(a.m_halfwidth_x, 6.0 / 2));
+  EXPECT_TRUE(is_roughly_equal(a.m_halfwidth_y, 6.0 / 2));
+  EXPECT_TRUE(is_roughly_equal(a.m_halfwidth_z, 6.0 / 2));
 }
