@@ -32,6 +32,11 @@ bool are_all_true(Ts... args) {
   return (... && args);
 }
 
+template <typename... Ts>
+bool are_all_roughly_zero(Ts... args) {
+  return are_all_true(is_roughly_equal(args, 0)...);
+}
+
 template <typename... Ts> bool are_same_sign(Ts... args) {
   return (are_all_true(std::greater{}(args, 0)...) || are_all_true(std::less{}(args, 0)...));
 }

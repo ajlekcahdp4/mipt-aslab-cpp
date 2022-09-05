@@ -20,7 +20,7 @@
 namespace throttle {
 namespace geometry {
 
-template <typename T> struct triangle {
+template <typename T> struct triangle3 {
   using point_type = point3<T>;
   using vec_type = vec3<T>;
   using plane_type = plane<T>;

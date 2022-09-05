@@ -22,12 +22,12 @@
 #include "primitives/triangle.hpp"
 
 using plane = throttle::geometry::plane<float>;
-using triangle = throttle::geometry::triangle<float>;
+using triangle3 = throttle::geometry::triangle3<float>;
 
 using throttle::geometry::is_roughly_equal;
 
 TEST(test_triangle, test_1) {
-  triangle t{{1, 2, 3}, {-1, 2, 3}, {5, 8, -1}};
+  triangle3 t{{1, 2, 3}, {-1, 2, 3}, {5, 8, -1}};
   EXPECT_FALSE(t.lies_on_one_side(plane::plane_xy()));
   EXPECT_FALSE(t.lies_on_one_side(plane::plane_yz()));
   EXPECT_TRUE(t.lies_on_one_side(plane::plane_xz()));
