@@ -10,7 +10,7 @@ set(UNIT_TEST_SOURCES
   test/test_equal.cc
   test/test_vec.cc
   test/test_plane.cc
-  test/test_triangle.cc
+  test/test_triangle3.cc
   test/test_aabb.cc
 )
 

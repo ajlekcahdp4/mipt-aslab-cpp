@@ -30,7 +30,7 @@ template <typename T> bool triangle_triangle_intersect(const triangle3<T> &t1, c
     return false;
   }
 
-  // 4. Compute the plane pi2 of the second triangle
+  // 4. Same as 1
   auto pi2 = t2.plane_of();
 
   // 5. Compute djstances from t1 to pi2
@@ -43,13 +43,14 @@ template <typename T> bool triangle_triangle_intersect(const triangle3<T> &t1, c
     return false;
   }
 
-  // 6. Here we check if triangles are coplanar. If they are then they are projected onto the most alligned coordinate plane and a 2d intersection test is performed.
+  // 6. Same as 3
   if (are_all_roughly_zero(d_1_a, d_1_b, d_1_c)) {
     return false; // TODO[]: Placeholder
   }
 
   // 7. If we get here than all early rejection tests failed and 2 triangles intersect the plane of the other.
   auto d = cross(pi1.normal(), pi2.normal());
+  auto [index, max] = d.max_component();
 }
 
 } // namespace geometry

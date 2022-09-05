@@ -14,6 +14,24 @@
 #include <type_traits>
 
 namespace throttle {
+
+template <typename T> T vmin(const T& a) {
+  return a;
+}
+
+template <typename T, typename... Ts, typename = std::enable_if_t<std::conjunction_v<std::is_same<T, Ts>...>>> T vmin(const T& a, const T& b, Ts... args) {
+  return ((a > b) ? vmin(b, args...) : vmin(a, args...));
+}
+
+template <typename T> T vmax(const T& a) {
+  return a;
+}
+
+template <typename T, typename... Ts, typename = std::enable_if_t<std::conjunction_v<std::is_same<T, Ts>...>>> T vmax(const T& a, const T& b, Ts... args) {
+  return ((a < b) ? vmax(b, args...) : vmax(a, args...));
+}
+
+
 namespace geometry {
 
 // Precision to be used for floating point comparisons
@@ -24,7 +42,7 @@ bool is_roughly_equal(T p_first, T p_second, T p_precision = default_precision<T
   using std::abs;
   using std::max;
   T epsilon = p_precision;
-  return (abs(p_first - p_second) <= epsilon * max({abs(p_first), abs(p_second), T{1.0}}));
+  return (abs(p_first - p_second) <= epsilon * vmax(abs(p_first), abs(p_second), T{1}));
 };
 
 template <typename... Ts, typename = std::enable_if_t<std::conjunction_v<std::is_convertible<bool, Ts>...>>>
@@ -34,7 +52,7 @@ bool are_all_true(Ts... args) {
 
 template <typename... Ts>
 bool are_all_roughly_zero(Ts... args) {
-  return are_all_true(is_roughly_equal(args, 0)...);
+  return are_all_true((is_roughly_equal<Ts>(args, 0))...);
 }
 
 template <typename... Ts> bool are_same_sign(Ts... args) {

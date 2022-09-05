@@ -11,6 +11,7 @@
 #pragma once
 
 #include <cmath>
+#include <utility>
 
 namespace throttle {
 namespace geometry {
@@ -39,6 +40,22 @@ template <typename T> struct vec3 {
                                             x * rhs.y - y * rhs.x}; }
 
   vec3 project(const vec3 &p_axis) { T length = p_axis.length_sq(); return ( length ? dot(p_axis) / length * p_axis : zero()); }
+
+  std::pair<unsigned, T> max_component() const {
+    unsigned index = 0; T max = std::abs(x);
+    if (std::abs(y) > max) { max = std::abs(y); index = 1; }
+    if (std::abs(z) > max) { max = std::abs(z); index = 2; }
+    return std::make_pair(index, max);
+  }
+
+  T get_at_index(unsigned index) const {
+    switch (index) {
+      case 0: return x;
+      case 1: return y;
+      case 2: return z;
+      default: return T{0};
+    }
+  }
 
   vec3 &operator+=(const vec3 &rhs) { x += rhs.x; y += rhs.y; z += rhs.z; return *this; }
   vec3 &operator-=(const vec3 &rhs) { return *this += rhs.neg(); }

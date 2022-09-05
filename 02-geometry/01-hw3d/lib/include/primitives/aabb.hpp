@@ -13,6 +13,7 @@
 
 #include "point3.hpp"
 #include "vec3.hpp"
+#include "equal.hpp"
 
 namespace throttle {
 namespace geometry {
@@ -35,8 +36,8 @@ template <typename T> struct aabb {
 
   template <typename... Ts, typename = std::enable_if_t<std::conjunction_v<std::is_convertible<Ts, point_type>...>>>
   aabb(Ts... points)
-      : aabb(point_type{std::min({points.x...}), std::min({points.y...}), std::min({points.z...})},
-             point_type{std::max({points.x...}), std::max({points.y...}), std::max({points.z...})}) {}
+      : aabb(point_type{vmin(points.x...), vmin(points.y...), vmin(points.z...)},
+             point_type{vmax(points.x...), vmax(points.y...), vmax(points.z...)}) {}
 
   bool test_intersect(aabb a) const {
     if (std::abs(m_center.x - a.m_center.x) > (m_halfwidth_x + a.m_halfwidth_x)) return false;
