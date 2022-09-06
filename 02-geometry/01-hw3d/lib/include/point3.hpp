@@ -22,6 +22,24 @@ template <typename T> struct point3 {
 
   static point3 origin() { return {0, 0, 0}; }
 
+  // clang-format off
+  std::pair<unsigned, T> max_component() const {
+    unsigned index = 0; T max = std::abs(x);
+    if (std::abs(y) > max) { max = std::abs(y); index = 1; }
+    if (std::abs(z) > max) { max = std::abs(z); index = 2; }
+    return std::make_pair(index, max);
+  }
+
+  T get_at_index(unsigned index) const {
+    switch (index) {
+      case 0: return x;
+      case 1: return y;
+      case 2: return z;
+      default: return T{0};
+    }
+  }
+  // clang-format on
+
   bool operator==(const point3 &p_other) const { return (x == p_other.x && y == p_other.y && z == p_other.z); }
   bool operator!=(const point3 &p_other) const { return !(*this == p_other); }
 };
