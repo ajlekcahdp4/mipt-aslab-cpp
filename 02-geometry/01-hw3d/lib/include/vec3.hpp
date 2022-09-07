@@ -65,6 +65,15 @@ template <typename T> struct vec3 {
 };
 // clang-format on
 
+} // namespace geometry
+} // namespace throttle
+
+#include "point3.hpp"
+#include "equal.hpp"
+
+namespace throttle {
+namespace geometry {
+
 template <typename T> T       dot(vec3<T> lhs, vec3<T> rhs) { return lhs.dot(rhs); }
 template <typename T> vec3<T> cross(vec3<T> lhs, vec3<T> rhs) { return lhs.cross(rhs); }
 
@@ -75,13 +84,6 @@ template <typename T> vec3<T> operator*(const vec3<T> &lhs, T rhs) { return {lhs
 template <typename T> vec3<T> operator*(T lhs, const vec3<T> &rhs) { return {rhs.x * lhs, rhs.y * lhs, rhs.z * lhs}; }
 template <typename T> vec3<T> operator/(const vec3<T> &lhs, T rhs) { return {lhs.x / rhs, lhs.y / rhs, lhs.z / rhs}; }
 
-} // namespace geometry
-} // namespace throttle
-
-#include "equal.hpp"
-
-namespace throttle {
-namespace geometry {
 
 template <typename T>
 bool colinear(const vec3<T> &lhs, const vec3<T> &rhs,

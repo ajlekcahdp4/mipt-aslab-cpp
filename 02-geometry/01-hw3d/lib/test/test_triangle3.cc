@@ -19,7 +19,7 @@
 
 #include "equal.hpp"
 #include "primitives/plane.hpp"
-#include "primitives/triangle.hpp"
+#include "primitives/triangle3.hpp"
 
 using plane = throttle::geometry::plane<float>;
 using triangle3 = throttle::geometry::triangle3<float>;

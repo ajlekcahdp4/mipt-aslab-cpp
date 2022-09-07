@@ -11,7 +11,7 @@
 #pragma once
 
 #include "primitives/plane.hpp"
-#include "primitives/triangle.hpp"
+#include "primitives/triangle3.hpp"
 
 #include <utility>
 #include <cassert>
