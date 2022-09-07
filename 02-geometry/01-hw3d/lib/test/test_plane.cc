@@ -23,6 +23,8 @@
 using plane = throttle::geometry::plane<float>;
 using throttle::geometry::is_roughly_equal;
 
+template class throttle::geometry::plane<float>;
+
 TEST(test_plane, test_1) {
   plane p{plane::point_type{1, 2, 2}, plane::vec_type{1, 0, 0}, plane::vec_type{0, 1, 0}};
   EXPECT_TRUE(is_roughly_equal(p.distance_origin(), 2.0f));
@@ -39,7 +41,8 @@ TEST(test_plane, test_2) {
   EXPECT_TRUE(is_roughly_equal(std::abs(c.distance_origin()), 1.0f / std::sqrt(14.0f)));
   EXPECT_TRUE(colinear(c.normal(), (-1.0f) * plane::vec_type{2, 1, 3}.norm()));
 
-  EXPECT_TRUE(is_roughly_equal(throttle::geometry::distance_from_plane(c, {128.0f, 11.0f, 5.0f}), 283.0f / std::sqrt(14.0f)));
+  EXPECT_TRUE(
+      is_roughly_equal(throttle::geometry::distance_from_plane(c, {128.0f, 11.0f, 5.0f}), 283.0f / std::sqrt(14.0f)));
 }
 
 TEST(test_plane, test_3) {

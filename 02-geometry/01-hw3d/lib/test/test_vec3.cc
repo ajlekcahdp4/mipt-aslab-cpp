@@ -21,6 +21,8 @@
 using vec = throttle::geometry::vec3<float>;
 using namespace throttle::geometry;
 
+template class throttle::geometry::vec3<float>;
+
 TEST(test_vec3, test_1) {
   vec a = vec::axis_i(), b = vec::axis_j();
   EXPECT_TRUE(is_roughly_equal(cross(a, b), vec::axis_k()));

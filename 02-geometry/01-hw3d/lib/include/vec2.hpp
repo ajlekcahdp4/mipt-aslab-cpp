@@ -38,7 +38,15 @@ template <typename T> struct vec2 {
 
   std::pair<unsigned, T> max_component() const { return (x > y ? std::make_pair(0, x) : std::make_pair(1, y)); }
 
-  T get_at_index(unsigned index) const {
+  T &operator[](unsigned index) {
+    switch (index) {
+      case 0: return x;
+      case 1: return y;
+      default: return T{0};
+    }
+  }
+
+  const T &operator[](unsigned index) const {
     switch (index) {
       case 0: return x;
       case 1: return y;
@@ -57,8 +65,8 @@ template <typename T> struct vec2 {
 } // namespace geometry
 } // namespace throttle
 
-#include "point2.hpp"
 #include "equal.hpp"
+#include "point2.hpp"
 
 namespace throttle {
 namespace geometry {

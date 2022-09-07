@@ -18,8 +18,10 @@
 #include "primitives/aabb.hpp"
 
 using AABB = typename throttle::geometry::aabb<double>;
-
 using namespace throttle::geometry;
+
+template class throttle::geometry::aabb<float>;
+
 TEST(TestAABB, test_intersect_1) {
   AABB a{{0, 0, 0}, 0.5, 0.5, 0.5};
   AABB b{{100, 100, 100}, 1, 2, 3};

@@ -23,14 +23,18 @@ template <typename T> struct point3 {
   static point3 origin() { return {0, 0, 0}; }
 
   // clang-format off
-  std::pair<unsigned, T> max_component() const {
-    unsigned index = 0; T max = std::abs(x);
-    if (std::abs(y) > max) { max = std::abs(y); index = 1; }
-    if (std::abs(z) > max) { max = std::abs(z); index = 2; }
-    return std::make_pair(index, max);
+  std::pair<unsigned, T> max_component() const { return (*this - origin()).max_component(); }
+
+  T &operator[](unsigned index) {
+    switch (index) {
+      case 0: return x;
+      case 1: return y;
+      case 2: return z;
+      default: return T{0};
+    }
   }
 
-  T get_at_index(unsigned index) const {
+  const T &operator[](unsigned index) const {
     switch (index) {
       case 0: return x;
       case 1: return y;
