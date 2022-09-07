@@ -48,12 +48,21 @@ template <typename T> struct vec3 {
     return std::make_pair(index, max);
   }
 
-  T get_at_index(unsigned index) const {
+  T &operator[](unsigned index) {
     switch (index) {
       case 0: return x;
       case 1: return y;
       case 2: return z;
-      default: return T{0};
+      default: throw std::out_of_range("Incorrect coordinate of vec3 was requested.");
+    }
+  }
+
+  const T &operator[](unsigned index) const {
+    switch (index) {
+      case 0: return x;
+      case 1: return y;
+      case 2: return z;
+      default: throw std::out_of_range("Incorrect coordinate of vec3 was requested.");
     }
   }
 
@@ -68,8 +77,8 @@ template <typename T> struct vec3 {
 } // namespace geometry
 } // namespace throttle
 
-#include "point3.hpp"
 #include "equal.hpp"
+#include "point3.hpp"
 
 namespace throttle {
 namespace geometry {
@@ -83,7 +92,6 @@ template <typename T> vec3<T> operator-(const vec3<T> &lhs, const vec3<T> &rhs) 
 template <typename T> vec3<T> operator*(const vec3<T> &lhs, T rhs) { return {lhs.x * rhs, lhs.y * rhs, lhs.z * rhs}; }
 template <typename T> vec3<T> operator*(T lhs, const vec3<T> &rhs) { return {rhs.x * lhs, rhs.y * lhs, rhs.z * lhs}; }
 template <typename T> vec3<T> operator/(const vec3<T> &lhs, T rhs) { return {lhs.x / rhs, lhs.y / rhs, lhs.z / rhs}; }
-
 
 template <typename T>
 bool colinear(const vec3<T> &lhs, const vec3<T> &rhs,

@@ -30,7 +30,7 @@ template <typename T> struct point3 {
       case 0: return x;
       case 1: return y;
       case 2: return z;
-      default: return T{0};
+      default: throw std::out_of_range("Incorrect coordinate of point3 was requested.");
     }
   }
 
@@ -39,7 +39,7 @@ template <typename T> struct point3 {
       case 0: return x;
       case 1: return y;
       case 2: return z;
-      default: return T{0};
+      default: throw std::out_of_range("Incorrect coordinate of point3 was requested.");
     }
   }
   // clang-format on
