@@ -27,7 +27,7 @@ using plane = throttle::geometry::plane<float>;
 using triangle3 = throttle::geometry::triangle3<float>;
 using throttle::geometry::is_roughly_equal;
 
-template class throttle::geometry::triangle3<float>;
+template struct throttle::geometry::triangle3<float>;
 
 TEST(test_triangle, test_1) {
   triangle3 t{{1, 2, 3}, {-1, 2, 3}, {5, 8, -1}};

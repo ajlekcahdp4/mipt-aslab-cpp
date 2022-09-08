@@ -26,7 +26,7 @@ using vec = typename throttle::geometry::vec2<float>;
 
 using namespace throttle::geometry;
 
-template class throttle::geometry::segment2<float>;
+template struct throttle::geometry::segment2<float>;
 
 TEST(test_segment2, test_contain_point) {
   segment_type a({0, 0}, {0, 10});

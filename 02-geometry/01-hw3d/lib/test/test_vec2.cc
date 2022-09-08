@@ -21,7 +21,7 @@
 using vec = throttle::geometry::vec2<float>;
 using namespace throttle::geometry;
 
-template class throttle::geometry::vec2<float>;
+template struct throttle::geometry::vec2<float>;
 
 TEST(test_vec2, test_colinear) {
   vec a{1, 2};
