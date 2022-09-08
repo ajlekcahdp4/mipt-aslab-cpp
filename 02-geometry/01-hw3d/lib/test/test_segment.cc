@@ -32,6 +32,6 @@ TEST(test_segment, test_contain_point) {
   segment_type a({0, 0, 0}, {0, 0, 10});
   point        p1{0, 0, 5};
   point        p2{0, 0, 11};
-  EXPECT_TRUE(a.contain(p1));
-  EXPECT_FALSE(a.contain(p2));
+  EXPECT_TRUE(a.contains(p1));
+  EXPECT_FALSE(a.contains(p2));
 }
