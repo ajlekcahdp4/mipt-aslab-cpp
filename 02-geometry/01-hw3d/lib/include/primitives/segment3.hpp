@@ -16,14 +16,14 @@
 namespace throttle {
 namespace geometry {
 
-template <typename T> struct segment {
+template <typename T> struct segment3 {
   using vec_type = vec3<T>;
   using point_type = point3<T>;
 
   point_type m_a;
   point_type m_b;
 
-  segment(const point_type &p_start, const vec_type &p_dir) : m_a{p_start}, m_b{p_start + p_dir} {}
+  segment3(const point_type &p_start, const vec_type &p_dir) : m_a{p_start}, m_b{p_start + p_dir} {}
 
   bool contain(const point_type &point) const {
     auto segment_vec = m_b - m_a;

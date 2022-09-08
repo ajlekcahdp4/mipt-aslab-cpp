@@ -17,16 +17,16 @@
 
 #include "equal.hpp"
 #include "point3.hpp"
-#include "primitives/segment.hpp"
+#include "primitives/segment3.hpp"
 #include "vec3.hpp"
 
-using segment_type = typename throttle::geometry::segment<float>;
+using segment_type = typename throttle::geometry::segment3<float>;
 using point = typename throttle::geometry::point3<float>;
 using vec = typename throttle::geometry::vec3<float>;
 
 using namespace throttle::geometry;
 
-template class throttle::geometry::segment<float>;
+template struct throttle::geometry::segment3<float>;
 
 TEST(test_segment, test_contain_point) {
   segment_type a({0, 0, 0}, {0, 0, 10});
