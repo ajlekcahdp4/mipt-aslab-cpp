@@ -23,8 +23,7 @@ template <typename T> struct point2 {
 
   std::pair<unsigned, T> max_component() const { return (*this - origin()).max_component(); }
 
-  T &operator[](unsigned index) { return (*this - origin())[index]; }
-
+  T       &operator[](unsigned index) { return (*this - origin())[index]; }
   const T &operator[](unsigned index) const { return (*this - origin())[index]; }
 
   bool operator==(const point2 &p_other) const { return (x == p_other.x && y == p_other.y); }
