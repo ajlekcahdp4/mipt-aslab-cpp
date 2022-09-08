@@ -45,7 +45,7 @@ public:
 };
 
 template <typename T> T signed_distance_from_plane(const plane<T> &p_plane, const point3<T> &p_point) {
-  return p_plane.signed_distance_to(p_point);
+  return p_plane.signed_distance(p_point);
 }
 
 template <typename T> T distance_from_plane(const plane<T> &p_plane, const point3<T> &p_point) {

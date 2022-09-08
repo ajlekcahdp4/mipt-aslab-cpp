@@ -23,7 +23,7 @@
 using plane = throttle::geometry::plane<float>;
 using throttle::geometry::is_roughly_equal;
 
-template class throttle::geometry::plane<float>;
+template struct throttle::geometry::plane<float>;
 
 TEST(test_plane, test_1) {
   plane p{plane::point_type{1, 2, 2}, plane::vec_type{1, 0, 0}, plane::vec_type{0, 1, 0}};
