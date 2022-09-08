@@ -13,22 +13,45 @@
 #include "primitives/plane.hpp"
 #include "primitives/triangle3.hpp"
 
-#include <utility>
+#include <algorithm>
+#include <array>
 #include <cassert>
+#include <utility>
 
 namespace throttle {
 namespace geometry {
 
 namespace detail {
-  template <typename T>
-  std::pair<T, T> compute_interval(T p_a, T p_b, T p_c, T d_a, T d_b, T d_c) {
-    assert(!are_same_sign(d_a, d_b, d_c));
-    if (are_same_sign(d_a, d_c)) {
-      
-    }
-  }
+template <typename T> std::pair<T, T> compute_interval(T p_a, T p_b, T p_c, T d_a, T d_b, T d_c) {
+  assert(!are_same_sign(d_a, d_b, d_c));
+  if (are_same_sign(d_a, d_c)) {}
 }
 
+// Rearrange triangle vertices
+template <typename T> triangle3<T> canonical_triangle(const triangle3<T> &p_tri, std::array<T, 3> &p_dist) {
+#ifndef NDEBUG
+  auto arr = p_dist;
+  std::sort(arr.begin(), arr.end());
+  assert(arr[0] != 0);
+  assert(arr[1] != 0);
+  assert(arr[2] != 0);
+#endif
+
+  auto greater_count = std::count_if(p_dist.begin(), p_dist.end(), [](T elem) { return elem > 0; });
+  switch (greater_count) {
+  case 1: break; // clang-format off
+  case 2: { std::for_each(p_dist.begin(), p_dist.end(), [](T &elem) { elem *= -1; }); break; } // clang-format on
+  default: throw std::invalid_argument("Elements of distance array should all be of different signs.");
+  }
+
+  auto max_index = std::distance(p_dist.begin(), std::max_element(p_dist.begin(), p_dist.end()));
+  switch (max_index) {
+  case 0: return triangle3<T>{p_tri.a, p_tri.b, p_tri.c};
+  case 1: return triangle3<T>{p_tri.b, p_tri.a, p_tri.c};
+  case 2: return triangle3<T>{p_tri.c, p_tri.a, p_tri.b};
+  }
+}
+} // namespace detail
 
 template <typename T> bool triangle_triangle_intersect(const triangle3<T> &t1, const triangle3<T> &t2) {
   // 1. Compute the plane pi1 of the first triangle

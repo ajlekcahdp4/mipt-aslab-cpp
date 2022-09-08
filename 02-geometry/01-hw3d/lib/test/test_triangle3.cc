@@ -15,9 +15,11 @@
 #include <gtest/gtest.h>
 #include <numeric>
 
+#include <array>
 #include <cmath>
 
 #include "equal.hpp"
+#include "narrowphase/triangletriangle.hpp"
 #include "primitives/plane.hpp"
 #include "primitives/triangle3.hpp"
 
@@ -32,4 +34,17 @@ TEST(test_triangle, test_1) {
   EXPECT_FALSE(t.lies_on_one_side(plane::plane_xy()));
   EXPECT_FALSE(t.lies_on_one_side(plane::plane_yz()));
   EXPECT_TRUE(t.lies_on_one_side(plane::plane_xz()));
+}
+
+TEST(test_triangle, test_canonical) {
+  triangle3 t{{1, 2, 3}, {-1, 2, 3}, {5, 8, -1}};
+  plane     p{{1, 1, 1}, {0, 0, 1}};
+
+  std::array<float, 3> dist;
+  dist[0] = p.signed_distance(t.a);
+  dist[1] = p.signed_distance(t.b);
+  dist[2] = p.signed_distance(t.c);
+
+  auto c = throttle::geometry::detail::canonical_triangle(t, dist);
+  EXPECT_EQ(c.a, t.c);
 }
