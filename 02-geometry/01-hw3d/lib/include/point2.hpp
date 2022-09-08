@@ -47,7 +47,7 @@ template <typename T> point2<T> operator+(const point2<T> &lhs, const vec2<T> &r
   return {lhs.x + rhs.x, lhs.y + rhs.y};
 }
 
-template <typename T> point2<T> operator+(const vec3<T> &lhs, const point2<T> &rhs) {
+template <typename T> point2<T> operator+(const vec2<T> &lhs, const point2<T> &rhs) {
   return {lhs.x + rhs.x, lhs.y + rhs.y};
 }
 
