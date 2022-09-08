@@ -10,7 +10,9 @@
 
 #pragma once
 
+#include "point2.hpp"
 #include <cmath>
+#include <stdexcept>
 
 namespace throttle {
 namespace geometry {
@@ -20,13 +22,23 @@ template <typename T> struct point3 {
   T y;
   T z;
 
+  using point_flat_type = point2<T>;
+
   static point3 origin() { return {0, 0, 0}; }
 
   std::pair<unsigned, T> max_component() const { return (*this - origin()).max_component(); }
 
-  T &operator[](unsigned index) { return (*this - origin())[index]; }
-
+  T       &operator[](unsigned index) { return (*this - origin())[index]; }
   const T &operator[](unsigned index) const { return (*this - origin())[index]; }
+
+  point_flat_type project_coord(unsigned axis) {
+    switch (axis) {
+    case 0: return point_flat_type{y, z}; // Project onto yz plane
+    case 1: return point_flat_type{x, z}; // Project onto xz plane
+    case 2: return point_flat_type{x, y}; // Project onto xy plane
+    default: throw std::out_of_range("Axis index for point projection is out of range.");
+    }
+  }
 
   bool operator==(const point3 &p_other) const { return (x == p_other.x && y == p_other.y && z == p_other.z); }
   bool operator!=(const point3 &p_other) const { return !(*this == p_other); }

@@ -50,3 +50,15 @@ TEST(TestPoint3, TestAdd) {
   point right{11, 19, 29};
   EXPECT_EQ(res, right);
 }
+
+TEST(TestPoint3, TestCoordProject) {
+  point a{1, 3, 5};
+
+  point::point_flat_type yz{3, 5};
+  point::point_flat_type xz{1, 5};
+  point::point_flat_type xy{1, 3};
+
+  EXPECT_EQ(a.project_coord(0), yz);
+  EXPECT_EQ(a.project_coord(1), xz);
+  EXPECT_EQ(a.project_coord(2), xy);
+}
