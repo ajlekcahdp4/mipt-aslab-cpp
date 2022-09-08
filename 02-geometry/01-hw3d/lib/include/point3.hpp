@@ -22,27 +22,11 @@ template <typename T> struct point3 {
 
   static point3 origin() { return {0, 0, 0}; }
 
-  // clang-format off
   std::pair<unsigned, T> max_component() const { return (*this - origin()).max_component(); }
 
-  T &operator[](unsigned index) {
-    switch (index) {
-      case 0: return x;
-      case 1: return y;
-      case 2: return z;
-      default: throw std::out_of_range("Incorrect coordinate of point3 was requested.");
-    }
-  }
+  T &operator[](unsigned index) { return (*this - origin())[index]; }
 
-  const T &operator[](unsigned index) const {
-    switch (index) {
-      case 0: return x;
-      case 1: return y;
-      case 2: return z;
-      default: throw std::out_of_range("Incorrect coordinate of point3 was requested.");
-    }
-  }
-  // clang-format on
+  const T &operator[](unsigned index) const { return (*this - origin())[index]; }
 
   bool operator==(const point3 &p_other) const { return (x == p_other.x && y == p_other.y && z == p_other.z); }
   bool operator!=(const point3 &p_other) const { return !(*this == p_other); }
