@@ -45,11 +45,11 @@ public:
     bool greater_eq = dist_ab >= 0;
     
     T dist_bc = compute_distance_pair(b, c, point);
-    if (is_roughly_equal(dist_bc, T{0})) dist_ab = T{0};
+    if (is_roughly_equal(dist_bc, T{0})) dist_bc = T{0};
     if ((greater_eq && dist_bc < 0) || (!greater_eq && dist_bc > 0)) return false;
     
     T dist_ca = compute_distance_pair(c, a, point);
-    if (is_roughly_equal(dist_ca, T{0})) dist_ab = T{0};
+    if (is_roughly_equal(dist_ca, T{0})) dist_ca = T{0};
     if ((greater_eq && dist_ca < 0) || (!greater_eq && dist_ca > 0)) return false;
 
     return true;
