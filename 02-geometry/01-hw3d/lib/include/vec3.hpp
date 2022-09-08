@@ -99,5 +99,10 @@ bool colinear(const vec3<T> &lhs, const vec3<T> &rhs,
   return is_roughly_equal(cross(lhs, rhs), vec3<T>::zero(), p_tolerance);
 }
 
+template <typename T>
+bool co_directional(const vec3<T> &lhs, const vec3<T> &rhs,
+                    T p_tolerance = ::throttle::geometry::default_precision<T>::m_prec) {
+  return (colinear(lhs, rhs, p_tolerance) && dot(lhs, rhs) > 0);
+}
 } // namespace geometry
 } // namespace throttle
