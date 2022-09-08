@@ -26,8 +26,6 @@ template <typename T> struct triangle2 {
   point_type b;
   point_type c;
 
-  triangle2(point_type a_, point_type b_, point_type c_) : a(a_), b(b_), c(c_) {}
-
   bool operator==(const triangle2 &other) const { return (a == other.a && b == other.b && c = other.c); }
   bool operator!=(const triangle2 &other) const { return (*this == other); }
 };
