@@ -31,9 +31,7 @@ template <typename T> struct triangle3 {
 
   plane_type plane_of() const { return plane_type{a, b, c}; }
 
-  bool lies_on_one_side(const plane_type &p_plane) const {
-    return lie_on_the_same_side(p_plane, a, b, c);
-  }
+  bool lies_on_one_side(const plane_type &p_plane) const { return lie_on_the_same_side(p_plane, a, b, c); }
 };
 
 } // namespace geometry
