@@ -63,3 +63,14 @@ TEST(test_vec2, test_project_on_zero) {
 
   EXPECT_EQ(proj, zero);
 }
+
+TEST(test_vec2, test_co_directional) {
+  vec a{1, 2};
+  vec b{1, -2};
+  vec c{-1, -2};
+  vec d{2, 4};
+
+  EXPECT_FALSE(co_directional(a, b));
+  EXPECT_FALSE(co_directional(a, c));
+  EXPECT_TRUE(co_directional(a, d));
+}

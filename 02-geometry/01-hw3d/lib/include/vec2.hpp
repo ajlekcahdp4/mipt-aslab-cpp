@@ -84,5 +84,11 @@ bool colinear(const vec2<T> &lhs, const vec2<T> &rhs,
   return is_roughly_equal(lhs.x * rhs.y, lhs.y * rhs.x, p_tolerance);
 }
 
+template <typename T>
+bool co_directional(const vec2<T> &lhs, const vec2<T> &rhs,
+                    T p_tolerance = ::throttle::geometry::default_precision<T>::m_prec) {
+  return (colinear(lhs, rhs, p_tolerance) && dot(lhs, rhs) > 0);
+}
+
 } // namespace geometry
 } // namespace throttle

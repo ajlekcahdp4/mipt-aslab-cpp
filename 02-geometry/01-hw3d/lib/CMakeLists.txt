@@ -15,7 +15,8 @@ set(UNIT_TEST_SOURCES
   test/test_plane.cc
   test/test_triangle3.cc
   test/test_aabb.cc
-  test/test_segment.cc
+  test/test_segment3.cc
+  test/test_segment2.cc
 )
 
 if (ENABLE_GTEST)

@@ -7,25 +7,25 @@
  * return.
  * ----------------------------------------------------------------------------
  */
+
 #pragma once
 
-#include <cmath>
+#include "point2.hpp"
+#include "vec2.hpp"
 
-#include "point3.hpp"
-#include "vec3.hpp"
 namespace throttle {
 namespace geometry {
 
-template <typename T> struct segment3 {
-  using vec_type = vec3<T>;
-  using point_type = point3<T>;
+template <typename T> struct segment2 {
+  using vec_type = vec2<T>;
+  using point_type = point2<T>;
 
   point_type m_a;
   point_type m_b;
 
-  segment3(const point_type &p_start, const vec_type &p_dir) : m_a{p_start}, m_b{p_start + p_dir} {}
+  segment2(const point_type &p_start, const vec_type &p_dir) : m_a(p_start), m_b(p_start + p_dir) {}
 
-  bool contains(const point_type &point) const {
+  bool contain(const point_type &point) const {
     auto segment_vec = m_b - m_a;
     auto vec = m_b - point;
     return (co_directional(segment_vec, vec) && segment_vec.length_sq() > vec.length_sq());

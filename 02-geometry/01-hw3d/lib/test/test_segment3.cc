@@ -28,7 +28,7 @@ using namespace throttle::geometry;
 
 template struct throttle::geometry::segment3<float>;
 
-TEST(test_segment, test_contain_point) {
+TEST(test_segment3, test_contain_point) {
   segment_type a({0, 0, 0}, {0, 0, 10});
   point        p1{0, 0, 5};
   point        p2{0, 0, 11};
