@@ -29,6 +29,25 @@ template struct throttle::geometry::triangle2<float>;
 
 TEST(test_triangle2, test_1) {
   triangle2 t{{0, 0}, {2, 6}, {4, -1}};
+
+  EXPECT_TRUE(t.point_in_triangle({1, 3}));
+  EXPECT_TRUE(t.point_in_triangle({2, 1}));
+  EXPECT_FALSE(t.point_in_triangle({0, 1}));
+  EXPECT_TRUE(t.point_in_triangle({0, 0}));
+  EXPECT_TRUE(t.point_in_triangle({2, 6}));
+  EXPECT_TRUE(t.point_in_triangle({4, -1}));
+
+  std::swap(t.a, t.b);
+
+  EXPECT_TRUE(t.point_in_triangle({1, 3}));
+  EXPECT_TRUE(t.point_in_triangle({2, 1}));
+  EXPECT_FALSE(t.point_in_triangle({0, 1}));
+  EXPECT_TRUE(t.point_in_triangle({0, 0}));
+  EXPECT_TRUE(t.point_in_triangle({2, 6}));
+  EXPECT_TRUE(t.point_in_triangle({4, -1}));
+
+  std::swap(t.b, t.c);
+
   EXPECT_TRUE(t.point_in_triangle({1, 3}));
   EXPECT_TRUE(t.point_in_triangle({2, 1}));
   EXPECT_FALSE(t.point_in_triangle({0, 1}));

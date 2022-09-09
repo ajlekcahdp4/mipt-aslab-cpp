@@ -28,11 +28,13 @@ template <typename T> struct vec2 {
 
   vec2 neg() const { return vec2{x * -1, y * -1}; }
   vec2 norm() const { T length = vec2::length(); return (length ? vec2{x / length, y / length} : *this); }
+  vec2 perp() const { return vec2{-y, x}; }
 
   T length_sq() const { return dot(*this); }
   T length() const { return std::sqrt(length_sq()); }
 
   T dot(const vec2 &rhs) const { return x * rhs.x + y * rhs.y; }
+  T perp_dot(const vec2 &rhs) const { return rhs.dot(perp()); }
   vec2 project(const vec2 &p_axis) { T length = p_axis.length_sq(); return ( length ? dot(p_axis) / length * p_axis : zero()); }
   std::pair<unsigned, T> max_component() const { return (x > y ? std::make_pair(0, x) : std::make_pair(1, y)); }
 
@@ -70,6 +72,7 @@ namespace throttle {
 namespace geometry {
 
 template <typename T> T dot(vec2<T> lhs, vec2<T> rhs) { return lhs.dot(rhs); }
+template <typename T> T perp_dot(vec2<T> lhs, vec2<T> rhs) { return lhs.perp_dot(rhs); }
 
 template <typename T> vec2<T> operator+(const vec2<T> &lhs, const vec2<T> &rhs) { return vec2<T>{lhs} += rhs; }
 template <typename T> vec2<T> operator-(const vec2<T> &lhs, const vec2<T> &rhs) { return vec2<T>{lhs} -= rhs; }

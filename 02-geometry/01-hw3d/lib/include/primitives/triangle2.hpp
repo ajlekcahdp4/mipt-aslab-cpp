@@ -10,12 +10,12 @@
 
 #pragma once
 
-#include <cmath>
 #include <cassert>
+#include <cmath>
 
+#include "equal.hpp"
 #include "point2.hpp"
 #include "vec2.hpp"
-#include "equal.hpp"
 
 namespace throttle {
 namespace geometry {
@@ -31,26 +31,30 @@ template <typename T> struct triangle2 {
   bool operator==(const triangle2 &other) const { return (a == other.a && b == other.b && c == other.c); }
   bool operator!=(const triangle2 &other) const { return (*this == other); }
 
-private:  
-  T compute_distance_pair(const point_type& first, const point_type& second, const point_type &point) const {
-    vec_type radius = point - first, dir = (second - first).norm(), norm = vec_type{dir.y, -dir.x};
+private:
+  static T compute_distance_pair(const point_type &first, const point_type &second, const point_type &point) {
+    vec_type radius = point - first, dir = (second - first).norm(), norm = dir.perp();
     vec_type proj = dir * dot(dir, radius), perp_component = radius - proj;
     return (dot(norm, perp_component) > 0 ? perp_component.length() : -perp_component.length());
   }
 
 public:
   bool point_in_triangle(const point_type &point) const {
-    T dist_ab = compute_distance_pair(a, b, point);
-    if (is_roughly_equal(dist_ab, T{0})) dist_ab = T{0};
-    bool greater_eq = dist_ab >= 0;
-    
-    T dist_bc = compute_distance_pair(b, c, point);
-    if (is_roughly_equal(dist_bc, T{0})) dist_bc = T{0};
-    if ((greater_eq && dist_bc < 0) || (!greater_eq && dist_bc > 0)) return false;
-    
-    T dist_ca = compute_distance_pair(c, a, point);
-    if (is_roughly_equal(dist_ca, T{0})) dist_ca = T{0};
-    if ((greater_eq && dist_ca < 0) || (!greater_eq && dist_ca > 0)) return false;
+    // Step 1. Check if the vectors ab and ac for a right oriented basis.
+    T         perp_product = perp_dot(b - a, c - a);
+    triangle2 right = (perp_product > 0 ? triangle2{a, b, c} : triangle2{a, c, b});
+
+#ifndef NDEBUG
+    T new_perp = perp_dot(right.b - right.a, right.c - right.a);
+    assert(new_perp > 0);
+#endif
+
+    T dist_ab = compute_distance_pair(right.a, right.b, point);
+    if (dist_ab < 0 && !is_roughly_equal(dist_ab, T{0})) return false;
+    T dist_bc = compute_distance_pair(right.b, right.c, point);
+    if (dist_bc < 0 && !is_roughly_equal(dist_bc, T{0})) return false;
+    T dist_ca = compute_distance_pair(right.c, right.a, point);
+    if (dist_ca < 0 && !is_roughly_equal(dist_ca, T{0})) return false;
 
     return true;
   }
