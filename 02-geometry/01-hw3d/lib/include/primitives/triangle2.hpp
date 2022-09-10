@@ -45,11 +45,11 @@ public:
 #endif
 
     T dist_ab = segment_type{right.a, right.b}.signed_distance(point);
-    if (is_definitely_less_eq(dist_ab, T{0})) return false;
+    if (is_definitely_less(dist_ab, T{0})) return false;
     T dist_bc = segment_type{right.b, right.c}.signed_distance(point);
-    if (is_definitely_less_eq(dist_bc, T{0})) return false;
+    if (is_definitely_less(dist_bc, T{0})) return false;
     T dist_ca = segment_type{right.c, right.a}.signed_distance(point);
-    if (is_definitely_less_eq(dist_ca, T{0})) return false;
+    if (is_definitely_less(dist_ca, T{0})) return false;
 
     return true;
   }

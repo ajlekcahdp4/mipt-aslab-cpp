@@ -51,7 +51,7 @@ bool is_roughly_greater_eq(T p_first, T p_second, T p_precision = default_precis
 };
 
 template <typename T, typename = std::enable_if_t<std::is_floating_point_v<T>>>
-bool is_definitely_less_eq(T p_first, T p_second, T p_precision = default_precision<T>::m_prec) {
+bool is_definitely_less(T p_first, T p_second, T p_precision = default_precision<T>::m_prec) {
   return !(is_roughly_greater_eq(p_first, p_second, p_precision));
 };
 
