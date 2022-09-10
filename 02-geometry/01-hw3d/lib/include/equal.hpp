@@ -15,22 +15,19 @@
 
 namespace throttle {
 
-template <typename T> T vmin(const T& a) {
-  return a;
-}
+template <typename T> T vmin(const T &a) { return a; }
 
-template <typename T, typename... Ts, typename = std::enable_if_t<std::conjunction_v<std::is_same<T, Ts>...>>> T vmin(const T& a, const T& b, Ts... args) {
+template <typename T, typename... Ts, typename = std::enable_if_t<std::conjunction_v<std::is_same<T, Ts>...>>>
+T vmin(const T &a, const T &b, Ts... args) {
   return ((a > b) ? vmin(b, args...) : vmin(a, args...));
 }
 
-template <typename T> T vmax(const T& a) {
-  return a;
-}
+template <typename T> T vmax(const T &a) { return a; }
 
-template <typename T, typename... Ts, typename = std::enable_if_t<std::conjunction_v<std::is_same<T, Ts>...>>> T vmax(const T& a, const T& b, Ts... args) {
+template <typename T, typename... Ts, typename = std::enable_if_t<std::conjunction_v<std::is_same<T, Ts>...>>>
+T vmax(const T &a, const T &b, Ts... args) {
   return ((a < b) ? vmax(b, args...) : vmax(a, args...));
 }
-
 
 namespace geometry {
 
@@ -45,13 +42,25 @@ bool is_roughly_equal(T p_first, T p_second, T p_precision = default_precision<T
   return (abs(p_first - p_second) <= epsilon * vmax(abs(p_first), abs(p_second), T{1}));
 };
 
+template <typename T, typename = std::enable_if_t<std::is_floating_point_v<T>>>
+bool is_roughly_greater_eq(T p_first, T p_second, T p_precision = default_precision<T>::m_prec) {
+  using std::abs;
+  using std::max;
+  T epsilon = p_precision;
+  return (p_first - p_second >= -epsilon * vmax(abs(p_first), abs(p_second), T{1}));
+};
+
+template <typename T, typename = std::enable_if_t<std::is_floating_point_v<T>>>
+bool is_definitely_less_eq(T p_first, T p_second, T p_precision = default_precision<T>::m_prec) {
+  return !(is_roughly_greater_eq(p_first, p_second, p_precision));
+};
+
 template <typename... Ts, typename = std::enable_if_t<std::conjunction_v<std::is_convertible<bool, Ts>...>>>
 bool are_all_true(Ts... args) {
   return (... && args);
 }
 
-template <typename... Ts>
-bool are_all_roughly_zero(Ts... args) {
+template <typename... Ts> bool are_all_roughly_zero(Ts... args) {
   return are_all_true((is_roughly_equal<Ts>(args, 0))...);
 }
 
@@ -63,8 +72,8 @@ template <typename... Ts> bool are_same_sign(Ts... args) {
 } // namespace throttle
 
 #include "point3.hpp"
-#include "vec3.hpp"
 #include "vec2.hpp"
+#include "vec3.hpp"
 
 namespace throttle {
 namespace geometry {

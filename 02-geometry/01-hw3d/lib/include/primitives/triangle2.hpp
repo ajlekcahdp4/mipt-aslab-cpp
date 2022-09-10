@@ -50,11 +50,11 @@ public:
 #endif
 
     T dist_ab = compute_distance_pair(right.a, right.b, point);
-    if (dist_ab < 0 && !is_roughly_equal(dist_ab, T{0})) return false;
+    if (is_definitely_less_eq(dist_ab, T{0})) return false;
     T dist_bc = compute_distance_pair(right.b, right.c, point);
-    if (dist_bc < 0 && !is_roughly_equal(dist_bc, T{0})) return false;
+    if (is_definitely_less_eq(dist_bc, T{0})) return false;
     T dist_ca = compute_distance_pair(right.c, right.a, point);
-    if (dist_ca < 0 && !is_roughly_equal(dist_ca, T{0})) return false;
+    if (is_definitely_less_eq(dist_ca, T{0})) return false;
 
     return true;
   }
