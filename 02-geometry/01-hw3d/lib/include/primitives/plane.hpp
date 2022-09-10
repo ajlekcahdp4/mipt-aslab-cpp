@@ -11,9 +11,11 @@
 #pragma once
 
 #include <cmath>
+#include <optional>
 
 #include "point3.hpp"
 #include "vec3.hpp"
+#include "segment3.hpp"
 
 namespace throttle {
 namespace geometry {
@@ -21,6 +23,7 @@ namespace geometry {
 template <typename T> struct plane {
   using vec_type = vec3<T>;
   using point_type = point3<T>;
+  using segment_type = segment3<T>;
 
 private:
   vec_type m_normal; // Normalized normal vector
@@ -40,6 +43,17 @@ public:
   T signed_distance(const point3<T> &p_point) const { return dot(p_point - point_type::origin(), m_normal) - m_dist; }
   T distance(const point3<T> &p_point) const { return std::abs(signed_distance(p_point)); }
   T distance_origin() const { return std::abs(m_dist); }
+
+  std::optional<point_type> segment_intersection(const segment_type& segment) {
+    T dist_a = signed_distance(segment.a);
+    T dist_b = signed_distance(segment.b);
+
+    if (is_roughly_equal(dist_a, T{0})) return segment.a;
+    if (is_roughly_equal(dist_b, T{0})) return segment.b;
+    if (are_same_sign(dist_a, dist_b)) return std::nullopt;
+
+    return std::abs(dist_a) / (std::abs(dist_a) + std::abs(dist_b)) * (segment.b - segment.a) + segment.a;
+  } 
 
   vec_type normal() const { return m_normal; }
 };

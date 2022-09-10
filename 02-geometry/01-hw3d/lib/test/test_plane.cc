@@ -56,3 +56,23 @@ TEST(test_plane, test_4) {
   EXPECT_FALSE(lie_on_the_same_side(p, point{0, 0, 1}, point{0, 2, -1}));
   EXPECT_TRUE(lie_on_the_same_side(p, point{5, -1, 2.2}, point{-8, 5, 0.1}));
 }
+
+TEST(test_plane, test_5) {
+  using segment = plane::segment_type;
+  plane p = plane::plane_xy();
+  
+  segment s1{{0, 0, -5}, {0, 0, 3}};
+  auto i1 = p.segment_intersection(s1);
+  EXPECT_TRUE(i1);
+  EXPECT_TRUE(is_roughly_equal(i1.value(), plane::point_type{0, 0, 0}));
+
+  segment s2{{-2, -2, -4}, {2, 2, 4}};
+  auto i2 = p.segment_intersection(s2);
+  EXPECT_TRUE(i2);
+  EXPECT_TRUE(is_roughly_equal(i2.value(), plane::point_type{0, 0, 0}));
+
+  segment s3{{1, 2, -3}, {4, 5, 6}};
+  auto i3 = p.segment_intersection(s3);
+  EXPECT_TRUE(i3);
+  EXPECT_TRUE(is_roughly_equal(i3.value(), plane::point_type{2, 3, 0}));
+}

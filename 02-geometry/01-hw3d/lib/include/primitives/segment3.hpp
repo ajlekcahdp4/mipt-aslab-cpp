@@ -23,6 +23,8 @@ template <typename T> struct segment3 {
   point_type a;
   point_type b;
 
+  segment3(const point_type &p_a, const point_type &p_b) : a{p_a}, b{p_b} {}
+
   bool contains(const point_type &point) const {
     vec_type segment_vec = b - a, vec = b - point;
     return (co_directional(segment_vec, vec) && segment_vec.length_sq() > vec.length_sq());

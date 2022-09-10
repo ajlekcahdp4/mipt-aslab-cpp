@@ -23,6 +23,8 @@ template <typename T> struct segment2 {
   point_type a;
   point_type b;
 
+  segment2(const point_type &p_a, const point_type &p_b) : a{p_a}, b{p_b} {}
+
   T signed_distance(const point_type &p_point) const {
     vec_type radius = p_point - b, dir = (b - a).norm(), norm = dir.perp();
     vec_type proj = dir * dot(dir, radius), perp_component = radius - proj;
