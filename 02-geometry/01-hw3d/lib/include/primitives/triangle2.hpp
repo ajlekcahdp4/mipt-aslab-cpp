@@ -15,6 +15,7 @@
 
 #include "equal.hpp"
 #include "point2.hpp"
+#include "segment2.hpp"
 #include "vec2.hpp"
 
 namespace throttle {
@@ -23,6 +24,7 @@ namespace geometry {
 template <typename T> struct triangle2 {
   using point_type = point2<T>;
   using vec_type = vec2<T>;
+  using segment_type = segment2<T>;
 
   point_type a;
   point_type b;
@@ -30,13 +32,6 @@ template <typename T> struct triangle2 {
 
   bool operator==(const triangle2 &other) const { return (a == other.a && b == other.b && c == other.c); }
   bool operator!=(const triangle2 &other) const { return (*this == other); }
-
-private:
-  static T compute_distance_pair(const point_type &first, const point_type &second, const point_type &point) {
-    vec_type radius = point - first, dir = (second - first).norm(), norm = dir.perp();
-    vec_type proj = dir * dot(dir, radius), perp_component = radius - proj;
-    return (dot(norm, perp_component) > 0 ? perp_component.length() : -perp_component.length());
-  }
 
 public:
   bool point_in_triangle(const point_type &point) const {
@@ -49,11 +44,11 @@ public:
     assert(new_perp > 0);
 #endif
 
-    T dist_ab = compute_distance_pair(right.a, right.b, point);
+    T dist_ab = segment_type{right.a, right.b}.signed_distance(point);
     if (is_definitely_less_eq(dist_ab, T{0})) return false;
-    T dist_bc = compute_distance_pair(right.b, right.c, point);
+    T dist_bc = segment_type{right.b, right.c}.signed_distance(point);
     if (is_definitely_less_eq(dist_bc, T{0})) return false;
-    T dist_ca = compute_distance_pair(right.c, right.a, point);
+    T dist_ca = segment_type{right.c, right.a}.signed_distance(point);
     if (is_definitely_less_eq(dist_ca, T{0})) return false;
 
     return true;

@@ -20,14 +20,17 @@ template <typename T> struct segment2 {
   using vec_type = vec2<T>;
   using point_type = point2<T>;
 
-  point_type m_a;
-  point_type m_b;
+  point_type a;
+  point_type b;
 
-  segment2(const point_type &p_start, const vec_type &p_dir) : m_a(p_start), m_b(p_start + p_dir) {}
+  T signed_distance(const point_type &p_point) const {
+    vec_type radius = p_point - b, dir = (b - a).norm(), norm = dir.perp();
+    vec_type proj = dir * dot(dir, radius), perp_component = radius - proj;
+    return (dot(norm, perp_component) > 0 ? perp_component.length() : -perp_component.length());
+  }
 
   bool contains(const point_type &point) const {
-    auto segment_vec = m_b - m_a;
-    auto vec = m_b - point;
+    vec_type segment_vec = b - a, vec = b - point;
     return (co_directional(segment_vec, vec) && segment_vec.length_sq() > vec.length_sq());
   }
 };

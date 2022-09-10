@@ -54,4 +54,5 @@ TEST(test_triangle2, test_1) {
   EXPECT_TRUE(t.point_in_triangle({0, 0}));
   EXPECT_TRUE(t.point_in_triangle({2, 6}));
   EXPECT_TRUE(t.point_in_triangle({4, -1}));
+  EXPECT_FALSE(t.point_in_triangle({-100, 50}));
 }

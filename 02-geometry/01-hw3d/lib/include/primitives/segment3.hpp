@@ -20,14 +20,11 @@ template <typename T> struct segment3 {
   using vec_type = vec3<T>;
   using point_type = point3<T>;
 
-  point_type m_a;
-  point_type m_b;
-
-  segment3(const point_type &p_start, const vec_type &p_dir) : m_a{p_start}, m_b{p_start + p_dir} {}
+  point_type a;
+  point_type b;
 
   bool contains(const point_type &point) const {
-    auto segment_vec = m_b - m_a;
-    auto vec = m_b - point;
+    vec_type segment_vec = b - a, vec = b - point;
     return (co_directional(segment_vec, vec) && segment_vec.length_sq() > vec.length_sq());
   }
 };
