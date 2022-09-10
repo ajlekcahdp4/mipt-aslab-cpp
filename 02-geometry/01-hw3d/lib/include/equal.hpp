@@ -55,6 +55,19 @@ bool is_definitely_less(T p_first, T p_second, T p_precision = default_precision
   return !(is_roughly_greater_eq(p_first, p_second, p_precision));
 };
 
+template <typename T, typename = std::enable_if_t<std::is_floating_point_v<T>>>
+bool is_roughly_less_eq(T p_first, T p_second, T p_precision = default_precision<T>::m_prec) {
+  using std::abs;
+  using std::max;
+  T epsilon = p_precision;
+  return (p_first - p_second <= epsilon * vmax(abs(p_first), abs(p_second), T{1}));
+};
+
+template <typename T, typename = std::enable_if_t<std::is_floating_point_v<T>>>
+bool is_definitely_greater(T p_first, T p_second, T p_precision = default_precision<T>::m_prec) {
+  return !(is_roughly_less_eq(p_first, p_second, p_precision));
+};
+
 template <typename... Ts, typename = std::enable_if_t<std::conjunction_v<std::is_convertible<bool, Ts>...>>>
 bool are_all_true(Ts... args) {
   return (... && args);

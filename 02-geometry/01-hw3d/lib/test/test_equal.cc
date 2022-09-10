@@ -29,3 +29,14 @@ TEST(test_equal, test_2) {
   EXPECT_FALSE(are_same_sign(1, 2, 3, -1));
   EXPECT_TRUE(are_same_sign(-1, -5, -1, -2));
 }
+
+TEST(test_equal, test_3) {
+  EXPECT_TRUE(is_roughly_greater_eq(-1e-7, 0.));
+  EXPECT_TRUE(is_roughly_greater_eq(1e7, 0.));
+  EXPECT_TRUE(is_definitely_less(-1e2, 0.));
+}
+
+TEST(test_equal, test_4) {
+  EXPECT_TRUE(is_roughly_less_eq(1e-7, 0.));
+  EXPECT_FALSE(is_roughly_less_eq(1e7, 0.));
+}
