@@ -39,7 +39,7 @@ template <typename T> struct segment2 {
 };
 
 template <typename T> bool operator==(const segment2<T> &lhs, const segment2<T> &rhs) {
-  return (lhs.a == rhs.a && lhs.b == rhs.b);
+  return (is_roughly_equal(lhs.a, rhs.a) && is_roughly_equal(lhs.b, rhs.b));
 }
 
 template <typename T> bool test_2d_segment_segment(const segment2<T> &seg1, const segment2<T> &seg2) {
