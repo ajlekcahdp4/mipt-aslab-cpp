@@ -16,14 +16,14 @@ namespace throttle {
 namespace geometry {
 
 template <typename T> struct segment1 {
+private:
   T a;
   T b;
-  // assert that a <= b
-  segment1(T a_arg, T b_arg) : a{a_arg}, b{b_arg} {
-    if (is_definitely_greater(a, b)) throw std::out_of_range("End of 1d segment is less then the start.");
-  }
 
-  T len() const noexcept { return b - a; }
+public:
+  segment1(T p_a, T p_b) : a{std::min(p_a, p_b)}, b{std::max(p_a, p_b)} {}
+
+  T len() const { return b - a; }
 
   bool intersect(const segment1<T> &other) const {
     if (is_roughly_greater_eq(a, other.a) && is_roughly_less_eq(a, other.b)) return true;
@@ -33,16 +33,9 @@ template <typename T> struct segment1 {
 
   bool contains(const segment1<T> &other) const {
     if (is_roughly_less_eq(a, other.a) && is_roughly_greater_eq(b, other.b)) return true;
+    return false;
   }
 };
-
-template <typename T> bool operator==(const segment1<T> &lhs, const segment1<T> &rhs) {
-  return (is_roughly_equal(lhs.a, rhs.a) && is_roughly_equal(lhs.b, rhs.b));
-}
-
-template <typename T> bool operator!=(const segment1<T> &lhs, const segment1<T> &rhs) { return !(lhs == rhs); }
-
-template <typename T> bool intersect(const segment1<T> &a, const segment1<T> &b) { return a.intersect(b); }
 
 } // namespace geometry
 } // namespace throttle
