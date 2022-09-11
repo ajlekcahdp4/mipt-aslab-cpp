@@ -50,19 +50,19 @@ template <typename T> struct vec3 {
 
   T &operator[](unsigned index) {
     switch (index) {
-      case 0: return x;
-      case 1: return y;
-      case 2: return z;
-      default: throw std::out_of_range("Incorrect coordinate of vec3 was requested.");
+    case 0: return x;
+    case 1: return y;
+    case 2: return z;
+    default: throw std::out_of_range("Incorrect coordinate of vec3 was requested.");
     }
   }
 
   const T &operator[](unsigned index) const {
     switch (index) {
-      case 0: return x;
-      case 1: return y;
-      case 2: return z;
-      default: throw std::out_of_range("Incorrect coordinate of vec3 was requested.");
+    case 0: return x;
+    case 1: return y;
+    case 2: return z;
+    default: throw std::out_of_range("Incorrect coordinate of vec3 was requested.");
     }
   }
 

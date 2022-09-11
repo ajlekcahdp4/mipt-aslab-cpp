@@ -28,8 +28,23 @@ template <typename T> struct point3 {
 
   std::pair<unsigned, T> max_component() const { return (*this - origin()).max_component(); }
 
-  T       &operator[](unsigned index) { return (*this - origin())[index]; }
-  const T &operator[](unsigned index) const { return (*this - origin())[index]; }
+  T &operator[](unsigned index) {
+    switch (index) {
+    case 0: return x;
+    case 1: return y;
+    case 2: return z;
+    default: throw std::out_of_range("Incorrect coordinate of vec3 was requested.");
+    }
+  }
+
+  const T &operator[](unsigned index) const {
+    switch (index) {
+    case 0: return x;
+    case 1: return y;
+    case 2: return z;
+    default: throw std::out_of_range("Incorrect coordinate of vec3 was requested.");
+    }
+  }
 
   point_flat_type project_coord(unsigned axis) {
     switch (axis) {
