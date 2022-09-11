@@ -32,9 +32,10 @@ public:
   }
 
   bool contains(const segment1<T> &other) const {
-    if (is_roughly_less_eq(a, other.a) && is_roughly_greater_eq(b, other.b)) return true;
-    return false;
+    return is_roughly_less_eq(a, other.a) && is_roughly_greater_eq(b, other.b);
   }
+
+  bool contains(T point) const { return is_roughly_greater_eq(point, a) && is_roughly_less_eq(point, b); }
 };
 
 } // namespace geometry

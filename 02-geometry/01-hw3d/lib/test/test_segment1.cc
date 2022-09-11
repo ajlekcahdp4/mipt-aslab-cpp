@@ -22,21 +22,16 @@ using namespace throttle::geometry;
 
 template struct throttle::geometry::segment1<float>;
 
-TEST(test_segment1, test_ctor) {
-  EXPECT_NO_THROW(segment a(1, 3));
-  EXPECT_THROW(segment(3, 1), std::out_of_range);
-}
-
 TEST(test_segment1, test_intersect) {
   segment a(1, 5);
   segment b(2, 3);
   segment c(0, 1);
   segment d(2, 30);
 
-  EXPECT_TRUE(intersect(a, b));
-  EXPECT_TRUE(intersect(a, c));
-  EXPECT_TRUE(intersect(a, d));
-  EXPECT_TRUE(intersect(b, d));
+  EXPECT_TRUE(a.intersect(b));
+  EXPECT_TRUE(a.intersect(c));
+  EXPECT_TRUE(a.intersect(d));
+  EXPECT_TRUE(b.intersect(d));
 }
 
 TEST(test_segment1, test_contains) {

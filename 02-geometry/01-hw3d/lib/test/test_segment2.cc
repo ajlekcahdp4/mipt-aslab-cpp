@@ -83,7 +83,6 @@ TEST(test_segment2, test_segment_segment_6) {
 TEST(test_segment2, test_segment_segment_7) {
   segment_type a({0, 0}, {0, 1});
   segment_type b({0, 2}, {0, 3});
-  std::cout << a.signed_distance(b.a) << " " << a.signed_distance(b.b);
 
   EXPECT_FALSE(test_2d_segment_segment(a, b));
 }
