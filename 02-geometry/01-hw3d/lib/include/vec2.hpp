@@ -36,7 +36,7 @@ template <typename T> struct vec2 {
   T dot(const vec2 &rhs) const { return x * rhs.x + y * rhs.y; }
   T perp_dot(const vec2 &rhs) const { return rhs.dot(perp()); }
   vec2 project(const vec2 &p_axis) { T length = p_axis.length_sq(); return ( length ? dot(p_axis) / length * p_axis : zero()); }
-  std::pair<unsigned, T> max_component() const { return (x > y ? std::make_pair(0, x) : std::make_pair(1, y)); }
+  std::pair<unsigned, T> max_component() const { return (std::abs(x) > std::abs(y) ? std::make_pair(0, std::abs(x)) : std::make_pair(1, std::abs(y))); }
 
   T &operator[](unsigned index) {
     switch (index) {
