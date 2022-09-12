@@ -103,3 +103,9 @@ TEST(test_triangle3, test_intersect_8) {
   triangle3 b{{1, -5, 0}, {3, 2, 1}, {1, 5, -4}};
   EXPECT_TRUE(triangle_triangle_intersect(a, b));
 }
+
+TEST(test_triangle3, test_intersect_9) {
+  triangle3 a{{5, 0, 0}, {0, 5, 0}, {0, 0, 0}};
+  triangle3 b{{0, 0, 0}, {0, 5, 0}, {0, 0, 5}};
+  EXPECT_TRUE(triangle_triangle_intersect(a, b));
+}
