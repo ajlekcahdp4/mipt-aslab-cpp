@@ -85,6 +85,7 @@ namespace geometry {
 
 template <typename T> T       dot(vec3<T> lhs, vec3<T> rhs) { return lhs.dot(rhs); }
 template <typename T> vec3<T> cross(vec3<T> lhs, vec3<T> rhs) { return lhs.cross(rhs); }
+template <typename T> T       triple_product(vec3<T> a, vec3<T> b, vec3<T> c) { return dot(a, cross(b, c)); }
 
 template <typename T> vec3<T> operator+(const vec3<T> &lhs, const vec3<T> &rhs) { return vec3<T>{lhs} += rhs; }
 template <typename T> vec3<T> operator-(const vec3<T> &lhs, const vec3<T> &rhs) { return vec3<T>{lhs} -= rhs; }
