@@ -100,3 +100,24 @@ TEST(test_segment2, test_segment_segment_9) {
 
   EXPECT_FALSE(test_2d_segment_segment(a, b));
 }
+
+TEST(test_segment2, test_segment_segment_10) {
+  segment_type a({0, 0}, {1, 0});
+  segment_type b({2, 2}, {-2, -0.5});
+
+  EXPECT_FALSE(test_2d_segment_segment(a, b));
+}
+
+TEST(test_segment2, test_segment_segment_11) {
+  segment_type a({-1, 0}, {1, 0});
+  segment_type b({0, 1}, {2, -1});
+
+  EXPECT_TRUE(test_2d_segment_segment(a, b));
+}
+
+TEST(test_segment2, test_segment_segment_12) {
+  segment_type a({-1, 0}, {1, 0});
+  segment_type b({-0.5, 0}, {0.5, 0});
+
+  EXPECT_TRUE(test_2d_segment_segment(a, b));
+}
