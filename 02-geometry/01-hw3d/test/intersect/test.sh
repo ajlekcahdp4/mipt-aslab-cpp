@@ -12,13 +12,13 @@ for file in ${current_folder}/${base_folder}/*.dat; do
 
     # Check if an argument to executable location has been passed to the program
     if [ -z "$1" ]; then
-        bin/queries < $file > ${current_folder}/$base_folder/temp.tmp
+        bin/intersect_fcl < $file > ${current_folder}/$base_folder/temp.tmp
     else
         $1 < $file > ${current_folder}/$base_folder/temp.tmp
     fi
 
     # Compare inputs
-    if diff -Z ${file}.ans ${current_folder}/${base_folder}/temp.tmp; then
+    if $3 ${file}.ans ${current_folder}/${base_folder}/temp.tmp; then
         echo "${green}Passed${reset}"
     else
         echo "${red}Failed${reset}"

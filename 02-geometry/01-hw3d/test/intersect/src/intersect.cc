@@ -29,7 +29,7 @@ int main() {
 
   std::set<unsigned> in_contact;
   for (unsigned i = 0; i < vec.size(); ++i) {
-    for (unsigned j = i; j < vec.size(); ++j) {
+    for (unsigned j = i + 1; j < vec.size(); ++j) {
       bool intersect = throttle::geometry::triangle_triangle_intersect(vec[i], vec[j]);
       if (intersect) {
         in_contact.insert(i);

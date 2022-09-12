@@ -94,7 +94,7 @@ def generate_ans(p_triangles: list) -> list:
     manager.registerObjects(objs)
     manager.setup()
     
-    crequest = fcl.CollisionRequest(num_max_contacts = len(p_triangles) ^ 2, enable_contact=True)
+    crequest = fcl.CollisionRequest(num_max_contacts = len(p_triangles) ** 2, enable_contact=True)
     cdata = fcl.CollisionData(crequest, fcl.CollisionResult())
     manager.collide(cdata, fcl.defaultCollisionCallback)
     
