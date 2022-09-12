@@ -2,14 +2,14 @@ set(QUERIES_SOURCES
   src/intersect.cc
 )
 
-add_executable(queries ${QUERIES_SOURCES})
-target_link_libraries(queries throttle)
+add_executable(intersect ${QUERIES_SOURCES})
+target_link_libraries(intersect throttle)
 if(Boost_FOUND)
-  target_link_libraries(queries Boost::program_options)
+  target_link_libraries(intersect Boost::program_options)
 endif()
 
-install(TARGETS queries DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin)
+install(TARGETS intersect DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 
 # if(BASH_PROGRAM)
-#   add_test(NAME test.queries COMMAND ${BASH_PROGRAM} ${CMAKE_CURRENT_SOURCE_DIR}/test.sh "$<TARGET_FILE:queries>" ${CMAKE_CURRENT_SOURCE_DIR})
+#   add_test(NAME test.intersect COMMAND ${BASH_PROGRAM} ${CMAKE_CURRENT_SOURCE_DIR}/test.sh "$<TARGET_FILE:intersect>" ${CMAKE_CURRENT_SOURCE_DIR})
 # endif()

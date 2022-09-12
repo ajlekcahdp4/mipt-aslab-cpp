@@ -50,13 +50,7 @@ template <typename T> std::pair<T, T> compute_interval(T p_a, T p_b, T p_c, T d_
 }
 
 // Rearrange triangle vertices
-template <typename T>
-std::pair<triangle3<T>, std::array<T, 3>> canonical_triangle(const triangle3<T> &p_tri, std::array<T, 3> p_dist) {
-#ifndef NDEBUG
-  auto arr = p_dist;
-  std::sort(arr.begin(), arr.end());
-#endif
-
+template <typename T> std::pair<triangle3<T>, std::array<T, 3>> canonical_triangle(const triangle3<T> &p_tri, std::array<T, 3> p_dist) {
   auto greater_count = std::count_if(p_dist.begin(), p_dist.end(), [](T elem) { return elem > 0; });
   switch (greater_count) {
   case 1: break; // clang-format off
