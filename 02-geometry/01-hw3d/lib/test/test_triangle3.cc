@@ -28,14 +28,14 @@ using throttle::geometry::is_roughly_equal;
 
 template struct throttle::geometry::triangle3<float>;
 
-TEST(test_triangle, test_1) {
+TEST(test_triangle3, test_1) {
   triangle3 t{{1, 2, 3}, {-1, 2, 3}, {5, 8, -1}};
   EXPECT_FALSE(t.lies_on_one_side(plane::plane_xy()));
   EXPECT_FALSE(t.lies_on_one_side(plane::plane_yz()));
   EXPECT_TRUE(t.lies_on_one_side(plane::plane_xz()));
 }
 
-TEST(test_triangle, test_canonical) {
+TEST(test_triangle3, test_canonical) {
   triangle3 t1{{1, 2, 3}, {-1, 2, 3}, {5, 8, -1}};
   plane     p{{1, 1, 1}, {0, 0, 1}};
 
@@ -54,4 +54,10 @@ TEST(test_triangle, test_canonical) {
 
   c = throttle::geometry::detail::canonical_triangle(t2, dist);
   EXPECT_EQ(c.first.b, t2.a);
+}
+
+TEST(test_triangle3, test_intersect_1) {
+  triangle3 a{{0, 0, 0}, {1, 1, 1}, {3, 5, 2}};
+  triangle3 b{{2, 4, 1}, {2, 1, 4}, {-4, 3, 0}};
+  EXPECT_TRUE(triangle_triangle_intersect(a, b));
 }
