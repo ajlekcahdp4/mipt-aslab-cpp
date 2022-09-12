@@ -1,7 +1,7 @@
 /*
  * ----------------------------------------------------------------------------
  * "THE BEER-WARE LICENSE" (Revision 42):
- * <tsimmerman.ss@phystech.edu>, wrote this file.  As long as you
+ * <tsimmerman.ss@phystech.edu>, <alex.rom23@mail.ru> wrote this file.  As long as you
  * retain this notice you can do whatever you want with this stuff. If we meet
  * some day, and you think this stuff is worth it, you can buy me a beer in
  * return.
@@ -50,13 +50,11 @@ template <typename T> std::pair<T, T> compute_interval(T p_a, T p_b, T p_c, T d_
 }
 
 // Rearrange triangle vertices
-template <typename T> std::pair<triangle3<T>, std::array<T, 3>> canonical_triangle(const triangle3<T> &p_tri, std::array<T, 3> p_dist) {
+template <typename T>
+std::pair<triangle3<T>, std::array<T, 3>> canonical_triangle(const triangle3<T> &p_tri, std::array<T, 3> p_dist) {
 #ifndef NDEBUG
   auto arr = p_dist;
   std::sort(arr.begin(), arr.end());
-  assert(arr[0] != 0);
-  assert(arr[1] != 0);
-  assert(arr[2] != 0);
 #endif
 
   auto greater_count = std::count_if(p_dist.begin(), p_dist.end(), [](T elem) { return elem > 0; });
@@ -68,9 +66,12 @@ template <typename T> std::pair<triangle3<T>, std::array<T, 3>> canonical_triang
 
   auto max_index = std::distance(p_dist.begin(), std::max_element(p_dist.begin(), p_dist.end()));
   switch (max_index) {
-  case 0: return std::make_pair(triangle3<T>{p_tri.b, p_tri.a, p_tri.c}, std::array<T, 3>{p_dist[1], p_dist[0], p_dist[2]});
-  case 1: return std::make_pair(triangle3<T>{p_tri.a, p_tri.b, p_tri.c}, std::array<T, 3>{p_dist[0], p_dist[1], p_dist[2]});
-  case 2: return std::make_pair(triangle3<T>{p_tri.a, p_tri.c, p_tri.b}, std::array<T, 3>{p_dist[0], p_dist[2], p_dist[1]});
+  case 0:
+    return std::make_pair(triangle3<T>{p_tri.b, p_tri.a, p_tri.c}, std::array<T, 3>{p_dist[1], p_dist[0], p_dist[2]});
+  case 1:
+    return std::make_pair(triangle3<T>{p_tri.a, p_tri.b, p_tri.c}, std::array<T, 3>{p_dist[0], p_dist[1], p_dist[2]});
+  case 2:
+    return std::make_pair(triangle3<T>{p_tri.a, p_tri.c, p_tri.b}, std::array<T, 3>{p_dist[0], p_dist[2], p_dist[1]});
   }
 }
 } // namespace detail
@@ -104,8 +105,9 @@ template <typename T> bool triangle_triangle_intersect(const triangle3<T> &t1, c
     using triangle_vertex_distance_pair = std::pair<typename triangle3<T>::point_type, T>;
     std::array<triangle_vertex_distance_pair, 3> vert_dist_arr = {
         std::make_pair(t1.a, d_1[0]), std::make_pair(t1.b, d_1[1]), std::make_pair(t1.c, d_1[2])};
-    std::sort(vert_dist_arr.begin(), vert_dist_arr.end(),
-              [](const auto &p_first, const auto &p_second) { return std::abs(p_first.second) < std::abs(p_second.second); });
+    std::sort(vert_dist_arr.begin(), vert_dist_arr.end(), [](const auto &p_first, const auto &p_second) {
+      return std::abs(p_first.second) < std::abs(p_second.second);
+    });
     auto max_index = pi2.normal().max_component().first;
     auto t2_flat = t2.project_coord(max_index);
 
@@ -114,8 +116,9 @@ template <typename T> bool triangle_triangle_intersect(const triangle3<T> &t1, c
       auto proj_first = vert_dist_arr[0].first.project_coord(max_index);
       if (t2_flat.point_in_triangle(proj_first)) return true;
       if (!are_same_sign(vert_dist_arr[1].second, vert_dist_arr[2].second))
-        t2_flat.point_in_triangle(
-            pi2.segment_intersection({vert_dist_arr[0].first, vert_dist_arr[1].first}).value().project_coord(max_index));
+        t2_flat.point_in_triangle(pi2.segment_intersection({vert_dist_arr[0].first, vert_dist_arr[1].first})
+                                      .value()
+                                      .project_coord(max_index));
       return false;
     }
 
