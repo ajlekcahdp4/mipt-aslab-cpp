@@ -123,54 +123,16 @@ TEST(triangle2, test_intersect_8) {
 
 TEST(triangle2, test_intersect_9) {
   triangle2 a{{-3, 1}, {1, 1}, {1, -5}};
-  triangle2 b{{0, 0}, {0, 0}, {0, 0}};
-
-  EXPECT_TRUE(a.intersect(b));
-  EXPECT_TRUE(b.intersect(a));
-}
-TEST(triangle2, test_intersect_10) {
-  triangle2 a{{-3, 1}, {1, 1}, {1, -5}};
-  triangle2 b{{1, 1}, {1, 1}, {1, 1}};
-
-  EXPECT_TRUE(a.intersect(b));
-  EXPECT_TRUE(b.intersect(a));
-}
-
-TEST(triangle2, test_intersect_11) {
-  triangle2 a{{-3, 1}, {1, 1}, {1, -5}};
   triangle2 b{{-1, 0}, {0, -1}, {0, -1}};
 
   EXPECT_TRUE(a.intersect(b));
   EXPECT_TRUE(b.intersect(a));
 }
 
-TEST(triangle2, test_intersect_12) {
+TEST(triangle2, test_intersect_10) {
   triangle2 a{{-3, 1}, {1, 1}, {1, -5}};
   triangle2 b{{0, 3}, {1, 3}, {2, 0}};
 
   EXPECT_FALSE(a.intersect(b));
   EXPECT_FALSE(b.intersect(a));
-}
-
-TEST(triangle2, test_intersect_13) {
-  triangle2 a{{111, 111}, {111, 112}, {111, 112}};
-  triangle2 b{{112, 112}, {112, 112}, {110, 111}};
-
-  EXPECT_TRUE(a.intersect(b));
-  EXPECT_TRUE(b.intersect(a));
-}
-
-TEST(triangle2, test_intersect_14) {
-  triangle2 a{{0, 0}, {0, 0}, {0, 0}};
-  triangle2 b{{1, 1}, {1, 1}, {1, 1}};
-
-  EXPECT_FALSE(a.intersect(b));
-  EXPECT_FALSE(b.intersect(a));
-}
-
-TEST(triangle2, test_intersect_15) {
-  triangle2 a{{0, 0}, {0, 0}, {0, 0}};
-  triangle2 b{{0, 0}, {0, 0}, {0, 0}};
-
-  EXPECT_TRUE(a.intersect(b));
 }
