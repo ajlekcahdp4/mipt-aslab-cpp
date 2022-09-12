@@ -45,3 +45,83 @@ TEST(test_segment3, test_intersect_1) {
   std::swap(a.a, a.b);
   EXPECT_TRUE(a.intersect(b));
 }
+
+TEST(test_segment3, test_intersect_2) {
+  segment_type a{{0, 0, 0}, {1, 1, 1}};
+  segment_type b{{0, 0, 1}, {1, 1, 0}};
+  EXPECT_TRUE(a.intersect(b));
+  std::swap(b.a, b.b);
+  EXPECT_TRUE(a.intersect(b));
+  std::swap(a.a, a.b);
+  EXPECT_TRUE(a.intersect(b));
+}
+
+TEST(test_segment3, test_intersect_3) {
+  segment_type a{{0, 0, 0}, {1, 1, 1}};
+  segment_type b{{1, 0, 0}, {0, 1, 0}};
+  EXPECT_FALSE(a.intersect(b));
+  std::swap(b.a, b.b);
+  EXPECT_FALSE(a.intersect(b));
+  std::swap(a.a, a.b);
+  EXPECT_FALSE(a.intersect(b));
+}
+
+TEST(test_segment3, test_intersect_4) {
+  segment_type a{{0, 0, 0}, {1, 1, 1}};
+  segment_type b{{1, 0, 0.5}, {0, 1, 0.5}};
+  EXPECT_TRUE(a.intersect(b));
+  std::swap(b.a, b.b);
+  EXPECT_TRUE(a.intersect(b));
+  std::swap(a.a, a.b);
+  EXPECT_TRUE(a.intersect(b));
+}
+
+TEST(test_segment3, test_intersect_5) {
+  segment_type a{{0, 0, 0}, {1, 1, 1}};
+  segment_type b{{1, 0.5, 1}, {0, 0.5, 0}};
+  EXPECT_TRUE(a.intersect(b));
+  std::swap(b.a, b.b);
+  EXPECT_TRUE(a.intersect(b));
+  std::swap(a.a, a.b);
+  EXPECT_TRUE(a.intersect(b));
+}
+
+TEST(test_segment3, test_intersect_6) {
+  segment_type a{{-1, -1, -1}, {1, 1, 1}};
+  segment_type b{{0.5, 0.5, 0.5}, {-0.5, -0.5, -0.5}};
+  EXPECT_TRUE(a.intersect(b));
+  std::swap(b.a, b.b);
+  EXPECT_TRUE(a.intersect(b));
+  std::swap(a.a, a.b);
+  EXPECT_TRUE(a.intersect(b));
+}
+
+TEST(test_segment3, test_intersect_7) {
+  segment_type a{{1, 1, 1}, {1, 1, 1}};
+  segment_type b{{2, 2, 2}, {-0.5, -0.5, -0.5}};
+  EXPECT_TRUE(a.intersect(b));
+  std::swap(b.a, b.b);
+  EXPECT_TRUE(a.intersect(b));
+  std::swap(a.a, a.b);
+  EXPECT_TRUE(a.intersect(b));
+}
+
+TEST(test_segment3, test_intersect_8) {
+  segment_type a{{0, 0, 0}, {1, 1, 1}};
+  segment_type b{{1, 0.5, 10}, {0, 0.5, 10}};
+  EXPECT_FALSE(a.intersect(b));
+  std::swap(b.a, b.b);
+  EXPECT_FALSE(a.intersect(b));
+  std::swap(a.a, a.b);
+  EXPECT_FALSE(a.intersect(b));
+}
+
+TEST(test_segment3, test_intersect_9) {
+  segment_type a{{1, 1, 1}, {1, 1, 1}};
+  segment_type b{{1, 1, 1}, {1, 1, 1}};
+  EXPECT_TRUE(a.intersect(b));
+  std::swap(b.a, b.b);
+  EXPECT_TRUE(a.intersect(b));
+  std::swap(a.a, a.b);
+  EXPECT_TRUE(a.intersect(b));
+}
