@@ -61,3 +61,45 @@ TEST(test_triangle3, test_intersect_1) {
   triangle3 b{{3, 4, 1}, {2, 1, 4}, {-4, 3, 0}};
   EXPECT_TRUE(triangle_triangle_intersect(a, b));
 }
+
+TEST(test_triangle3, test_intersect_2) {
+  triangle3 a{{0, 0, 0}, {1, 1, 1}, {1, 2, 3}};
+  triangle3 b{{3, 4, 1}, {2, 1, 4}, {-4, 3, 0}};
+  EXPECT_TRUE(triangle_triangle_intersect(a, b));
+}
+
+TEST(test_triangle3, test_intersect_3) {
+  triangle3 a{{0, 0, 0}, {1, 1, 0}, {1, 2, 0}};
+  triangle3 b{{3, 4, 1}, {2, 1, 1}, {-4, 3, 0}};
+  EXPECT_FALSE(triangle_triangle_intersect(a, b));
+}
+
+TEST(test_triangle3, test_intersect_4) {
+  triangle3 a{{0, 0, 0}, {1, 1, 0}, {1, 2, 0}};
+  triangle3 b{{3, 4, 1}, {2, 1, 1}, {-4, 3, 1}};
+  EXPECT_FALSE(triangle_triangle_intersect(a, b));
+}
+
+TEST(test_triangle3, test_intersect_5) {
+  triangle3 a{{0, 0, 0}, {1, 1, 0}, {1, 2, 0}};
+  triangle3 b{{-1, 4, 5}, {1, 4, 1}, {0, 4, 0}};
+  EXPECT_FALSE(triangle_triangle_intersect(a, b));
+}
+
+TEST(test_triangle3, test_intersect_6) {
+  triangle3 a{{-3, 1, 0}, {1, 1, 0}, {1, -5, 0}};
+  triangle3 b{{-1, 0, 0}, {0, -1, 0}, {0, -0.5, 0}};
+  EXPECT_TRUE(triangle_triangle_intersect(a, b));
+}
+
+TEST(test_triangle3, test_intersect_7) {
+  triangle3 a{{-3, 1, 0}, {1, 1, 0}, {1, -5, 0}};
+  triangle3 b{{1, -6, 0}, {1, 2, 1}, {1, 5, -4}};
+  EXPECT_TRUE(triangle_triangle_intersect(a, b));
+}
+
+TEST(test_triangle3, test_intersect_8) {
+  triangle3 a{{-3, 1, 0}, {1, 1, 0}, {1, -5, 0}};
+  triangle3 b{{1, -5, 0}, {3, 2, 1}, {1, 5, -4}};
+  EXPECT_TRUE(triangle_triangle_intersect(a, b));
+}
