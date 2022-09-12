@@ -159,3 +159,18 @@ TEST(triangle2, test_intersect_13) {
   EXPECT_TRUE(a.intersect(b));
   EXPECT_TRUE(b.intersect(a));
 }
+
+TEST(triangle2, test_intersect_14) {
+  triangle2 a{{0, 0}, {0, 0}, {0, 0}};
+  triangle2 b{{1, 1}, {1, 1}, {1, 1}};
+
+  EXPECT_FALSE(a.intersect(b));
+  EXPECT_FALSE(b.intersect(a));
+}
+
+TEST(triangle2, test_intersect_15) {
+  triangle2 a{{0, 0}, {0, 0}, {0, 0}};
+  triangle2 b{{0, 0}, {0, 0}, {0, 0}};
+
+  EXPECT_TRUE(a.intersect(b));
+}
