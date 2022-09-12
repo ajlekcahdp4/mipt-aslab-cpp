@@ -53,6 +53,29 @@ public:
 
     return true;
   }
+
+  bool intersect(const triangle2 &other) const {
+    // Step 1. Check if there are intersections between the sides of the triangles.
+    if (segment_type{a, b}.intersect(segment_type{other.a, other.b})) return true;
+    if (segment_type{a, b}.intersect(segment_type{other.a, other.c})) return true;
+    if (segment_type{a, b}.intersect(segment_type{other.b, other.c})) return true;
+
+    if (segment_type{a, c}.intersect(segment_type{other.a, other.b})) return true;
+    if (segment_type{a, c}.intersect(segment_type{other.a, other.c})) return true;
+    if (segment_type{a, c}.intersect(segment_type{other.b, other.c})) return true;
+
+    if (segment_type{c, b}.intersect(segment_type{other.a, other.b})) return true;
+    if (segment_type{c, b}.intersect(segment_type{other.a, other.c})) return true;
+    if (segment_type{c, b}.intersect(segment_type{other.b, other.c})) return true;
+
+    // Step 2. If no sides intersects then either one triangle contains the other or they don't intersect.
+    // Check if one triangle contains another.
+    if (point_in_triangle(other.a)) return true;
+    if (other.point_in_triangle(a)) return true;
+
+    // Step 3. Triangles don't itersect.
+    return false;
+  }
 };
 
 } // namespace geometry
