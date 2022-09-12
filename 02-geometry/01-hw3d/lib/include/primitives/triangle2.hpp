@@ -54,24 +54,20 @@ public:
     return true;
   }
 
+  bool intersect(const segment_type &seg) const {
+    segment_type ab = {a, b}, ac = {a, c}, cb = {c, b};
+    return (ab.intersect(seg) || ac.intersect(seg) || cb.intersect(seg));
+  }
+
   bool intersect(const triangle2 &other) const {
     // Step 1. Check if there are intersections between the sides of the triangles.
-    if (segment_type{a, b}.intersect(segment_type{other.a, other.b})) return true;
-    if (segment_type{a, b}.intersect(segment_type{other.a, other.c})) return true;
-    if (segment_type{a, b}.intersect(segment_type{other.b, other.c})) return true;
+    segment_type ab2 = {other.a, other.b}, ac2 = {other.a, other.c}, cb2 = {other.c, other.b};
 
-    if (segment_type{a, c}.intersect(segment_type{other.a, other.b})) return true;
-    if (segment_type{a, c}.intersect(segment_type{other.a, other.c})) return true;
-    if (segment_type{a, c}.intersect(segment_type{other.b, other.c})) return true;
-
-    if (segment_type{c, b}.intersect(segment_type{other.a, other.b})) return true;
-    if (segment_type{c, b}.intersect(segment_type{other.a, other.c})) return true;
-    if (segment_type{c, b}.intersect(segment_type{other.b, other.c})) return true;
+    if (intersect(ab2) || intersect(ac2) || intersect(cb2)) return true;
 
     // Step 2. If no sides intersects then either one triangle contains the other or they don't intersect.
     // Check if one triangle contains another.
-    if (point_in_triangle(other.a)) return true;
-    if (other.point_in_triangle(a)) return true;
+    if (point_in_triangle(other.a) || other.point_in_triangle(a)) return true;
 
     // Step 3. Triangles don't itersect.
     return false;
