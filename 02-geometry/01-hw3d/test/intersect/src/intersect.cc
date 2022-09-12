@@ -8,7 +8,7 @@
 
 int main() {
   using triangle = throttle::geometry::triangle3<float>;
-  triangle a{{0, 0, 0}, {0, 5, 0}, {5, 0, 0}};
-  triangle b{{0, 3, 0}, {3, 0, 0}, {10, 10, 0}};
-  throttle::geometry::triangle_triangle_intersect(a, b);
+  triangle a{{-5, -5, 0}, {5, -5, 0}, {0, 10, 0}};
+  triangle b{{-10, 0, -10}, {10, 0, 10}, {0, 0, 20}};
+  std::cout << throttle::geometry::triangle_triangle_intersect(a, b);
 }

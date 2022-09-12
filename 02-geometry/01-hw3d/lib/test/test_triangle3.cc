@@ -45,7 +45,7 @@ TEST(test_triangle, test_canonical) {
   dist[2] = p.signed_distance(t1.c);
 
   auto c = throttle::geometry::detail::canonical_triangle(t1, dist);
-  EXPECT_EQ(c.b, t1.c);
+  EXPECT_EQ(c.first.b, t1.c);
 
   triangle3 t2{{1, 2, 8}, {-1, 2, -4}, {5, 8, -1}};
   dist[0] = p.signed_distance(t2.a);
@@ -53,5 +53,5 @@ TEST(test_triangle, test_canonical) {
   dist[2] = p.signed_distance(t2.c);
 
   c = throttle::geometry::detail::canonical_triangle(t2, dist);
-  EXPECT_EQ(c.b, t2.a);
+  EXPECT_EQ(c.first.b, t2.a);
 }

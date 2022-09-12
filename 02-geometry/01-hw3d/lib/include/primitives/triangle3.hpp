@@ -50,7 +50,7 @@ template <typename T> std::pair<T, T> compute_interval(T p_a, T p_b, T p_c, T d_
 }
 
 // Rearrange triangle vertices
-template <typename T> triangle3<T> canonical_triangle(const triangle3<T> &p_tri, std::array<T, 3> p_dist) {
+template <typename T> std::pair<triangle3<T>, std::array<T, 3>> canonical_triangle(const triangle3<T> &p_tri, std::array<T, 3> p_dist) {
 #ifndef NDEBUG
   auto arr = p_dist;
   std::sort(arr.begin(), arr.end());
@@ -68,9 +68,9 @@ template <typename T> triangle3<T> canonical_triangle(const triangle3<T> &p_tri,
 
   auto max_index = std::distance(p_dist.begin(), std::max_element(p_dist.begin(), p_dist.end()));
   switch (max_index) {
-  case 0: return triangle3<T>{p_tri.b, p_tri.a, p_tri.c};
-  case 1: return triangle3<T>{p_tri.a, p_tri.b, p_tri.c};
-  case 2: return triangle3<T>{p_tri.a, p_tri.c, p_tri.b};
+  case 0: return std::make_pair(triangle3<T>{p_tri.b, p_tri.a, p_tri.c}, std::array<T, 3>{p_dist[1], p_dist[0], p_dist[2]});
+  case 1: return std::make_pair(triangle3<T>{p_tri.a, p_tri.b, p_tri.c}, std::array<T, 3>{p_dist[0], p_dist[1], p_dist[2]});
+  case 2: return std::make_pair(triangle3<T>{p_tri.a, p_tri.c, p_tri.b}, std::array<T, 3>{p_dist[0], p_dist[2], p_dist[1]});
   }
 }
 } // namespace detail
@@ -134,13 +134,24 @@ template <typename T> bool triangle_triangle_intersect(const triangle3<T> &t1, c
   auto d = cross(pi1.normal(), pi2.normal());
   auto index = d.max_component().first;
 
-  T p_1_a = t1.a[index];
-  T p_1_b = t1.b[index];
-  T p_1_c = t1.c[index];
+  auto [canon_t1, canon_dist_1] = detail::canonical_triangle(t1, d_1);
+  auto [canon_t2, canon_dist_2] = detail::canonical_triangle(t2, d_2);
 
-  T p_2_a = t2.a[index];
-  T p_2_b = t2.b[index];
-  T p_2_c = t2.c[index];
+  T p_1_a = canon_t1.a[index];
+  T p_1_b = canon_t1.b[index];
+  T p_1_c = canon_t1.c[index];
+
+  T p_2_a = canon_t2.a[index];
+  T p_2_b = canon_t2.b[index];
+  T p_2_c = canon_t2.c[index];
+
+  auto v1 = p_1_a + (p_1_b - p_1_a) * (canon_dist_1[0]) / (canon_dist_1[0] - canon_dist_1[1]);
+  auto v2 = p_1_c + (p_1_b - p_1_c) * (canon_dist_1[2]) / (canon_dist_1[2] - canon_dist_1[1]);
+
+  auto q1 = p_2_a + (p_2_b - p_2_a) * (canon_dist_2[0]) / (canon_dist_2[0] - canon_dist_2[1]);
+  auto q2 = p_2_c + (p_2_b - p_2_c) * (canon_dist_2[2]) / (canon_dist_2[2] - canon_dist_2[1]);
+
+  return segment1<T>{v1, v2}.intersect(segment1<T>{q1, q2});
 }
 
 } // namespace geometry
