@@ -35,3 +35,13 @@ TEST(test_segment3, test_contain_point) {
   EXPECT_TRUE(a.contains(p1));
   EXPECT_FALSE(a.contains(p2));
 }
+
+TEST(test_segment3, test_intersect_1) {
+  segment_type a{{0, 0, 0}, {0, 0, 1}};
+  segment_type b{{0, 0, 0}, {0, 1, 0}};
+  EXPECT_TRUE(a.intersect(b));
+  std::swap(b.a, b.b);
+  EXPECT_TRUE(a.intersect(b));
+  std::swap(a.a, a.b);
+  EXPECT_TRUE(a.intersect(b));
+}

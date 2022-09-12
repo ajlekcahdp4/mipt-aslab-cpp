@@ -12,7 +12,9 @@
 #include <cmath>
 
 #include "point3.hpp"
+#include "segment2.hpp"
 #include "vec3.hpp"
+
 namespace throttle {
 namespace geometry {
 
@@ -28,6 +30,18 @@ template <typename T> struct segment3 {
   bool contains(const point_type &point) const {
     vec_type segment_vec = b - a, vec = b - point;
     return (co_directional(segment_vec, vec) && segment_vec.length_sq() > vec.length_sq());
+  }
+
+  bool intersect(const segment3 &other) const {
+    vec_type d1 = other.a - a, d2 = other.b - a, d3 = b - a;
+    if (!is_roughly_equal(triple_product(d1, d2, d3), T{0})) return false;
+
+    vec_type normal = cross(d1, d2);
+    if (is_roughly_equal(normal, vec_type::zero())) normal = cross(d2, d3);
+    auto max_index = normal.max_component().first;
+
+    return segment2{other.a.project_coord(max_index), other.b.project_coord(max_index)}.intersect(
+        segment2{a.project_coord(max_index), b.project_coord(max_index)});
   }
 };
 

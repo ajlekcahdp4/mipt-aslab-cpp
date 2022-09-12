@@ -46,7 +46,7 @@ template <typename T> struct point3 {
     }
   }
 
-  point_flat_type project_coord(unsigned axis) {
+  point_flat_type project_coord(unsigned axis) const {
     switch (axis) {
     case 0: return point_flat_type{y, z}; // Project onto yz plane
     case 1: return point_flat_type{x, z}; // Project onto xz plane
