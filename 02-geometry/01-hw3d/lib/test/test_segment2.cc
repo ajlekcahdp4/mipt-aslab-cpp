@@ -113,6 +113,11 @@ TEST(test_segment2, test_segment_segment_11) {
   segment_type b({0, 1}, {2, -1});
 
   EXPECT_TRUE(test_2d_segment_segment(a, b));
+
+  segment_type c{{0, -1}, {0, 1}};
+  segment_type d{{-1, -1}, {1, -1}};
+
+  EXPECT_TRUE(test_2d_segment_segment(c, d));
 }
 
 TEST(test_segment2, test_segment_segment_12) {
@@ -120,4 +125,9 @@ TEST(test_segment2, test_segment_segment_12) {
   segment_type b({-0.5, 0}, {0.5, 0});
 
   EXPECT_TRUE(test_2d_segment_segment(a, b));
+
+  segment_type c{{-0.66, -0.33}, {2, 1}};
+  segment_type d{{0.2, 0.1}, {4, 2}};
+
+  EXPECT_TRUE(test_2d_segment_segment(c, d));
 }
