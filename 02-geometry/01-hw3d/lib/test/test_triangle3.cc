@@ -36,14 +36,22 @@ TEST(test_triangle, test_1) {
 }
 
 TEST(test_triangle, test_canonical) {
-  triangle3 t{{1, 2, 3}, {-1, 2, 3}, {5, 8, -1}};
+  triangle3 t1{{1, 2, 3}, {-1, 2, 3}, {5, 8, -1}};
   plane     p{{1, 1, 1}, {0, 0, 1}};
 
   std::array<float, 3> dist;
-  dist[0] = p.signed_distance(t.a);
-  dist[1] = p.signed_distance(t.b);
-  dist[2] = p.signed_distance(t.c);
+  dist[0] = p.signed_distance(t1.a);
+  dist[1] = p.signed_distance(t1.b);
+  dist[2] = p.signed_distance(t1.c);
 
-  auto c = throttle::geometry::detail::canonical_triangle(t, dist);
-  EXPECT_EQ(c.a, t.c);
+  auto c = throttle::geometry::detail::canonical_triangle(t1, dist);
+  EXPECT_EQ(c.b, t1.c);
+
+  triangle3 t2{{1, 2, 8}, {-1, 2, -4}, {5, 8, -1}};
+  dist[0] = p.signed_distance(t2.a);
+  dist[1] = p.signed_distance(t2.b);
+  dist[2] = p.signed_distance(t2.c);
+
+  c = throttle::geometry::detail::canonical_triangle(t2, dist);
+  EXPECT_EQ(c.b, t2.a);
 }

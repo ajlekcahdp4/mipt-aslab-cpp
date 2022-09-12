@@ -10,13 +10,14 @@
 
 #pragma once
 
-#include <cmath>
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <cmath>
 #include <utility>
 
 #include "primitives/plane.hpp"
+#include "primitives/triangle2.hpp"
 
 #include "point3.hpp"
 #include "vec3.hpp"
@@ -28,14 +29,18 @@ template <typename T> struct triangle3 {
   using point_type = point3<T>;
   using vec_type = vec3<T>;
   using plane_type = plane<T>;
+  using flat_triangle_type = triangle2<T>;
 
   point_type a;
   point_type b;
   point_type c;
 
   plane_type plane_of() const { return plane_type{a, b, c}; }
+  bool       lies_on_one_side(const plane_type &p_plane) const { return lie_on_the_same_side(p_plane, a, b, c); }
 
-  bool lies_on_one_side(const plane_type &p_plane) const { return lie_on_the_same_side(p_plane, a, b, c); }
+  flat_triangle_type project_coord(unsigned axis) const {
+    return flat_triangle_type{a.project_coord(axis), b.project_coord(axis), c.project_coord(axis)};
+  }
 };
 
 namespace detail {
@@ -45,7 +50,7 @@ template <typename T> std::pair<T, T> compute_interval(T p_a, T p_b, T p_c, T d_
 }
 
 // Rearrange triangle vertices
-template <typename T> triangle3<T> canonical_triangle(const triangle3<T> &p_tri, std::array<T, 3> &p_dist) {
+template <typename T> triangle3<T> canonical_triangle(const triangle3<T> &p_tri, std::array<T, 3> p_dist) {
 #ifndef NDEBUG
   auto arr = p_dist;
   std::sort(arr.begin(), arr.end());
@@ -63,9 +68,9 @@ template <typename T> triangle3<T> canonical_triangle(const triangle3<T> &p_tri,
 
   auto max_index = std::distance(p_dist.begin(), std::max_element(p_dist.begin(), p_dist.end()));
   switch (max_index) {
-  case 0: return triangle3<T>{p_tri.a, p_tri.b, p_tri.c};
-  case 1: return triangle3<T>{p_tri.b, p_tri.a, p_tri.c};
-  case 2: return triangle3<T>{p_tri.c, p_tri.a, p_tri.b};
+  case 0: return triangle3<T>{p_tri.b, p_tri.a, p_tri.c};
+  case 1: return triangle3<T>{p_tri.a, p_tri.b, p_tri.c};
+  case 2: return triangle3<T>{p_tri.a, p_tri.c, p_tri.b};
   }
 }
 } // namespace detail
@@ -73,48 +78,69 @@ template <typename T> triangle3<T> canonical_triangle(const triangle3<T> &p_tri,
 template <typename T> bool triangle_triangle_intersect(const triangle3<T> &t1, const triangle3<T> &t2) {
   // 1. Compute the plane pi1 of the first triangle
   auto pi1 = t1.plane_of();
-
   // 2. Compute djstances from t2 to pi1
-  T d_2_a = pi1.signed_distance(t2.a);
-  T d_2_b = pi1.signed_distance(t2.b);
-  T d_2_c = pi1.signed_distance(t2.c);
-
+  std::array<T, 3> d_2 = {pi1.signed_distance(t2.a), pi1.signed_distance(t2.b), pi1.signed_distance(t2.c)};
+  std::for_each(d_2.begin(), d_2.end(), [](auto &elem) {
+    if (are_all_roughly_zero(elem)) elem = T{0};
+  });
   // 3. Rejection test. If none of the points lie on the plane and all distances have the same sign, then triangles
   // can't intersect.
-  if (!are_all_roughly_zero(d_2_a, d_2_b, d_2_c) && are_same_sign(d_2_a, d_2_b, d_2_c)) {
-    return false;
-  }
+  if (are_same_sign(d_2[0], d_2[1], d_2[2])) return false;
 
-  // 4. Same as 1
+  // 4. Same for triangle t2
   auto pi2 = t2.plane_of();
-
   // 5. Compute djstances from t1 to pi2
-  T d_1_a = pi1.signed_distance(t1.a);
-  T d_1_b = pi1.signed_distance(t1.b);
-  T d_1_c = pi1.signed_distance(t1.c);
-
-  // 5. Rejection test. If none of the points lie on the plane and all distances have the same sign, then triangles
+  std::array<T, 3> d_1 = {pi2.signed_distance(t1.a), pi2.signed_distance(t1.b), pi2.signed_distance(t1.c)};
+  std::for_each(d_1.begin(), d_1.end(), [](auto &elem) {
+    if (are_all_roughly_zero(elem)) elem = T{0};
+  });
+  // 6. Rejection test. If none of the points lie on the plane and all distances have the same sign, then triangles
   // can't intersect.
-  if (!are_all_roughly_zero(d_1_a, d_1_b, d_1_c) && are_same_sign(d_1_a, d_1_b, d_1_c)) {
-    return false;
+  if (are_same_sign(d_1[0], d_1[1], d_1[2])) return false;
+
+  // 7. Handle degenerate cases when one or more points lies on the plane of the other triangle.
+  auto num_zeros = std::count_if(d_1.begin(), d_1.end(), [](const auto &elem) { return elem == T{0}; });
+  if (num_zeros) {
+    using triangle_vertex_distance_pair = std::pair<typename triangle3<T>::point_type, T>;
+    std::array<triangle_vertex_distance_pair, 3> vert_dist_arr = {
+        std::make_pair(t1.a, d_1[0]), std::make_pair(t1.b, d_1[1]), std::make_pair(t1.c, d_1[2])};
+    std::sort(vert_dist_arr.begin(), vert_dist_arr.end(),
+              [](const auto &p_first, const auto &p_second) { return std::abs(p_first.second) < std::abs(p_second.second); });
+    auto max_index = pi2.normal().max_component().first;
+    auto t2_flat = t2.project_coord(max_index);
+
+    switch (num_zeros) {
+    case 1: {
+      auto proj_first = vert_dist_arr[0].first.project_coord(max_index);
+      if (t2_flat.point_in_triangle(proj_first)) return true;
+      if (!are_same_sign(vert_dist_arr[1].second, vert_dist_arr[2].second))
+        t2_flat.point_in_triangle(
+            pi2.segment_intersection({vert_dist_arr[0].first, vert_dist_arr[1].first}).value().project_coord(max_index));
+      return false;
+    }
+
+    case 2: {
+      return t2_flat.point_in_triangle(vert_dist_arr[0].first.project_coord(max_index)) ||
+             t2_flat.point_in_triangle(vert_dist_arr[1].first.project_coord(max_index));
+    }
+
+    case 3: return t2_flat.intersect(t1.project_coord(max_index));
+    default: throw std::runtime_error{"Something has gone terribly wrong."};
+    }
   }
 
-  // 6. Same as 3
-  if (are_all_roughly_zero(d_1_a, d_1_b, d_1_c)) {
-    return false; // TODO[]: Placeholder
-  }
-
-  // 7. If we get here than all early rejection tests failed and 2 triangles intersect the plane of the other.
+  // 8. If we get here than all early rejection tests failed and 2 triangles intersect the plane of the other. In this
+  // case 2 distances are of one sign and the other is of another sign. And none of the distances are equal to 0.
   auto d = cross(pi1.normal(), pi2.normal());
-  auto [index, max] = d.max_component();
+  auto index = d.max_component().first;
 
-  T p_1_a = t1.a.get_at_index(index);
-  T p_1_b = t1.b.get_at_index(index);
-  T p_1_c = t1.c.get_at_index(index);
+  T p_1_a = t1.a[index];
+  T p_1_b = t1.b[index];
+  T p_1_c = t1.c[index];
 
-  T p_2_a = t2.a.get_at_index(index);
-  T p_2_b = t2.b.get_at_index(index);
-  T p_2_c = t2.c.get_at_index(index);
+  T p_2_a = t2.a[index];
+  T p_2_b = t2.b[index];
+  T p_2_c = t2.c[index];
 }
 
 } // namespace geometry
