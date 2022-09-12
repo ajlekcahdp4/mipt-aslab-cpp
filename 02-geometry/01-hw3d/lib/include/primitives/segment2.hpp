@@ -47,7 +47,7 @@ template <typename T> struct segment2 {
 
     if (is_roughly_equal(dir_cross, T{0})) {
       if (!is_roughly_equal(perp_dot(diff_start, r), T{0})) return false; // Parallel
-      auto max_index = r.max_component().second;
+      auto max_index = r.max_component().first;
       return segment1<T>{a[max_index], b[max_index]}.intersect({other.a[max_index], other.b[max_index]});
     }
 
