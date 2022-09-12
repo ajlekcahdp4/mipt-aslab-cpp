@@ -19,7 +19,6 @@
 #include <cmath>
 
 #include "equal.hpp"
-#include "narrowphase/triangletriangle.hpp"
 #include "primitives/plane.hpp"
 #include "primitives/triangle3.hpp"
 

@@ -19,7 +19,6 @@
 #include <cmath>
 
 #include "equal.hpp"
-#include "narrowphase/triangletriangle.hpp"
 #include "primitives/triangle2.hpp"
 
 using triangle2 = throttle::geometry::triangle2<float>;
