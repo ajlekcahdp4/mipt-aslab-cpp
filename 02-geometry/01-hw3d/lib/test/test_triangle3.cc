@@ -58,6 +58,6 @@ TEST(test_triangle3, test_canonical) {
 
 TEST(test_triangle3, test_intersect_1) {
   triangle3 a{{0, 0, 0}, {1, 1, 1}, {3, 5, 2}};
-  triangle3 b{{2, 4, 1}, {2, 1, 4}, {-4, 3, 0}};
+  triangle3 b{{3, 4, 1}, {2, 1, 4}, {-4, 3, 0}};
   EXPECT_TRUE(triangle_triangle_intersect(a, b));
 }
