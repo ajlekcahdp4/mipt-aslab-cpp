@@ -1,11 +1,9 @@
 #include <chrono>
 #include <iostream>
 
-#include "primitives/aabb.hpp"
 #include "primitives/plane.hpp"
 #include "primitives/triangle3.hpp"
 #include "vec3.hpp"
-#include "broadphase/bruteforce.hpp"
 
 #include <vector>
 #include <set>
