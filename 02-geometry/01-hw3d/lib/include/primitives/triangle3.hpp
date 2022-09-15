@@ -55,7 +55,7 @@ template <typename T> std::pair<triangle3<T>, std::array<T, 3>> canonical_triang
   switch (greater_count) {
   case 1: break; // clang-format off
   case 2: { std::for_each(p_dist.begin(), p_dist.end(), [](T &elem) { elem *= -1; }); break; } // clang-format on
-  default: throw std::invalid_argument("Elements of distance array should all be of different signs.");
+  default: throw std::invalid_argument("Elements of distance array should all be of different signs");
   }
 
   auto max_index = std::distance(p_dist.begin(), std::max_element(p_dist.begin(), p_dist.end()));
@@ -67,6 +67,8 @@ template <typename T> std::pair<triangle3<T>, std::array<T, 3>> canonical_triang
   case 2:
     return std::make_pair(triangle3<T>{p_tri.a, p_tri.c, p_tri.b}, std::array<T, 3>{p_dist[0], p_dist[2], p_dist[1]});
   }
+
+  throw std::runtime_error{"Something unexpected has occured"};
 }
 } // namespace detail
 
