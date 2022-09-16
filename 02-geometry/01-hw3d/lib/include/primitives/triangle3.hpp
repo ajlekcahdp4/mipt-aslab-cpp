@@ -18,6 +18,7 @@
 
 #include "primitives/plane.hpp"
 #include "primitives/triangle2.hpp"
+#include "primitives/segment3.hpp"
 
 #include "point3.hpp"
 #include "vec3.hpp"
@@ -36,6 +37,7 @@ template <typename T> struct triangle3 {
   using vec_type = vec3<T>;
   using plane_type = plane<T>;
   using flat_triangle_type = triangle2<T>;
+  using segment_type = segment3<T>;
 
   point_type a;
   point_type b;
@@ -49,14 +51,24 @@ template <typename T> struct triangle3 {
   }
 
   bool intersect(const triangle3 &other) const { return detail::triangle_triangle_intersect(*this, other); }
+  
+  bool intersect(const segment_type &seg) const {
+    plane_type plane = plane_of();
+    auto intersection = plane.segment_intersection(seg);
+    if (!intersection) return false;
+    auto max_index = plane.normal().max_component().first;
+    return project_coord(max_index).point_in_triangle(intersection.value().project_coord(max_index));
+  }
+
+  bool intersect(const point_type &point) const {
+    plane_type plane = plane_of();
+    if (is_definitely_greater(plane.distance(point), T{0})) return false;
+    auto max_index = plane.normal().max_component().first;
+    return project_coord(max_index).point_in_triangle(point.project_coord(max_index));
+  }
 };
 
 namespace detail {
-template <typename T> std::pair<T, T> compute_interval(T p_a, T p_b, T p_c, T d_a, T d_b, T d_c) {
-  assert(!are_same_sign(d_a, d_b, d_c));
-  if (are_same_sign(d_a, d_c)) {}
-}
-
 // Rearrange triangle vertices
 template <typename T>
 std::pair<triangle3<T>, std::array<T, 3>> canonical_triangle(const triangle3<T> &p_tri, std::array<T, 3> p_dist) {

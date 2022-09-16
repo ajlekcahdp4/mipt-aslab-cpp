@@ -4,13 +4,15 @@
 #include "primitives/plane.hpp"
 #include "primitives/triangle3.hpp"
 #include "vec3.hpp"
+#include "narrowphase/collision_shape.hpp"
 
 #include <vector>
 #include <set>
 
 int main() {
+  using collison_geom_type = throttle::geometry::collision_shape<float>;
   using triangle = throttle::geometry::triangle3<float>;
-  std::vector<triangle> vec;
+  std::vector<collison_geom_type> vec;
 
   unsigned n;
   if (!(std::cin >> n)) {
@@ -29,7 +31,7 @@ int main() {
   std::set<unsigned> in_contact;
   for (unsigned i = 0; i < vec.size(); ++i) {
     for (unsigned j = i + 1; j < vec.size(); ++j) {
-      bool intersect = vec[i].intersect(vec[j]);
+      bool intersect = vec[i].collide(vec[j]);
       if (intersect) {
         in_contact.insert(i);
         in_contact.insert(j);
