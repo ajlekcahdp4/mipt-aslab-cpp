@@ -22,6 +22,7 @@ private:
 
 public:
   segment1(T p_a, T p_b) : a{std::min(p_a, p_b)}, b{std::max(p_a, p_b)} {}
+  static segment1 unity() { return segment1{0, 1}; }
 
   T len() const { return b - a; }
 

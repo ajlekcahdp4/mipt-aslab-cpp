@@ -54,13 +54,9 @@ template <typename T> struct segment2 {
     const T t = perp_dot(diff_start, s) / perp_dot(r, s);
     const T u = perp_dot(diff_start, r) / perp_dot(r, s);
 
-    return segment1<T>{0, 1}.contains(t) && segment1<T>{0, 1}.contains(u);
+    return segment1<T>::unity().contains(t) && segment1<T>::unity().contains(u);
   }
 };
-
-template <typename T> bool test_2d_segment_segment(const segment2<T> &seg1, const segment2<T> &seg2) {
-  return seg1.intersect(seg2);
-}
 
 } // namespace geometry
 } // namespace throttle

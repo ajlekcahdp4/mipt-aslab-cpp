@@ -25,6 +25,12 @@
 namespace throttle {
 namespace geometry {
 
+template <typename> struct triangle3;
+
+namespace detail {
+template <typename T> bool triangle_triangle_intersect(const triangle3<T>&, const triangle3<T>&);
+}
+
 template <typename T> struct triangle3 {
   using point_type = point3<T>;
   using vec_type = vec3<T>;
@@ -41,6 +47,8 @@ template <typename T> struct triangle3 {
   flat_triangle_type project_coord(unsigned axis) const {
     return flat_triangle_type{a.project_coord(axis), b.project_coord(axis), c.project_coord(axis)};
   }
+
+  bool intersect(const triangle3 &other) const { return detail::triangle_triangle_intersect(*this, other); }
 };
 
 namespace detail {
@@ -50,7 +58,8 @@ template <typename T> std::pair<T, T> compute_interval(T p_a, T p_b, T p_c, T d_
 }
 
 // Rearrange triangle vertices
-template <typename T> std::pair<triangle3<T>, std::array<T, 3>> canonical_triangle(const triangle3<T> &p_tri, std::array<T, 3> p_dist) {
+template <typename T>
+std::pair<triangle3<T>, std::array<T, 3>> canonical_triangle(const triangle3<T> &p_tri, std::array<T, 3> p_dist) {
   auto greater_count = std::count_if(p_dist.begin(), p_dist.end(), [](T elem) { return elem > 0; });
   switch (greater_count) {
   case 1: break; // clang-format off
@@ -70,7 +79,6 @@ template <typename T> std::pair<triangle3<T>, std::array<T, 3>> canonical_triang
 
   throw std::runtime_error{"Something unexpected has occured"};
 }
-} // namespace detail
 
 template <typename T> bool triangle_triangle_intersect(const triangle3<T> &t1, const triangle3<T> &t2) {
   // 1. Compute the plane pi1 of the first triangle
@@ -152,6 +160,8 @@ template <typename T> bool triangle_triangle_intersect(const triangle3<T> &t1, c
 
   return segment1<T>{v1, v2}.intersect(segment1<T>{q1, q2});
 }
+
+} // namespace detail
 
 } // namespace geometry
 } // namespace throttle
