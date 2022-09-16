@@ -36,6 +36,9 @@ public:
   }
 
   bool contains(T point) const { return is_roughly_greater_eq(point, a) && is_roughly_less_eq(point, b); }
+
+  T left() const { return a; }
+  T right() const { return b; }
 };
 
 } // namespace geometry
