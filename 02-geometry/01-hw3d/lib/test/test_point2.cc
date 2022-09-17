@@ -23,7 +23,7 @@ using point = throttle::geometry::point2<float>;
 using vec = throttle::geometry::vec2<float>;
 using namespace throttle::geometry;
 
-template class throttle::geometry::point2<float>;
+template struct throttle::geometry::point2<float>;
 
 TEST(TestPoint2, TestSubscriptOperator_1) {
   point a{1.0, 2.0};
