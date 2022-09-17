@@ -11,12 +11,22 @@
 #pragma once
 
 #include "broadphase_structure.hpp"
+#include "narrowphase/collision_shape.hpp"
+
+#include <vector>
 
 namespace throttle {
 namespace geometry {
 
-template <typename T> class bruteforce : broadphase_structure<bruteforce<T>> {
+template <typename T, typename t_shape = collision_shape<T>,
+          typename = std::enable_if_t<std::is_base_of_v<collision_shape<T>, t_shape>>>
+class bruteforce : broadphase_structure<bruteforce<T>, t_shape> {
+  std::vector<t_shape> m_stored_shapes;
 
+public:
+  using shape_type = t_shape;
+
+  void add_collison_shape(const shape_type &shape) { m_stored_shapes.push_back(shape); }
 };
 
 } // namespace geometry

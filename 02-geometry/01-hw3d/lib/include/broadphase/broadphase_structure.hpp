@@ -10,25 +10,21 @@
 
 #pragma once
 
+#include "narrowphase/collision_shape.hpp"
+#include <type_traits>
+
 namespace throttle {
 namespace geometry {
 
-template <typename t_derived> class broadphase_structure {
+template <typename t_derived, typename shape_type> class broadphase_structure {
   using derived_ptr = t_derived *;
   using const_derived_ptr = const t_derived *;
 
-  derived_ptr impl() {
-    return static_cast<derived_ptr>(this);
-  }
-
-  const_derived_ptr impl() const {
-    return static_cast<const_derived_ptr>(this);
-  }
+  derived_ptr       impl() { return static_cast<derived_ptr>(this); }
+  const_derived_ptr impl() const { return static_cast<const_derived_ptr>(this); }
 
 public:
-  void add_collison_shape() {
-    impl()->add_collision_shape();
-  }
+  void add_collison_shape(const shape_type &shape) { impl()->add_collision_shape(shape); }
   //
 };
 

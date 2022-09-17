@@ -41,9 +41,13 @@ public:
   bool collide(const collision_shape &other) const {
     if (!m_aabb.intersect(other.m_aabb)) return false;
     return mpark::visit([](auto &&first, auto &&second) -> bool { return intersect(first, second); }, m_shape,
-                      other.m_shape);
+                        other.m_shape);
   }
 };
+
+template <typename T> bool collide(const collision_shape<T> &shape1, const collision_shape<T> &shape2) {
+  return shape1.collide(shape2);
+}
 
 // Overloads for triangles
 

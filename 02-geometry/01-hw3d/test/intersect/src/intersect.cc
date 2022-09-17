@@ -1,18 +1,28 @@
 #include <chrono>
 #include <iostream>
 
+#include "broadphase/broadphase_structure.hpp"
+#include "broadphase/bruteforce.hpp"
+
+#include "narrowphase/collision_shape.hpp"
 #include "primitives/plane.hpp"
 #include "primitives/triangle3.hpp"
 #include "vec3.hpp"
-#include "narrowphase/collision_shape.hpp"
 
-#include <vector>
 #include <set>
+#include <vector>
+
+struct indexed_geom : public throttle::geometry::collision_shape<float> {
+  unsigned index;
+  indexed_geom(unsigned idx, auto &&base) : collision_shape{base}, index{idx} {};
+};
 
 int main() {
   using collison_geom_type = throttle::geometry::collision_shape<float>;
   using triangle = throttle::geometry::triangle3<float>;
   std::vector<collison_geom_type> vec;
+
+  throttle::geometry::bruteforce<float, indexed_geom> bruteforce;
 
   unsigned n;
   if (!(std::cin >> n)) {
@@ -25,6 +35,7 @@ int main() {
     triangle temp;
     std::cin >> temp.a[0] >> temp.a[1] >> temp.a[2] >> temp.b[0] >> temp.b[1] >> temp.b[2] >> temp.c[0] >> temp.c[1] >>
         temp.c[2];
+    bruteforce.add_collison_shape({i, temp});
     vec.push_back(temp);
   }
 
@@ -39,5 +50,6 @@ int main() {
     }
   }
 
-  for (const auto &v: in_contact) std::cout << v << " ";
+  for (const auto &v : in_contact)
+    std::cout << v << " ";
 }
