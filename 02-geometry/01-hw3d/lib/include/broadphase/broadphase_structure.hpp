@@ -24,7 +24,7 @@ template <typename t_derived, typename shape_type> class broadphase_structure {
   const_derived_ptr impl() const { return static_cast<const_derived_ptr>(this); }
 
 public:
-  void add_collison_shape(const shape_type &shape) { impl()->add_collision_shape(shape); }
+  void add_collision_shape(const shape_type &shape) { impl()->add_collision_shape(shape); }
   //
 };
 

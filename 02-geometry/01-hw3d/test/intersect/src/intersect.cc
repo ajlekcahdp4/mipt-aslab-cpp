@@ -35,7 +35,7 @@ int main() {
     triangle temp;
     std::cin >> temp.a[0] >> temp.a[1] >> temp.a[2] >> temp.b[0] >> temp.b[1] >> temp.b[2] >> temp.c[0] >> temp.c[1] >>
         temp.c[2];
-    bruteforce.add_collison_shape({i, temp});
+    bruteforce.add_collision_shape({i, temp});
     vec.push_back(temp);
   }
 

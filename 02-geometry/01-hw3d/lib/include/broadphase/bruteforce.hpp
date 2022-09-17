@@ -26,7 +26,7 @@ class bruteforce : broadphase_structure<bruteforce<T>, t_shape> {
 public:
   using shape_type = t_shape;
 
-  void add_collison_shape(const shape_type &shape) { m_stored_shapes.push_back(shape); }
+  void add_collision_shape(const shape_type &shape) { m_stored_shapes.push_back(shape); }
 };
 
 } // namespace geometry
