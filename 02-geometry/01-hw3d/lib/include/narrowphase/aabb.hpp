@@ -42,9 +42,9 @@ template <typename T> struct aabb {
              point_type{vmax(points.x...), vmax(points.y...), vmax(points.z...)}) {}
 
   bool intersect(aabb a) const {
-    if (std::abs(m_center.x - a.m_center.x) > (m_halfwidth_x + a.m_halfwidth_x)) return false;
-    if (std::abs(m_center.y - a.m_center.y) > (m_halfwidth_y + a.m_halfwidth_y)) return false;
-    if (std::abs(m_center.z - a.m_center.z) > (m_halfwidth_z + a.m_halfwidth_z)) return false;
+    if (is_definitely_greater(std::abs(m_center.x - a.m_center.x), (m_halfwidth_x + a.m_halfwidth_x))) return false;
+    if (is_definitely_greater(std::abs(m_center.y - a.m_center.y), (m_halfwidth_y + a.m_halfwidth_y))) return false;
+    if (is_definitely_greater(std::abs(m_center.z - a.m_center.z), (m_halfwidth_z + a.m_halfwidth_z))) return false;
     return true;
   }
 };
