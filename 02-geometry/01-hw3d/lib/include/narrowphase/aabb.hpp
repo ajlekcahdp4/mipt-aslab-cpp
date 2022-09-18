@@ -73,6 +73,15 @@ template <typename T> struct aabb {
   bool intersect_yz(T x) const {
     return (is_roughly_greater_eq(x, m_center.x - m_halfwidth_x) && is_roughly_less_eq(x, m_center.x + m_halfwidth_x));
   }
+
+  bool intersect_coodrinate_plane(unsigned idx, T val) const {
+    switch (idx) {
+    case 0: return intersect_yz(val);
+    case 1: return intersect_xz(val);
+    case 2: return intersect_xy(val);
+    default: throw std::out_of_range("Index of plane out of range.");
+    }
+  }
 };
 
 } // namespace geometry
