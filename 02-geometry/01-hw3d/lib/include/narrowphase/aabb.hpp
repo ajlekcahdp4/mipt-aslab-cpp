@@ -44,6 +44,14 @@ template <typename T> struct aabb {
       : aabb(point_type{vmin(points.x...), vmin(points.y...), vmin(points.z...)},
              point_type{vmax(points.x...), vmax(points.y...), vmax(points.z...)}) {}
 
+  point_type minimum_corner() const {
+    return {m_center.x - m_halfwidth_x, m_center.y - m_halfwidth_y, m_center.z - m_halfwidth_z};
+  }
+
+  point_type maximum_corner() const {
+    return {m_center.x + m_halfwidth_x, m_center.y + m_halfwidth_y, m_center.z + m_halfwidth_z};
+  }
+
   bool intersect(const aabb &a) const {
     if (is_definitely_greater(std::abs(m_center.x - a.m_center.x), (m_halfwidth_x + a.m_halfwidth_x))) return false;
     if (is_definitely_greater(std::abs(m_center.y - a.m_center.y), (m_halfwidth_y + a.m_halfwidth_y))) return false;
