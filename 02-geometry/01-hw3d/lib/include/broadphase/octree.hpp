@@ -40,18 +40,13 @@ public:
   using shape_type = t_shape;
 
 private:
-  struct ref_counted_shape {
-    shape_type shape;
-    unsigned   ref_counts;
 
-    ref_counted_shape(const shape_type &p_shape, unsigned p_count) : shape{p_shape}, ref_counts{p_count} {}
-  };
-
-  std::vector<ref_counted_shape> m_stored_shapes;
+  std::vector<shape_type> m_stored_shapes;
   std::vector<t_shape>           m_waiting_queue;
 
   unsigned m_max_depth;
-  T m_min_cell_size_half;
+  T        m_min_cell_size_half;
+  unsigned m_max_refs = 12;
 
   std::optional<T> m_max_coord, m_min_coord;
   struct octree_node {
@@ -68,38 +63,46 @@ private:
 
   std::vector<octree_node> m_nodes;
 
-  void insert_shape_impl(unsigned root_index, const shape_type &shape) {
-    unsigned     index = 0;
-    bool         straddling = false;
+  void insert_shape_impl(unsigned root_index, const shape_type &shape, unsigned shape_pos) {
+    unsigned index = 0;
+    bool     straddling = false;
+
     auto         bbox = shape.bounding_box();
     octree_node &curr_node = m_nodes[root_index];
 
     for (unsigned i = 0; i < 3; ++i) {
       T delta = bbox.m_center[i] - curr_node.m_center[i];
+
       if (bbox.intersect_coodrinate_plane(i, curr_node.m_center[i])) {
         straddling = true;
         break;
       }
+
       if (delta > T{0}) index |= (1 << i);
     }
 
-    if (!straddling && curr_node.m_children[index]) {
-      insert_shape_impl(curr_node.m_children[index], shape);
+    if (!straddling) {
+      if (curr_node.m_children[index]) return insert_shape_impl(curr_node.m_children[index], shape, shape_pos);
+      curr_node.m_contained_shape_indexes.push_back(shape_pos);
+      return;
     }
 
     else {
-      unsigned new_shape_index = m_stored_shapes.size();
-      m_stored_shapes.emplace_back(shape, 1);
-      curr_node.m_contained_shape_indexes.push_back(new_shape_index);
+      curr_node.m_contained_shape_indexes.push_back(shape_pos);
     }
   }
 
-  void insert_shape(const shape_type &shape) { insert_shape_impl(root_index(), shape); }
+  void insert_shape(const shape_type &shape) {
+    unsigned new_shape_index = m_stored_shapes.size();
+    m_stored_shapes.emplace_back(shape);
+    insert_shape_impl(root_index(), shape, new_shape_index);
+  }
 
   unsigned build_subtree(point_type center, T halfwidth, unsigned stop) {
     unsigned index = m_nodes.size();
     m_nodes.emplace_back(center, halfwidth);
 
+    // Check if stop conditions are met.
     if (!stop || (halfwidth < m_min_cell_size_half)) return index;
 
     vec_type offset = vec_type::zero();
@@ -122,7 +125,7 @@ private:
     // Guard against empty octree
     if (!m_max_coord) return;
 
-    // Update halfwidth and center
+    // Calculate halfwidth and center
     auto center_coord = (m_max_coord.value() + m_min_coord.value()) / T{2};
     auto center = point_type{center_coord, center_coord, center_coord};
     auto halfwidth = (m_max_coord.value() - m_min_coord.value()) / T{2};
@@ -139,7 +142,10 @@ private:
 
 public:
   static constexpr auto default_min_cell_size = T{1.0e-4f};
-  octree(unsigned depth, T min_cell_size = default_min_cell_size) : m_max_depth{depth}, m_min_cell_size_half{min_cell_size / T{2}} { m_nodes.emplace_back(point_type::origin(), T{0}); }
+  octree(unsigned depth, T min_cell_size = default_min_cell_size)
+      : m_max_depth{depth}, m_min_cell_size_half{min_cell_size / T{2}} {
+    m_nodes.emplace_back(point_type::origin(), T{0});
+  }
 
   void add_collision_shape(const shape_type &shape) {
     auto bbox = shape.bounding_box();
@@ -156,7 +162,17 @@ public:
     m_max_coord = vmax(m_max_coord.value(), max_point.x, max_point.y, max_point.z);
   }
 
-  void rebuid() { return; }
+  void rebuid() {
+    if (!m_waiting_queue.size()) return;
+
+    // Copy shapes from stored buffer to waiting queue.
+    std::transform(m_stored_shapes.begin(), m_stored_shapes.end(), std::back_inserter(m_waiting_queue),
+                   [](const auto &elem) { return elem; });
+    m_stored_shapes.clear();
+
+    preconstruct();
+    flush_waiting(); // Flush the waiting queue and move shapes to the stored buffer.
+  }
 
 private:
   struct many_to_many_collider {
@@ -174,7 +190,7 @@ private:
           for (const auto &i_b : tree.m_nodes[current_node].m_contained_shape_indexes) {
             if (i_a == i_b) break;
 
-            if (tree.m_stored_shapes[i_a].shape.collide(tree.m_stored_shapes[i_b].shape)) {
+            if (tree.m_stored_shapes[i_a].collide(tree.m_stored_shapes[i_b])) {
               in_collision.insert(i_a);
               in_collision.insert(i_b);
             }
@@ -192,20 +208,14 @@ private:
 
 public:
   std::vector<shape_ptr> many_to_many() {
-    if (m_waiting_queue.size()) {
-      std::transform(m_stored_shapes.begin(), m_stored_shapes.end(), std::back_inserter(m_waiting_queue),
-                     [](const auto &elem) { return elem.shape; });
-      m_stored_shapes.clear();
-      preconstruct();
-      flush_waiting();
-    }
+    rebuid();
 
     many_to_many_collider collider{*this};
     collider.collide(root_index());
 
     std::vector<shape_ptr> result;
     std::transform(collider.in_collision.begin(), collider.in_collision.end(), std::back_inserter(result),
-                   [&](const auto &elem) { return std::addressof(m_stored_shapes[elem].shape); });
+                   [&](const auto &elem) { return std::addressof(m_stored_shapes[elem]); });
     return result;
   }
 };
