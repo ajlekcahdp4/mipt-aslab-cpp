@@ -25,13 +25,26 @@ namespace geometry {
 template <typename T, typename t_shape = collision_shape<T>,
           typename = std::enable_if_t<std::is_base_of_v<collision_shape<T>, t_shape>>>
 class uniform_grid : broadphase_structure<uniform_grid<T>, t_shape> {
-
-  using list_t = typename std::list<t_shape>;
-  using map_t = typename std::unordered_map<cell, list_t>;
-
   struct cell {
     point3<T> point_t m_minimum_corner;
   };
+
+  using cell_type = cell<T>;
+
+  struct cell_hash {
+    // compute hash bucket index in range [0, NUM_BUCKETS-1]
+    int operator()(const cell_type &cell) {
+      const int h1 = 0x8da6b343; // Large multiplication constants;
+      const int h2 = 0xd8163841; // here arbirarily chosen primes
+      const int h3 = 0xcb1ab31f;
+
+      int hash = h1 * cell.x + h2 * cell.y + h3 * cell.z;
+      return hash;
+    }
+  };
+
+  using list_t = typename std::list<t_shape>;
+  using map_t = typename std::unordered_map<cell, list_t, cell_hash>;
 
   T                    m_cell_size;
   std::vector<t_shape> m_waiting_queue;
@@ -42,17 +55,17 @@ class uniform_grid : broadphase_structure<uniform_grid<T>, t_shape> {
 public:
   using shape_type = t_shape;
 
-  uniform_grid(T min_size) : m_cell_size{min_size} {}
-  uniform_grid(T min_size, unsigned number_hint) : m_cell_size{min_size} { m_waiting_queue.reserve(number_hint); }
+  uniform_grid(unsigned number_hint) { m_waiting_queue.reserve(number_hint); }
 
   void add_collision_shape(const shape_type &shape) {
     m_waiting_queue.push_back(shape);
     auto &bbox = shape.bounding_box();
     auto  bbox_max_corner = bbox.maximum_corner();
     auto  bbox_min_corner = bbox.minimum_corner();
-    auto  double_max_width = 2 * bbox.max_width();
+    auto  max_width = bbox.max_width();
 
-    if (is_definitely_greater(m_cell_size, double_max_width)) m_cell_size = double_max_width;
+    /* remain cell size to be large enough to fit the largest shape in any rotation */
+    if (is_definitely_greater(max_width, m_cell_size)) m_cell_size = max_width;
 
     if (!m_min_val) { /* first insertion */
       m_min_val = vmin(bbox_min_corner.x, bbox_min_corner.y, bbox_min_corner.z);
