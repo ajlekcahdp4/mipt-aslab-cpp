@@ -117,6 +117,7 @@ TEST(TestAABB, test_intersect_with_plane_5) {
   EXPECT_TRUE(a.intersect_xy(-0.5));
 }
 
+<<<<<<< HEAD
 TEST(TestAABB, test_min_max_corner) {
   using point = AABB::point_type;
   AABB a{{1.0, 2.0, 3.0}, 1.0, 2.0, 3.0};
@@ -124,6 +125,8 @@ TEST(TestAABB, test_min_max_corner) {
   EXPECT_TRUE(is_roughly_equal(a.maximum_corner(), point{2.0, 4.0, 6.0}));
 }
 
+=======
+>>>>>>> a1dc053 (added AABB cube ctor, axes plane intersection and tests)
 TEST(TestAABB, test_variadic_constructor) {
   using point = AABB::point_type;
   AABB a{point{1, 2, 3}, point{4, 5, 6}, point{7, 8, 9}};
