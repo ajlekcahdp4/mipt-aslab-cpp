@@ -105,5 +105,12 @@ bool co_directional(const vec3<T> &lhs, const vec3<T> &rhs,
                     T p_tolerance = ::throttle::geometry::default_precision<T>::m_prec) {
   return (colinear(lhs, rhs, p_tolerance) && dot(lhs, rhs) > 0);
 }
+
+template <typename T, typename = std::enable_if_t<std::is_floating_point_v<T>>>
+bool is_roughly_equal(vec3<T> p_first, vec3<T> p_second, T p_precision = default_precision<T>::m_prec) {
+  return is_roughly_equal(p_first.x, p_second.x, p_precision) && is_roughly_equal(p_first.y, p_second.y, p_precision) &&
+         is_roughly_equal(p_first.z, p_second.z, p_precision);
+};
+
 } // namespace geometry
 } // namespace throttle

@@ -18,6 +18,7 @@
 
 #include "primitives/plane.hpp"
 #include "primitives/triangle2.hpp"
+#include "primitives/segment3.hpp"
 
 #include "point3.hpp"
 #include "vec3.hpp"
@@ -25,11 +26,18 @@
 namespace throttle {
 namespace geometry {
 
+template <typename> struct triangle3;
+
+namespace detail {
+template <typename T> bool triangle_triangle_intersect(const triangle3<T>&, const triangle3<T>&);
+}
+
 template <typename T> struct triangle3 {
   using point_type = point3<T>;
   using vec_type = vec3<T>;
   using plane_type = plane<T>;
   using flat_triangle_type = triangle2<T>;
+  using segment_type = segment3<T>;
 
   point_type a;
   point_type b;
@@ -41,21 +49,34 @@ template <typename T> struct triangle3 {
   flat_triangle_type project_coord(unsigned axis) const {
     return flat_triangle_type{a.project_coord(axis), b.project_coord(axis), c.project_coord(axis)};
   }
+
+  bool intersect(const triangle3 &other) const { return detail::triangle_triangle_intersect(*this, other); }
+  
+  bool intersect(const segment_type &seg) const {
+    plane_type plane = plane_of();
+    auto intersection = plane.segment_intersection(seg);
+    if (!intersection) return false;
+    auto max_index = plane.normal().max_component().first;
+    return project_coord(max_index).point_in_triangle(intersection.value().project_coord(max_index));
+  }
+
+  bool intersect(const point_type &point) const {
+    plane_type plane = plane_of();
+    if (is_definitely_greater(plane.distance(point), T{0})) return false;
+    auto max_index = plane.normal().max_component().first;
+    return project_coord(max_index).point_in_triangle(point.project_coord(max_index));
+  }
 };
 
 namespace detail {
-template <typename T> std::pair<T, T> compute_interval(T p_a, T p_b, T p_c, T d_a, T d_b, T d_c) {
-  assert(!are_same_sign(d_a, d_b, d_c));
-  if (are_same_sign(d_a, d_c)) {}
-}
-
 // Rearrange triangle vertices
-template <typename T> std::pair<triangle3<T>, std::array<T, 3>> canonical_triangle(const triangle3<T> &p_tri, std::array<T, 3> p_dist) {
+template <typename T>
+std::pair<triangle3<T>, std::array<T, 3>> canonical_triangle(const triangle3<T> &p_tri, std::array<T, 3> p_dist) {
   auto greater_count = std::count_if(p_dist.begin(), p_dist.end(), [](T elem) { return elem > 0; });
   switch (greater_count) {
   case 1: break; // clang-format off
   case 2: { std::for_each(p_dist.begin(), p_dist.end(), [](T &elem) { elem *= -1; }); break; } // clang-format on
-  default: throw std::invalid_argument("Elements of distance array should all be of different signs.");
+  default: throw std::invalid_argument("Elements of distance array should all be of different signs");
   }
 
   auto max_index = std::distance(p_dist.begin(), std::max_element(p_dist.begin(), p_dist.end()));
@@ -67,8 +88,9 @@ template <typename T> std::pair<triangle3<T>, std::array<T, 3>> canonical_triang
   case 2:
     return std::make_pair(triangle3<T>{p_tri.a, p_tri.c, p_tri.b}, std::array<T, 3>{p_dist[0], p_dist[2], p_dist[1]});
   }
+
+  throw std::runtime_error{"Something unexpected has occured"};
 }
-} // namespace detail
 
 template <typename T> bool triangle_triangle_intersect(const triangle3<T> &t1, const triangle3<T> &t2) {
   // 1. Compute the plane pi1 of the first triangle
@@ -150,6 +172,8 @@ template <typename T> bool triangle_triangle_intersect(const triangle3<T> &t1, c
 
   return segment1<T>{v1, v2}.intersect(segment1<T>{q1, q2});
 }
+
+} // namespace detail
 
 } // namespace geometry
 } // namespace throttle

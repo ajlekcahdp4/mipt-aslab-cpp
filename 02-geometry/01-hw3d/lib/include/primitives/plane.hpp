@@ -14,8 +14,8 @@
 #include <optional>
 
 #include "point3.hpp"
-#include "vec3.hpp"
 #include "segment3.hpp"
+#include "vec3.hpp"
 
 namespace throttle {
 namespace geometry {
@@ -44,7 +44,7 @@ public:
   T distance(const point3<T> &p_point) const { return std::abs(signed_distance(p_point)); }
   T distance_origin() const { return std::abs(m_dist); }
 
-  std::optional<point_type> segment_intersection(const segment_type& segment) {
+  std::optional<point_type> segment_intersection(const segment_type &segment) {
     T dist_a = signed_distance(segment.a);
     T dist_b = signed_distance(segment.b);
 
@@ -52,8 +52,14 @@ public:
     if (is_roughly_equal(dist_b, T{0})) return segment.b;
     if (are_same_sign(dist_a, dist_b)) return std::nullopt;
 
+      // This code used to be this, but it's possible to avoid calling std::abs. dist_a and dist_b have different signs
+      // if we get here. Then consider if dist_a > 0, dist_b < 0, then dist_a - dist_b = abs(dist_a) + abs(dist_b). Next
+      // consider if dist_a < 0, dist_b > 0. dist_a - dist_b = -(abs(dist_a) + abs(dist_b)).
+#if 0
     return std::abs(dist_a) / (std::abs(dist_a) + std::abs(dist_b)) * (segment.b - segment.a) + segment.a;
-  } 
+#endif
+    return ((dist_a) / (dist_a - dist_b)) * (segment.b - segment.a) + segment.a;
+  }
 
   vec_type normal() const { return m_normal; }
 };
@@ -74,7 +80,8 @@ template <typename T> T distance_from_plane(const plane<T> &p_plane, const point
 namespace throttle {
 namespace geometry {
 
-template <typename T, typename... Ts, typename = std::enable_if_t<std::conjunction_v<std::is_convertible<Ts, point3<T>>...>>>
+template <typename T, typename... Ts,
+          typename = std::enable_if_t<std::conjunction_v<std::is_convertible<Ts, point3<T>>...>>>
 bool lie_on_the_same_side(const plane<T> &p_plane, Ts... p_points) {
   return are_same_sign(p_plane.signed_distance(p_points)...);
 }

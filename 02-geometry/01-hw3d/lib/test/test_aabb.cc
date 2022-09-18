@@ -15,7 +15,7 @@
 #include <gtest/gtest.h>
 #include <numeric>
 
-#include "primitives/aabb.hpp"
+#include "narrowphase/aabb.hpp"
 
 using AABB = typename throttle::geometry::aabb<double>;
 using namespace throttle::geometry;
@@ -26,67 +26,102 @@ TEST(TestAABB, test_intersect_1) {
   AABB a{{0, 0, 0}, 0.5, 0.5, 0.5};
   AABB b{{100, 100, 100}, 1, 2, 3};
 
-  EXPECT_FALSE(aabb_aabb_intersect(a, b));
+  EXPECT_FALSE(a.intersect(b));
 }
 
 TEST(TestAABB, test_intersect_2) {
   AABB a{{0, 0, 0}, 0.5, 0.5, 0.5};
   AABB b{{0, 0, 1}, 1, 1, 1};
 
-  EXPECT_TRUE(aabb_aabb_intersect(a, b));
+  EXPECT_TRUE(a.intersect(b));
 }
 
 TEST(TestAABB, test_intersect_3) {
   AABB a{{0, 0, 0}, 0.5, 0.5, 0.5};
   AABB b{{0, 0, 1}, 0.5, 0.5, 0.5};
 
-  EXPECT_TRUE(aabb_aabb_intersect(a, b));
+  EXPECT_TRUE(a.intersect(b));
 }
 
 TEST(TestAABB, test_intersect_4) {
   AABB a{{0, 0, 0}, 0.5, 0.5, 0.5};
   AABB b{{0, 0.5, 0}, 0, 0.5, 0.5};
 
-  EXPECT_TRUE(aabb_aabb_intersect(a, b));
+  EXPECT_TRUE(a.intersect(b));
 }
 
 TEST(TestAABB, test_intersect_5) {
   AABB a{{0, 0, 0}, 0.5, 0.5, 0.5};
   AABB b{{0, 1, 0}, 0, 0.5, 0.5};
 
-  EXPECT_TRUE(aabb_aabb_intersect(a, b));
+  EXPECT_TRUE(a.intersect(b));
 }
 
 TEST(TestAABB, test_intersect_6) {
   AABB a{{0, 0, 0}, 0.5, 0, 0.5};
   AABB b{{0, 0, 0}, 0, 0.5, 0.5};
 
-  EXPECT_TRUE(aabb_aabb_intersect(a, b));
+  EXPECT_TRUE(a.intersect(b));
 }
 
 TEST(TestAABB, test_intersect_7) {
   AABB a{{0, 0, 0}, 0.5, 0.5, 0.5};
   AABB b{{-0.5, 0.75, 0}, 0, 0.5, 0.5};
 
-  EXPECT_TRUE(aabb_aabb_intersect(a, b));
+  EXPECT_TRUE(a.intersect(b));
 }
 
-TEST(TestAABB, test_equal) {
-  AABB a{{0, 0, 0}, 1, 2, 3};
-  AABB b{{0, 0, 0}, 1, 2, 3};
-  AABB c{{0, 1, 0}, 1, 2, 3};
+TEST(TestAABB, test_intersect_8) {
+  AABB a{{0, 0, 0}, 0, 0, 0};
+  AABB b{{0, 0, 0}, 0, 0, 0};
 
-  EXPECT_TRUE(a == b);
-  EXPECT_FALSE(a == c);
+  EXPECT_TRUE(a.intersect(b));
 }
 
-TEST(TestAABB, test_not_equal) {
-  AABB a{{0, 0, 0}, 1, 2, 3};
-  AABB b{{0, 0, 0}, 1, 2, 3};
-  AABB c{{0, 1, 0}, 1, 2, 3};
+TEST(TestAABB, test_intersect_9) {
+  AABB a{{0, 0.3, 0}, 0, 0.5, 0};
+  AABB b{{0, 0, 0}, 0, 0.5, 0};
 
-  EXPECT_FALSE(a != b);
-  EXPECT_TRUE(a != c);
+  EXPECT_TRUE(a.intersect(b));
+}
+
+TEST(TestAABB, test_intersect_10) {
+  AABB a{{0, 0.3, 0}, 0, 0.5, 0.5};
+  AABB b{{0, 0, 0}, 0, 0.5, 0.5};
+
+  EXPECT_TRUE(a.intersect(b));
+}
+
+TEST(TestAABB, test_intersect_with_plane_1) {
+  AABB a{{0, 0.3, 0}, 0.5, 0.5, 0.5};
+  EXPECT_TRUE(a.intersect_xy(0));
+}
+
+TEST(TestAABB, test_intersect_with_plane_2) {
+  AABB a{{0, 0.3, 0}, 0.5, 0.5, 0.5};
+  EXPECT_TRUE(a.intersect_xy(0.5));
+}
+
+TEST(TestAABB, test_intersect_with_plane_3) {
+  AABB a{{0, 0.3, 0}, 0.5, 0.5, 0.5};
+  EXPECT_FALSE(a.intersect_xy(1.0));
+}
+
+TEST(TestAABB, test_intersect_with_plane_4) {
+  AABB a{{0, 0.3, 0}, 0.5, 0.5, 0.5};
+  EXPECT_FALSE(a.intersect_xy(-1.0));
+}
+
+TEST(TestAABB, test_intersect_with_plane_5) {
+  AABB a{{0, 0.3, 0}, 0.5, 0.5, 0.5};
+  EXPECT_TRUE(a.intersect_xy(-0.5));
+}
+
+TEST(TestAABB, test_min_max_corner) {
+  using point = AABB::point_type;
+  AABB a{{1.0, 2.0, 3.0}, 1.0, 2.0, 3.0};
+  EXPECT_TRUE(is_roughly_equal(a.minimum_corner(), point{0, 0, 0}));
+  EXPECT_TRUE(is_roughly_equal(a.maximum_corner(), point{2.0, 4.0, 6.0}));
 }
 
 TEST(TestAABB, test_variadic_constructor) {

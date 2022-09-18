@@ -1,17 +1,32 @@
 #include <chrono>
 #include <iostream>
 
-#include "primitives/aabb.hpp"
+#include "broadphase/broadphase_structure.hpp"
+#include "broadphase/bruteforce.hpp"
+#include "broadphase/octree.hpp"
+
+#include "narrowphase/collision_shape.hpp"
 #include "primitives/plane.hpp"
 #include "primitives/triangle3.hpp"
 #include "vec3.hpp"
 
-#include <vector>
 #include <set>
+#include <vector>
+#include <cmath>
+
+struct indexed_geom : public throttle::geometry::collision_shape<float> {
+  unsigned index;
+  indexed_geom(unsigned idx, auto &&base) : collision_shape{base}, index{idx} {};
+};
+
+unsigned apporoximate_optimal_depth(unsigned number) {
+  constexpr unsigned max_depth = 6;
+  unsigned log_num = std::log10(float(number));
+  return std::min(max_depth, log_num);
+}
 
 int main() {
   using triangle = throttle::geometry::triangle3<float>;
-  std::vector<triangle> vec;
 
   unsigned n;
   if (!(std::cin >> n)) {
@@ -19,24 +34,14 @@ int main() {
     return 1;
   }
 
-  vec.reserve(n);
+  throttle::geometry::octree<float, indexed_geom> octree{apporoximate_optimal_depth(n)};
   for (unsigned i = 0; i < n; ++i) {
     triangle temp;
     std::cin >> temp.a[0] >> temp.a[1] >> temp.a[2] >> temp.b[0] >> temp.b[1] >> temp.b[2] >> temp.c[0] >> temp.c[1] >>
         temp.c[2];
-    vec.push_back(temp);
+    octree.add_collision_shape({i, temp});
   }
 
-  std::set<unsigned> in_contact;
-  for (unsigned i = 0; i < vec.size(); ++i) {
-    for (unsigned j = i + 1; j < vec.size(); ++j) {
-      bool intersect = throttle::geometry::triangle_triangle_intersect(vec[i], vec[j]);
-      if (intersect) {
-        in_contact.insert(i);
-        in_contact.insert(j);
-      }
-    }
-  }
-
-  for (const auto &v: in_contact) std::cout << v << " ";
+  for (const auto v : octree.many_to_many())
+    std::cout << v->index << " ";
 }

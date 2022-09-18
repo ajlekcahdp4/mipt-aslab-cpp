@@ -22,6 +22,7 @@ private:
 
 public:
   segment1(T p_a, T p_b) : a{std::min(p_a, p_b)}, b{std::max(p_a, p_b)} {}
+  static segment1 unity() { return segment1{0, 1}; }
 
   T len() const { return b - a; }
 
@@ -36,6 +37,9 @@ public:
   }
 
   bool contains(T point) const { return is_roughly_greater_eq(point, a) && is_roughly_less_eq(point, b); }
+
+  T left() const { return a; }
+  T right() const { return b; }
 };
 
 } // namespace geometry

@@ -4,6 +4,7 @@ set(LIBRARY_SOURCES
 
 add_library(throttle ${LIBRARY_SOURCES})
 target_include_directories(throttle PUBLIC include)
+target_link_libraries(throttle mpark_variant)
 
 set(UNIT_TEST_SOURCES
   test/main.cc
