@@ -32,6 +32,9 @@ template <typename T> struct aabb {
   aabb(const point_type &p_center, T half_x, T half_y, T half_z)
       : m_center{p_center}, m_halfwidth_x{half_x}, m_halfwidth_y{half_y}, m_halfwidth_z{half_z} {}
 
+  aabb(const point_type &p_center, T halfwidth)
+      : m_center{p_center}, m_halfwidth_x{halfwidth}, m_halfwidth_y{halfwidth}, m_halfwidth_z{halfwidth} {}
+
   aabb(const point_type &first, const point_type &second)
       : m_center{first + T{0.5f} * (second - first)}, m_halfwidth_x{std::abs(first.x - second.x) / T{2.0f}},
         m_halfwidth_y{std::abs(first.y - second.y) / T{2.0f}}, m_halfwidth_z{std::abs(first.z - second.z) / T{2.0f}} {}
@@ -41,11 +44,23 @@ template <typename T> struct aabb {
       : aabb(point_type{vmin(points.x...), vmin(points.y...), vmin(points.z...)},
              point_type{vmax(points.x...), vmax(points.y...), vmax(points.z...)}) {}
 
-  bool intersect(aabb a) const {
+  bool intersect(const aabb &a) const {
     if (is_definitely_greater(std::abs(m_center.x - a.m_center.x), (m_halfwidth_x + a.m_halfwidth_x))) return false;
     if (is_definitely_greater(std::abs(m_center.y - a.m_center.y), (m_halfwidth_y + a.m_halfwidth_y))) return false;
     if (is_definitely_greater(std::abs(m_center.z - a.m_center.z), (m_halfwidth_z + a.m_halfwidth_z))) return false;
     return true;
+  }
+
+  bool intersect_xy(T z) const {
+    return (is_roughly_greater_eq(z, m_center.z - m_halfwidth_z) && is_roughly_less_eq(z, m_center.z + m_halfwidth_z));
+  }
+
+  bool intersect_xz(T y) const {
+    return (is_roughly_greater_eq(y, m_center.y - m_halfwidth_y) && is_roughly_less_eq(y, m_center.y + m_halfwidth_y));
+  }
+
+  bool intersect_yz(T x) const {
+    return (is_roughly_greater_eq(x, m_center.x - m_halfwidth_x) && is_roughly_less_eq(x, m_center.x + m_halfwidth_x));
   }
 };
 
