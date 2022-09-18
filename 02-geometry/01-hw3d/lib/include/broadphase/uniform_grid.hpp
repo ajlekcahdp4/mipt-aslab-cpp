@@ -25,6 +25,7 @@ namespace geometry {
 template <typename T, typename t_shape = collision_shape<T>,
           typename = std::enable_if_t<std::is_base_of_v<collision_shape<T>, t_shape>>>
 class uniform_grid : broadphase_structure<uniform_grid<T>, t_shape> {
+
   struct cell {
     point3<T> point_t m_minimum_corner;
   };
@@ -43,19 +44,33 @@ class uniform_grid : broadphase_structure<uniform_grid<T>, t_shape> {
     }
   };
 
-  using list_t = typename std::list<t_shape>;
-  using map_t = typename std::unordered_map<cell, list_t, cell_hash>;
+  /* A list of indexes of shapes in m_stored_shapes */
+  using shape_list_t = typename std::list<unsigned>;
 
-  T                    m_cell_size;
+  /* map cell into shape_list_t */
+  using map_t = typename std::unordered_map<cell, shape_list_t, cell_hash>;
+
+  /* grid's cells size */
+  T m_cell_size;
+
+  /* queue of shapes to insert */
   std::vector<t_shape> m_waiting_queue;
+
+  /* vector of inserted elements */
+  std::vector<t_shape> m_stored_shapes;
   map_t                m_map;
 
+  /* minimum and maximum values of the bounding box coordinates */
   std::optional<T> m_min_val, m_max_val;
 
 public:
   using shape_type = t_shape;
 
-  uniform_grid(unsigned number_hint) { m_waiting_queue.reserve(number_hint); }
+  /* ctor with hint about the number of shapes to insert */
+  uniform_grid(unsigned number_hint) {
+    m_waiting_queue.reserve(number_hint);
+    m_stored_shapes.reserve(number_hint);
+  }
 
   void add_collision_shape(const shape_type &shape) {
     m_waiting_queue.push_back(shape);
@@ -75,6 +90,43 @@ public:
       m_max_val = vmax(m_max_val, bbox_max_corner.x, bbox_max_corner.y, bbox_max_corner.z);
     }
   }
+
+  std::vector<shape_ptr> many_to_many() {
+    rebuild();
+    std::set<unsigned> in_collision;
+
+    for (auto &list : m_map) {
+      auto intersecting = find_all_collisions(list);
+      for (auto &elem : intersecting)
+        set.insert(elem);
+    }
+  }
+
+  void rebuild() {
+    m_map.clear();
+
+    /* re-insert all old elements into the grid */
+    for (auto &idx : m_stored_shapes) {
+      m_stored_shapes.push_back(idx);
+      insert(idx);
+    }
+
+    /* insert all the new shapes into the grid */
+    for (auto &idx : m_waiting_queue) {
+      m_stored_shapes.push_back(idx);
+      insert(idx);
+    }
+  }
+
+private:
+  /*
+   * find all cells the shape overlaps and insert shape's index into
+   * the corresponding lists.
+   */
+  void insert(unsigned) {}
+
+  /* returns the set off all intersecting shapes in the cell's list */
+  std::set<unsigned> find_all_collisions(shape_list_t) const {}
 };
 
 } // namespace geometry
