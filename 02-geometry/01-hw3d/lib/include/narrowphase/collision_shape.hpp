@@ -43,6 +43,10 @@ public:
     return mpark::visit([](auto &&first, auto &&second) -> bool { return intersect(first, second); }, m_shape,
                         other.m_shape);
   }
+
+  aabb_type bounding_box() const {
+    return m_aabb;
+  }
 };
 
 template <typename T> bool collide(const collision_shape<T> &shape1, const collision_shape<T> &shape2) {
