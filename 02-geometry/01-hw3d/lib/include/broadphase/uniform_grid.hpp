@@ -50,6 +50,9 @@ public:
     auto &bbox = shape.bounding_box();
     auto  bbox_max_corner = bbox.maximum_corner();
     auto  bbox_min_corner = bbox.minimum_corner();
+    auto  double_max_width = 2 * bbox.max_width();
+
+    if (is_definitely_greater(m_cell_size, double_max_width)) m_cell_size = double_max_width;
 
     if (!m_min_val) { /* first insertion */
       m_min_val = vmin(bbox_min_corner.x, bbox_min_corner.y, bbox_min_corner.z);
