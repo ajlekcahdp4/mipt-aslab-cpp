@@ -71,6 +71,52 @@ TEST(TestAABB, test_intersect_7) {
   EXPECT_TRUE(a.intersect(b));
 }
 
+TEST(TestAABB, test_intersect_8) {
+  AABB a{{0, 0, 0}, 0, 0, 0};
+  AABB b{{0, 0, 0}, 0, 0, 0};
+
+  EXPECT_TRUE(a.intersect(b));
+}
+
+TEST(TestAABB, test_intersect_9) {
+  AABB a{{0, 0.3, 0}, 0, 0.5, 0};
+  AABB b{{0, 0, 0}, 0, 0.5, 0};
+
+  EXPECT_TRUE(a.intersect(b));
+}
+
+TEST(TestAABB, test_intersect_10) {
+  AABB a{{0, 0.3, 0}, 0, 0.5, 0.5};
+  AABB b{{0, 0, 0}, 0, 0.5, 0.5};
+
+  EXPECT_TRUE(a.intersect(b));
+}
+
+TEST(TestAABB, test_intersect_with_plane_1) {
+  AABB a{{0, 0.3, 0}, 0.5, 0.5, 0.5};
+  EXPECT_TRUE(a.intersect_xy(0));
+}
+
+TEST(TestAABB, test_intersect_with_plane_2) {
+  AABB a{{0, 0.3, 0}, 0.5, 0.5, 0.5};
+  EXPECT_TRUE(a.intersect_xy(0.5));
+}
+
+TEST(TestAABB, test_intersect_with_plane_3) {
+  AABB a{{0, 0.3, 0}, 0.5, 0.5, 0.5};
+  EXPECT_FALSE(a.intersect_xy(1.0));
+}
+
+TEST(TestAABB, test_intersect_with_plane_4) {
+  AABB a{{0, 0.3, 0}, 0.5, 0.5, 0.5};
+  EXPECT_FALSE(a.intersect_xy(-1.0));
+}
+
+TEST(TestAABB, test_intersect_with_plane_5) {
+  AABB a{{0, 0.3, 0}, 0.5, 0.5, 0.5};
+  EXPECT_TRUE(a.intersect_xy(-0.5));
+}
+
 TEST(TestAABB, test_variadic_constructor) {
   using point = AABB::point_type;
   AABB a{point{1, 2, 3}, point{4, 5, 6}, point{7, 8, 9}};
