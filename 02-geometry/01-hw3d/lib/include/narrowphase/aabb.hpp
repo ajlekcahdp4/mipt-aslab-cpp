@@ -52,6 +52,9 @@ template <typename T> struct aabb {
     return {m_center.x + m_halfwidth_x, m_center.y + m_halfwidth_y, m_center.z + m_halfwidth_z};
   }
 
+  // returns the maximum width in all 3 dimensions
+  T max_width() const { return 2 * vmax(m_halfwidth_x, m_halfwidth_y, m_halfwidth_z); }
+
   bool intersect(const aabb &a) const {
     if (is_definitely_greater(std::abs(m_center.x - a.m_center.x), (m_halfwidth_x + a.m_halfwidth_x))) return false;
     if (is_definitely_greater(std::abs(m_center.y - a.m_center.y), (m_halfwidth_y + a.m_halfwidth_y))) return false;
