@@ -46,7 +46,7 @@ class uniform_grid : broadphase_structure<uniform_grid<T>, t_shape> {
     // compute hash bucket index in range [0, NUM_BUCKETS-1]
     std::size_t operator()(const cell &cell) const {
       const int h1 = 0x8da6b343; // Large multiplication constants;
-      const int h2 = 0xd8163841; // here arbirarily chosen primes
+      const int h2 = 0xd8163841; // here arbitrarily chosen primes
       const int h3 = 0xcb1ab31f;
 
       int hash = h1 * cell.x + h2 * cell.y + h3 * cell.z;
@@ -61,12 +61,6 @@ class uniform_grid : broadphase_structure<uniform_grid<T>, t_shape> {
     }
   };
 
-  /* A list of indexes of shapes in m_stored_shapes */
-  using shape_list_t = typename std::list<index_t>;
-
-  /* map cell into shape_list_t */
-  using map_t = typename std::unordered_map<cell, shape_list_t, cell_hash>;
-
   // grid's cells size
   T m_cell_size;
 
@@ -74,12 +68,16 @@ class uniform_grid : broadphase_structure<uniform_grid<T>, t_shape> {
   std::vector<t_shape> m_waiting_queue;
 
   // The vector of inserted elements and vectors from all the cells that the element overlaps
-  using m_stored_shapes_elem_t = typename std::pair<t_shape, std::vector<cell>>;
-  std::vector<m_stored_shapes_elem_t> m_stored_shapes;
-  map_t                               m_map;
+  using stored_shapes_elem_t = typename std::pair<t_shape, std::vector<cell>>;
+  std::vector<stored_shapes_elem_t> m_stored_shapes;
+
+  /* A list of indexes of shapes in m_stored_shapes */
+  using shape_list_t = typename std::list<index_t>;
+  /* map cell into shape_list_t */
+  using map_t = typename std::unordered_map<cell, shape_list_t, cell_hash>;
+  map_t m_map;
 
   // minimum and maximum values of the bounding box coordinates
-
   std::optional<T> m_min_val, m_max_val;
 
 public:
@@ -87,7 +85,6 @@ public:
 
   // ctor with hint about the number of shapes to insert
   uniform_grid(index_t number_hint) {
-
     m_waiting_queue.reserve(number_hint);
     m_stored_shapes.reserve(number_hint);
   }
@@ -116,10 +113,10 @@ public:
 
     many_to_many_collider collider(m_map, m_stored_shapes);
     collider.collide();
+
     std::vector<shape_ptr> result;
     std::transform(collider.in_collision.begin(), collider.in_collision.end(), std::back_inserter(result),
                    [&](const auto &idx) { return std::addressof(m_stored_shapes[idx].first); });
-
     return result;
   }
 
@@ -136,7 +133,7 @@ public:
 
     /* insert all the new shapes into the grid */
     for (index_t idx = 0; idx < size; idx++) {
-      m_stored_shapes.push_back(m_stored_shapes_elem_t{m_stored_shapes[idx].first, std::vector<cell>{}});
+      m_stored_shapes.push_back(stored_shapes_elem_t{m_stored_shapes[idx].first, std::vector<cell>{}});
 
       insert(idx);
     }
@@ -180,15 +177,15 @@ private:
 
   struct many_to_many_collider {
     std::set<index_t> in_collision;
-    map_t            &map;
 
-    const std::vector<m_stored_shapes_elem_t> &stored_shapes;
+    map_t &map;
 
-    many_to_many_collider(map_t &map_a, const std::vector<m_stored_shapes_elem_t> &stored_shapes_a)
+    const std::vector<stored_shapes_elem_t> &stored_shapes;
+
+    many_to_many_collider(map_t &map_a, const std::vector<stored_shapes_elem_t> &stored_shapes_a)
         : map(map_a), stored_shapes(stored_shapes_a) {}
 
     // fills "in_collision" set with all intersecting shapes in the grid
-
     void collide() {
       /* For each cell we will test */
       for (auto &bucket : map)
