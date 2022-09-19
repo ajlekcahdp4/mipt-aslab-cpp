@@ -13,6 +13,7 @@
 #include "point2.hpp"
 #include <cmath>
 #include <stdexcept>
+#include <type_traits>
 
 namespace throttle {
 namespace geometry {
@@ -23,9 +24,7 @@ template <typename T> struct point3 {
   T z;
 
   using point_flat_type = point2<T>;
-
-  static point3 origin() { return {0, 0, 0}; }
-
+  static point3          origin() { return {0, 0, 0}; }
   std::pair<unsigned, T> max_component() const { return (*this - origin()).max_component(); }
 
   T &operator[](unsigned index) {
@@ -66,6 +65,12 @@ template <typename T> struct point3 {
 
 namespace throttle {
 namespace geometry {
+
+template <typename T, typename... Ts, typename = std::enable_if_t<std::conjunction_v<std::is_same<point3<T>, Ts>...>>>
+point3<T> barycentric_average(Ts... points) {
+  return point3<T>{(... + points.x) / T{sizeof...(Ts)}, (... + points.y) / T{sizeof...(Ts)},
+                   (... + points.z) / T{sizeof...(Ts)}};
+}
 
 template <typename T> vec3<T> operator-(const point3<T> &lhs, const point3<T> &rhs) {
   return {lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z};
