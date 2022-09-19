@@ -79,6 +79,7 @@ class uniform_grid : broadphase_structure<uniform_grid<T>, t_shape> {
   map_t                               m_map;
 
   // minimum and maximum values of the bounding box coordinates
+
   std::optional<T> m_min_val, m_max_val;
 
 public:
@@ -86,6 +87,7 @@ public:
 
   // ctor with hint about the number of shapes to insert
   uniform_grid(index_t number_hint) {
+
     m_waiting_queue.reserve(number_hint);
     m_stored_shapes.reserve(number_hint);
   }
@@ -117,6 +119,7 @@ public:
     std::vector<shape_ptr> result;
     std::transform(collider.in_collision.begin(), collider.in_collision.end(), std::back_inserter(result),
                    [&](const auto &idx) { return std::addressof(m_stored_shapes[idx].first); });
+
     return result;
   }
 
@@ -127,12 +130,14 @@ public:
     auto size = m_stored_shapes.size();
     for (index_t idx = 0; idx < size; idx++) {
       m_stored_shapes[idx].second.clear();
+
       insert(idx);
     }
 
     /* insert all the new shapes into the grid */
     for (index_t idx = 0; idx < size; idx++) {
       m_stored_shapes.push_back(m_stored_shapes_elem_t{m_stored_shapes[idx].first, std::vector<cell>{}});
+
       insert(idx);
     }
 

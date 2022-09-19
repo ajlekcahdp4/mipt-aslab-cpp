@@ -14,10 +14,17 @@
 #include <cmath>
 #include <set>
 #include <vector>
+
 struct indexed_geom : public throttle::geometry::collision_shape<float> {
   unsigned index;
   indexed_geom(unsigned idx, auto &&base) : collision_shape{base}, index{idx} {};
 };
+
+unsigned apporoximate_optimal_depth(unsigned number) {
+  constexpr unsigned max_depth = 6;
+  unsigned           log_num = std::log10(float(number));
+  return std::min(max_depth, log_num);
+}
 
 int main() {
   using triangle = throttle::geometry::triangle3<float>;
