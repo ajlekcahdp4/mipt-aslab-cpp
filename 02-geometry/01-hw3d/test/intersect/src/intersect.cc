@@ -13,6 +13,14 @@
 #include <cmath>
 #include <set>
 #include <vector>
+#include <string>
+#include <chrono>
+
+#ifdef BOOST_FOUND__
+#include <boost/program_options.hpp>
+#include <boost/program_options/option.hpp>
+namespace po = boost::program_options;
+#endif
 
 struct indexed_geom : public throttle::geometry::collision_shape<float> {
   unsigned index;
@@ -54,8 +62,45 @@ static unsigned apporoximate_optimal_depth(unsigned number) {
   return std::min(max_depth, log_num);
 }
 
-int main() {
+template <typename broad> void application_loop(throttle::geometry::broadphase_structure<broad, indexed_geom> &cont, unsigned n, bool hide = false) {
   using point_type = throttle::geometry::point3<float>;
+  
+  for (unsigned i = 0; i < n; ++i) {
+    point_type a, b, c;
+    std::cin >> a[0] >> a[1] >> a[2] >> b[0] >> b[1] >> b[2] >> c[0] >> c[1] >> c[2];
+    cont.add_collision_shape({i, shape_from_three_points(a, b, c)});
+  }
+
+  auto result = cont.many_to_many();
+  if (hide) return;
+
+  for (const auto v : result)
+    std::cout << v->index << " ";
+  
+  std::cout << "\n";
+}
+
+int main(int argc, char *argv[]) {
+  bool hide = false;
+
+#ifdef BOOST_FOUND__
+  std::string opt;
+  po::options_description desc("Available options");
+  desc.add_options()("help,h", "Print this help message")("measure,m", "Print perfomance metrics")("hide",
+                                                                                                   "Hide output")("broad", po::value<std::string>(&opt)->default_value("octree"), "Algorithm for broad phase");
+
+  po::variables_map vm;
+  po::store(po::parse_command_line(argc, argv, desc), vm);
+  po::notify(vm);
+
+  if (vm.count("help")) {
+    std::cout << desc << "\n";
+    return 1;
+  }
+
+  bool measure = vm.count("measure");
+  hide = vm.count("hide");
+#endif  
 
   unsigned n;
   if (!(std::cin >> n)) {
@@ -63,14 +108,27 @@ int main() {
     return 1;
   }
 
-  throttle::geometry::octree<float, indexed_geom> octree{apporoximate_optimal_depth(n)};
-  for (unsigned i = 0; i < n; ++i) {
-    point_type a, b, c;
 
-    std::cin >> a[0] >> a[1] >> a[2] >> b[0] >> b[1] >> b[2] >> c[0] >> c[1] >> c[2];
-    octree.add_collision_shape({i, shape_from_three_points(a, b, c)});
+#ifdef BOOST_FOUND__
+  auto start = std::chrono::high_resolution_clock::now();
+
+  if (opt == "octree") {
+    throttle::geometry::octree<float, indexed_geom> octree{apporoximate_optimal_depth(n)};
+    application_loop(octree, n, hide);  
+  } else if (opt == "bruteforce") {
+    throttle::geometry::bruteforce<float, indexed_geom> bruteforce{n};
+    application_loop(bruteforce, n, hide);  
   }
 
-  for (const auto v : octree.many_to_many())
-    std::cout << v->index << " ";
+  auto finish = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration<double, std::milli>(finish - start);
+
+  if (measure) {
+    std::cout << opt << " took " << elapsed.count() << "ms to run\n";
+  }
+
+#else
+  throttle::geometry::octree<float, indexed_geom> octree{apporoximate_optimal_depth(n)};
+  application_loop(octree, n, hide);
+#endif
 }
