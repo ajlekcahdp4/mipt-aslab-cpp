@@ -44,7 +44,6 @@ template <typename T> struct aabb {
       : aabb(point_type{vmin(points.x...), vmin(points.y...), vmin(points.z...)},
              point_type{vmax(points.x...), vmax(points.y...), vmax(points.z...)}) {}
 
-<<<<<<< HEAD
   point_type minimum_corner() const {
     return {m_center.x - m_halfwidth_x, m_center.y - m_halfwidth_y, m_center.z - m_halfwidth_z};
   }
@@ -56,8 +55,6 @@ template <typename T> struct aabb {
   // returns the maximum width in all 3 dimensions
   T max_width() const { return 2 * vmax(m_halfwidth_x, m_halfwidth_y, m_halfwidth_z); }
 
-=======
->>>>>>> a1dc053 (added AABB cube ctor, axes plane intersection and tests)
   bool intersect(const aabb &a) const {
     if (is_definitely_greater(std::abs(m_center.x - a.m_center.x), (m_halfwidth_x + a.m_halfwidth_x))) return false;
     if (is_definitely_greater(std::abs(m_center.y - a.m_center.y), (m_halfwidth_y + a.m_halfwidth_y))) return false;
@@ -76,7 +73,6 @@ template <typename T> struct aabb {
   bool intersect_yz(T x) const {
     return (is_roughly_greater_eq(x, m_center.x - m_halfwidth_x) && is_roughly_less_eq(x, m_center.x + m_halfwidth_x));
   }
-<<<<<<< HEAD
 
   bool intersect_coodrinate_plane(unsigned idx, T val) const {
     switch (idx) {
@@ -86,8 +82,6 @@ template <typename T> struct aabb {
     default: throw std::out_of_range("Index of plane out of range.");
     }
   }
-=======
->>>>>>> a1dc053 (added AABB cube ctor, axes plane intersection and tests)
 };
 
 } // namespace geometry
