@@ -11,6 +11,7 @@
 
 #include <cmath>
 
+#include "equal.hpp"
 #include "point3.hpp"
 #include "segment2.hpp"
 #include "vec3.hpp"
@@ -29,7 +30,7 @@ template <typename T> struct segment3 {
 
   bool contains(const point_type &point) const {
     vec_type segment_vec = b - a, vec = b - point;
-    return (co_directional(segment_vec, vec) && segment_vec.length_sq() > vec.length_sq());
+    return (co_directional(segment_vec, vec) && is_roughly_greater_eq(segment_vec.length_sq(), vec.length_sq()));
   }
 
   bool intersect(const segment3 &other) const {
