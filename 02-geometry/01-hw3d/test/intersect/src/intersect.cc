@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
   std::string opt;
   po::options_description desc("Available options");
   desc.add_options()("help,h", "Print this help message")("measure,m", "Print perfomance metrics")("hide",
-                                                                                                   "Hide output")("broad", po::value<std::string>(&opt)->default_value("octree"), "Algorithm for broad phase");
+                                                                                                   "Hide output")("broad", po::value<std::string>(&opt)->default_value("octree"), "Algorithm for broad phase (bruteforce, octree)");
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
