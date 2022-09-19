@@ -62,22 +62,26 @@ static unsigned apporoximate_optimal_depth(unsigned number) {
   return std::min(max_depth, log_num);
 }
 
-template <typename broad> void application_loop(throttle::geometry::broadphase_structure<broad, indexed_geom> &cont, unsigned n, bool hide = false) {
+template <typename broad> bool application_loop(throttle::geometry::broadphase_structure<broad, indexed_geom> &cont, unsigned n, bool hide = false) {
   using point_type = throttle::geometry::point3<float>;
   
   for (unsigned i = 0; i < n; ++i) {
     point_type a, b, c;
-    std::cin >> a[0] >> a[1] >> a[2] >> b[0] >> b[1] >> b[2] >> c[0] >> c[1] >> c[2];
+    if (!(std::cin >> a[0] >> a[1] >> a[2] >> b[0] >> b[1] >> b[2] >> c[0] >> c[1] >> c[2])) {
+      std::cout << "Can't read i-th = " << i << " triangle\n";
+      return false;
+    }
     cont.add_collision_shape({i, shape_from_three_points(a, b, c)});
   }
 
   auto result = cont.many_to_many();
-  if (hide) return;
+  if (hide) return true;
 
   for (const auto v : result)
     std::cout << v->index << " ";
   
   std::cout << "\n";
+  return true;
 }
 
 int main(int argc, char *argv[]) {
@@ -114,10 +118,10 @@ int main(int argc, char *argv[]) {
 
   if (opt == "octree") {
     throttle::geometry::octree<float, indexed_geom> octree{apporoximate_optimal_depth(n)};
-    application_loop(octree, n, hide);  
+    if (!application_loop(octree, n, hide)) return 1;  
   } else if (opt == "bruteforce") {
     throttle::geometry::bruteforce<float, indexed_geom> bruteforce{n};
-    application_loop(bruteforce, n, hide);  
+    if (!application_loop(bruteforce, n, hide)) return 1;  
   }
 
   auto finish = std::chrono::high_resolution_clock::now();
