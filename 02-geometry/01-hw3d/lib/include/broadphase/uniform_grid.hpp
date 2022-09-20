@@ -17,6 +17,8 @@
 #include "vec3.hpp"
 
 #include <algorithm>
+#include <array>
+#include <cmath>
 #include <list>
 #include <set>
 #include <unordered_map>
@@ -30,7 +32,7 @@ namespace throttle {
 namespace geometry {
 
 template <typename T> point3<int> convert_to_int_point(const vec3<T> &vec) {
-  return point3<int>{static_cast<int>(vec.x), static_cast<int>(vec.y), static_cast<int>(vec.z)};
+  return point3<int>{std::floor(vec.x), std::floor(vec.y), std::floor(vec.z)};
 }
 
 template <typename T, typename t_shape = collision_shape<T>,
@@ -44,10 +46,10 @@ class uniform_grid : broadphase_structure<uniform_grid<T>, t_shape> {
   using int_vector_type = vec3<int>;
   using index_t = unsigned;
 
-  using cell = int_point_type;
+  using cell_type = int_point_type;
 
   struct cell_hash {
-    std::size_t operator()(const cell &cell) const {
+    std::size_t operator()(const cell_type &cell) const {
       std::size_t seed{};
 
       boost::hash_combine(seed, cell.x);
@@ -65,13 +67,13 @@ class uniform_grid : broadphase_structure<uniform_grid<T>, t_shape> {
   std::vector<t_shape> m_waiting_queue;
 
   // The vector of inserted elements and vectors from all the cells that the element overlaps
-  using stored_shapes_elem_t = typename std::pair<t_shape, std::vector<cell>>;
+  using stored_shapes_elem_t = typename std::pair<t_shape, cell_type>;
   std::vector<stored_shapes_elem_t> m_stored_shapes;
 
   /* A list of indexes of shapes in m_stored_shapes */
-  using shape_list_t = typename std::list<index_t>;
+  using shape_idx_vec_t = typename std::vector<index_t>;
   /* map cell into shape_list_t */
-  using map_t = typename std::unordered_map<cell, shape_list_t, cell_hash>;
+  using map_t = typename std::unordered_map<cell_type, shape_idx_vec_t, cell_hash>;
   map_t m_map;
 
   // minimum and maximum values of the bounding box coordinates
@@ -94,7 +96,7 @@ public:
     auto max_width = bbox.max_width();
 
     /* remain cell size to be large enough to fit the largest shape in any rotation */
-    if (is_definitely_greater(max_width, m_cell_size)) m_cell_size = max_width;
+    if (is_definitely_greater(max_width, m_cell_size)) m_cell_size = 2 * max_width;
 
     if (!m_min_val) { /* first insertion */
       m_min_val = vmin(bbox_min_corner.x, bbox_min_corner.y, bbox_min_corner.z);
@@ -134,44 +136,28 @@ public:
   }
 
 private:
-  /*
-   * find all cells the shape overlaps and insert shape's index into
-   * the corresponding lists.
-   */
+  /* insert shape into m_stored shapes and into m_map */
   void insert(const shape_type &shape) {
-    std::vector<cell> cells_vector;
-    auto              cells = find_all_cells_shape_overlaps(shape);
-
     auto old_stored_size = m_stored_shapes.size();
-    for (auto &cell : cells) {
-      cells_vector.push_back(cell);
-      m_map[cell].push_back(old_stored_size);
-    }
+    auto cell = compute_cell(shape);
 
-    m_stored_shapes.emplace_back(shape, std::move(cells_vector));
+    m_stored_shapes.emplace_back(shape, cell);
+
+    m_map[cell].push_back(old_stored_size);
   }
 
-  // fill "cells" with unique cells that "idx"th shape overlapse.
-  std::unordered_set<int_point_type, cell_hash> find_all_cells_shape_overlaps(const shape_type &shape) const {
-    std::unordered_set<int_point_type, cell_hash> cells;
+  cell_type compute_cell(const shape_type &shape) const {
+    auto bbox = shape.bounding_box();
+    auto min_corner = bbox.m_center - point_type::origin();
+    return convert_to_int_point(min_corner / m_cell_size);
+  }
 
-    auto           bbox = shape.bounding_box();
-    auto           min_corner = bbox.minimum_corner() - point_type::origin();
-    std::vector<T> widths = {2 * bbox.m_halfwidth_x, 2 * bbox.m_halfwidth_y, 2 * bbox.m_halfwidth_x};
-
-    cells.insert(convert_to_int_point(min_corner / m_cell_size));
-
-    cells.insert(convert_to_int_point((min_corner + vector_type{widths[0], 0, 0}) / m_cell_size));
-    cells.insert(convert_to_int_point((min_corner + vector_type{0, widths[1], 0}) / m_cell_size));
-    cells.insert(convert_to_int_point((min_corner + vector_type{0, 0, widths[2]}) / m_cell_size));
-
-    cells.insert(convert_to_int_point((min_corner + vector_type{0, widths[1], widths[2]}) / m_cell_size));
-    cells.insert(convert_to_int_point((min_corner + vector_type{widths[0], 0, widths[2]}) / m_cell_size));
-    cells.insert(convert_to_int_point((min_corner + vector_type{widths[0], widths[1], 0}) / m_cell_size));
-
-    cells.insert(convert_to_int_point((min_corner + vector_type{widths[0], widths[1], widths[2]}) / m_cell_size));
-
-    return cells;
+  static constexpr std::array<vec3<int>, 27> offsets() {
+    return std::array<vec3<int>, 27>{{{0, 0, 0},   {0, 0, 1},  {0, 0, -1},  {0, 1, 0},   {0, -1, 0},   {1, 0, 0},
+                                      {-1, 0, 0},  {0, 1, -1}, {0, 1, 1},   {0, -1, 1},  {0, -1, -1},  {1, 0, 1},
+                                      {1, 0, -1},  {-1, 0, 1}, {-1, 0, -1}, {1, 1, 1},   {1, 1, -1},   {1, -1, 1},
+                                      {1, -1, -1}, {-1, 1, 1}, {-1, 1, -1}, {-1, -1, 1}, {-1, -1, -1}, {-1, -1, 0},
+                                      {-1, 1, 0},  {1, -1, 0}, {1, 1, 0}}};
   }
 
   struct many_to_many_collider {
@@ -187,18 +173,21 @@ private:
     // fills "in_collision" set with all intersecting shapes in the grid
     void collide() {
       /* For each cell we will test */
-      for (auto &bucket : map)
-        /* each shape */
-        for (auto &to_test_idx : bucket.second)
-          /* with all the cell it overlaps  */
-          for (auto &cell : stored_shapes[to_test_idx].second)
-            /* for intersection with all shapes they contains */
-            for (auto &to_test_with_idx : map[cell])
-              if (to_test_with_idx != to_test_idx &&
+      for (auto &bucket : map) {
+        auto offsets_a = offsets();
+        /* all the neighbors */
+        for (auto &offset : offsets_a) {
+          auto bucket_to_test_with = map[bucket.first + offset];
+          /*for all of the shapes they containes to intersect */
+          for (auto to_test_idx : bucket.second)
+            for (auto to_test_with_idx : bucket_to_test_with)
+              if (to_test_idx != to_test_with_idx &&
                   stored_shapes[to_test_idx].first.collide(stored_shapes[to_test_with_idx].first)) {
                 in_collision.insert(to_test_idx);
                 in_collision.insert(to_test_with_idx);
               }
+        }
+      }
     };
   };
 };
