@@ -18,7 +18,9 @@
 
 #include <algorithm>
 #include <list>
+#include <set>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -51,13 +53,6 @@ class uniform_grid : broadphase_structure<uniform_grid<T>, t_shape> {
 
       int hash = h1 * cell.x + h2 * cell.y + h3 * cell.z;
       return hash;
-    }
-  };
-
-  struct cmp_cells {
-    bool operator()(const cell &lhs, const cell &rhs) const {
-      auto hash = cell_hash{};
-      return (hash(lhs) < hash(rhs));
     }
   };
 
@@ -147,32 +142,34 @@ private:
    * the corresponding lists.
    */
   void insert(index_t idx) {
-    std::set<int_point_type, cmp_cells> cells{};
-
-    auto &shape = m_stored_shapes[idx].first;
-
-    auto bbox = shape.bounding_box();
-
-    auto min_corner = bbox.minimum_corner() - point_type::origin();
-
-    std::vector<T> hwidths = {2 * bbox.m_halfwidth_x, 2 * bbox.m_halfwidth_y, 2 * bbox.m_halfwidth_x};
-
-    cells.insert(convert_to_int_point(min_corner / m_cell_size));
-
-    cells.insert(convert_to_int_point((min_corner + vector_type{hwidths[0], 0, 0}) / m_cell_size));
-    cells.insert(convert_to_int_point((min_corner + vector_type{0, hwidths[1], 0}) / m_cell_size));
-    cells.insert(convert_to_int_point((min_corner + vector_type{0, 0, hwidths[2]}) / m_cell_size));
-
-    cells.insert(convert_to_int_point((min_corner + vector_type{0, hwidths[1], hwidths[2]}) / m_cell_size));
-    cells.insert(convert_to_int_point((min_corner + vector_type{hwidths[0], 0, hwidths[2]}) / m_cell_size));
-    cells.insert(convert_to_int_point((min_corner + vector_type{hwidths[0], hwidths[1], 0}) / m_cell_size));
-
-    cells.insert(convert_to_int_point((min_corner + vector_type{hwidths[0], hwidths[1], hwidths[2]}) / m_cell_size));
+    /* unordered set is there used for storing unique cells */
+    std::unordered_set<int_point_type, cell_hash> cells;
+    find_all_cells_shape_overlaps(cells, idx);
 
     for (auto &cell : cells) {
       m_stored_shapes[idx].second.push_back(cell);
       m_map[cell].push_back(idx);
     }
+  }
+
+  // fill "cells" with unique cells that "idx"th shape overlapse.
+  void find_all_cells_shape_overlaps(std::unordered_set<int_point_type, cell_hash> &cells, const index_t idx) const {
+    auto          &shape = m_stored_shapes[idx].first;
+    auto           bbox = shape.bounding_box();
+    auto           min_corner = bbox.minimum_corner() - point_type::origin();
+    std::vector<T> widths = {2 * bbox.m_halfwidth_x, 2 * bbox.m_halfwidth_y, 2 * bbox.m_halfwidth_x};
+
+    cells.insert(convert_to_int_point(min_corner / m_cell_size));
+
+    cells.insert(convert_to_int_point((min_corner + vector_type{widths[0], 0, 0}) / m_cell_size));
+    cells.insert(convert_to_int_point((min_corner + vector_type{0, widths[1], 0}) / m_cell_size));
+    cells.insert(convert_to_int_point((min_corner + vector_type{0, 0, widths[2]}) / m_cell_size));
+
+    cells.insert(convert_to_int_point((min_corner + vector_type{0, widths[1], widths[2]}) / m_cell_size));
+    cells.insert(convert_to_int_point((min_corner + vector_type{widths[0], 0, widths[2]}) / m_cell_size));
+    cells.insert(convert_to_int_point((min_corner + vector_type{widths[0], widths[1], 0}) / m_cell_size));
+
+    cells.insert(convert_to_int_point((min_corner + vector_type{widths[0], widths[1], widths[2]}) / m_cell_size));
   }
 
   struct many_to_many_collider {
