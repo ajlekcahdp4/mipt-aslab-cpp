@@ -31,7 +31,7 @@ namespace geometry {
 
 template <typename T, typename t_shape = collision_shape<T>,
           typename = std::enable_if_t<std::is_base_of_v<collision_shape<T>, t_shape>>>
-class octree : public broadphase_structure<bruteforce<T, t_shape>, t_shape> {
+class octree : public broadphase_structure<octree<T, t_shape>, t_shape> {
   using shape_ptr = t_shape *;
   using point_type = point3<T>;
   using vec_type = vec3<T>;
