@@ -39,7 +39,4 @@ bin/intersect --help
 # Run sample test
 bin/intersect --hide --measure --broad=octree < resources/large0.dat
 # octree took 217.537ms to run
-
-# To run all tests
-./test.sh
 ```

@@ -12,7 +12,7 @@ for file in ${current_folder}/${base_folder}/*.dat; do
 
     # Check if an argument to executable location has been passed to the program
     if [ -z "$1" ]; then
-        bin/intersect_fcl < $file > ${current_folder}/$base_folder/temp.tmp
+        bin/intersect < $file > ${current_folder}/$base_folder/temp.tmp
     else
         $1 < $file > ${current_folder}/$base_folder/temp.tmp
     fi
