@@ -31,8 +31,8 @@
 namespace throttle {
 namespace geometry {
 
-template <typename T> point3<int> convert_to_int_point(const vec3<T> &vec) {
-  return point3<int>{std::floor(vec.x), std::floor(vec.y), std::floor(vec.z)};
+template <typename T> vec3<int> convert_to_int_vector(const vec3<T> &vec) {
+  return vec3<int>{std::floor(vec.x), std::floor(vec.y), std::floor(vec.z)};
 }
 
 template <typename T, typename t_shape = collision_shape<T>,
@@ -46,7 +46,7 @@ class uniform_grid : broadphase_structure<uniform_grid<T>, t_shape> {
   using int_vector_type = vec3<int>;
   using index_t = unsigned;
 
-  using cell_type = int_point_type;
+  using cell_type = int_vector_type;
 
   struct cell_hash {
     std::size_t operator()(const cell_type &cell) const {
@@ -149,15 +149,15 @@ private:
   cell_type compute_cell(const shape_type &shape) const {
     auto bbox = shape.bounding_box();
     auto min_corner = bbox.m_center - point_type::origin();
-    return convert_to_int_point(min_corner / m_cell_size);
+    return convert_to_int_vector(min_corner / m_cell_size);
   }
 
-  static constexpr std::array<vec3<int>, 27> offsets() {
-    return std::array<vec3<int>, 27>{{{0, 0, 0},   {0, 0, 1},  {0, 0, -1},  {0, 1, 0},   {0, -1, 0},   {1, 0, 0},
-                                      {-1, 0, 0},  {0, 1, -1}, {0, 1, 1},   {0, -1, 1},  {0, -1, -1},  {1, 0, 1},
-                                      {1, 0, -1},  {-1, 0, 1}, {-1, 0, -1}, {1, 1, 1},   {1, 1, -1},   {1, -1, 1},
-                                      {1, -1, -1}, {-1, 1, 1}, {-1, 1, -1}, {-1, -1, 1}, {-1, -1, -1}, {-1, -1, 0},
-                                      {-1, 1, 0},  {1, -1, 0}, {1, 1, 0}}};
+  static constexpr std::array<int_vector_type, 27> offsets() {
+    return std::array<int_vector_type, 27>{
+        {{0, 0, 0},   {0, 0, 1},    {0, 0, -1},  {0, 1, 0},   {0, -1, 0},  {1, 0, 0},  {-1, 0, 0},
+         {0, 1, -1},  {0, 1, 1},    {0, -1, 1},  {0, -1, -1}, {1, 0, 1},   {1, 0, -1}, {-1, 0, 1},
+         {-1, 0, -1}, {1, 1, 1},    {1, 1, -1},  {1, -1, 1},  {1, -1, -1}, {-1, 1, 1}, {-1, 1, -1},
+         {-1, -1, 1}, {-1, -1, -1}, {-1, -1, 0}, {-1, 1, 0},  {1, -1, 0},  {1, 1, 0}}};
   }
 
   struct many_to_many_collider {
@@ -177,15 +177,15 @@ private:
         auto offsets_a = offsets();
         /* all the neighbors */
         for (auto &offset : offsets_a) {
-          auto bucket_to_test_with = map[bucket.first + offset];
-          /*for all of the shapes they containes to intersect */
-          for (auto to_test_idx : bucket.second)
-            for (auto to_test_with_idx : bucket_to_test_with)
-              if (to_test_idx != to_test_with_idx &&
-                  stored_shapes[to_test_idx].first.collide(stored_shapes[to_test_with_idx].first)) {
-                in_collision.insert(to_test_idx);
-                in_collision.insert(to_test_with_idx);
-              }
+          auto bucket_to_test_with_it = map.find(bucket.first + offset);
+          if (bucket_to_test_with_it != map.end()) /*for all of the shapes they containes to intersect */
+            for (auto to_test_idx : bucket.second)
+              for (auto to_test_with_idx : bucket_to_test_with_it->second)
+                if (to_test_idx != to_test_with_idx &&
+                    stored_shapes[to_test_idx].first.collide(stored_shapes[to_test_with_idx].first)) {
+                  in_collision.insert(to_test_idx);
+                  in_collision.insert(to_test_with_idx);
+                }
         }
       }
     };
