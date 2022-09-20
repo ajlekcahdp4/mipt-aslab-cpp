@@ -24,6 +24,8 @@
 #include <utility>
 #include <vector>
 
+#include <boost/functional/hash.hpp>
+
 namespace throttle {
 namespace geometry {
 
@@ -45,14 +47,14 @@ class uniform_grid : broadphase_structure<uniform_grid<T>, t_shape> {
   using cell = int_point_type;
 
   struct cell_hash {
-    // compute hash bucket index in range [0, NUM_BUCKETS-1]
     std::size_t operator()(const cell &cell) const {
-      const int h1 = 0x8da6b343; // Large multiplication constants;
-      const int h2 = 0xd8163841; // here arbitrarily chosen primes
-      const int h3 = 0xcb1ab31f;
+      std::size_t seed{};
 
-      int hash = h1 * cell.x + h2 * cell.y + h3 * cell.z;
-      return hash;
+      boost::hash_combine(seed, cell.x);
+      boost::hash_combine(seed, cell.y);
+      boost::hash_combine(seed, cell.z);
+
+      return seed;
     }
   };
 
