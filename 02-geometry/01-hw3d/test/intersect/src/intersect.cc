@@ -11,17 +11,100 @@
 #include "primitives/triangle3.hpp"
 #include "vec3.hpp"
 
+#include <chrono>
 #include <cmath>
 #include <set>
+#include <string>
 #include <vector>
+
+#ifdef BOOST_FOUND__
+#include <boost/program_options.hpp>
+#include <boost/program_options/option.hpp>
+namespace po = boost::program_options;
+#endif
 
 struct indexed_geom : public throttle::geometry::collision_shape<float> {
   unsigned index;
   indexed_geom(unsigned idx, auto &&base) : collision_shape{base}, index{idx} {};
 };
 
-int main() {
-  using triangle = throttle::geometry::triangle3<float>;
+using throttle::geometry::collision_shape;
+using throttle::geometry::is_roughly_equal;
+using throttle::geometry::point3;
+using throttle::geometry::segment3;
+using throttle::geometry::triangle3;
+using throttle::geometry::vec3;
+
+template <typename T>
+throttle::geometry::collision_shape<T> shape_from_three_points(const point3<T> &a, const point3<T> &b,
+                                                               const point3<T> &c) {
+  auto ab = b - a, ac = c - a;
+
+  if (throttle::geometry::colinear(ab, ac)) { // Either a segment or a point
+    if (is_roughly_equal(ab, vec3<T>::zero()) && is_roughly_equal(ac, vec3<T>::zero())) {
+      return throttle::geometry::barycentric_average<T>(a, b, c);
+    }
+    // This is a segment. Project the the points onto the most closely alligned axis.
+    auto max_index = ab.max_component().first;
+
+    std::array<std::pair<point3<T>, T>, 3> arr = {std::make_pair(a, a[max_index]), std::make_pair(b, b[max_index]),
+                                                  std::make_pair(c, c[max_index])};
+    std::sort(arr.begin(), arr.end(),
+              [](const auto &left, const auto &right) -> bool { return left.second < right.second; });
+    return segment3<T>{arr[0].first, arr[2].first};
+  }
+
+  return triangle3<T>{a, b, c};
+}
+
+static unsigned apporoximate_optimal_depth(unsigned number) {
+  constexpr unsigned max_depth = 6;
+  unsigned           log_num = std::log10(float(number));
+  return std::min(max_depth, log_num);
+}
+
+template <typename broad>
+void application_loop(throttle::geometry::broadphase_structure<broad, indexed_geom> &cont, unsigned n,
+                      bool hide = false) {
+  using point_type = throttle::geometry::point3<float>;
+
+  for (unsigned i = 0; i < n; ++i) {
+    point_type a, b, c;
+    std::cin >> a[0] >> a[1] >> a[2] >> b[0] >> b[1] >> b[2] >> c[0] >> c[1] >> c[2];
+    cont.add_collision_shape({i, shape_from_three_points(a, b, c)});
+  }
+
+  auto result = cont.many_to_many();
+  if (hide) return;
+
+  for (const auto v : result)
+    std::cout << v->index << " ";
+
+  std::cout << "\n";
+}
+
+int main(int argc, char *argv[]) {
+  bool hide = false;
+
+#ifdef BOOST_FOUND__
+  std::string             opt;
+  po::options_description desc("Available options");
+  desc.add_options()("help,h", "Print this help message")("measure,m", "Print perfomance metrics")(
+      "hide", "Hide output")("broad", po::value<std::string>(&opt)->default_value("octree"),
+                             "Algorithm for broad phase (bruteforce, octree)");
+
+  po::variables_map vm;
+  po::store(po::parse_command_line(argc, argv, desc), vm);
+  po::notify(vm);
+
+  if (vm.count("help")) {
+    std::cout << desc << "\n";
+    return 1;
+  }
+
+  bool measure = vm.count("measure");
+  hide = vm.count("hide");
+#endif
 
   unsigned n;
   if (!(std::cin >> n)) {
@@ -29,14 +112,29 @@ int main() {
     return 1;
   }
 
-  throttle::geometry::uniform_grid<float, indexed_geom> ugrid{n};
-  for (unsigned i = 0; i < n; ++i) {
-    triangle temp;
-    std::cin >> temp.a[0] >> temp.a[1] >> temp.a[2] >> temp.b[0] >> temp.b[1] >> temp.b[2] >> temp.c[0] >> temp.c[1] >>
-        temp.c[2];
-    ugrid.add_collision_shape({i, temp});
+#ifdef BOOST_FOUND__
+  auto start = std::chrono::high_resolution_clock::now();
+
+  if (opt == "octree") {
+    throttle::geometry::octree<float, indexed_geom> octree{apporoximate_optimal_depth(n)};
+    application_loop(octree, n, hide);
+  } else if (opt == "bruteforce") {
+    throttle::geometry::bruteforce<float, indexed_geom> bruteforce{n};
+    application_loop(bruteforce, n, hide);
+  } else if (opt == "uniform_grid") {
+    throttle::geometry::uniform_grid<float, indexed_geom> uniform_grid{n};
+    application_loop(uniform_grid, n, hide);
   }
 
-  for (const auto v : ugrid.many_to_many())
-    std::cout << v->index << " ";
+  auto finish = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration<double, std::milli>(finish - start);
+
+  if (measure) {
+    std::cout << opt << " took " << elapsed.count() << "ms to run\n";
+  }
+
+#else
+  throttle::geometry::octree<float, indexed_geom> octree{apporoximate_optimal_depth(n)};
+  application_loop(octree, n, hide);
+#endif
 }
