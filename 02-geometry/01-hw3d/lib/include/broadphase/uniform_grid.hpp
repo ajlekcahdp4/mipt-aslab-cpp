@@ -120,19 +120,14 @@ public:
   void rebuild() {
     m_map.clear();
 
-    /* re-insert all old elements into the grid */
-    auto size = m_stored_shapes.size();
-    for (index_t idx = 0; idx < size; idx++) {
-      m_stored_shapes[idx].second.clear();
-
-      insert(idx);
-    }
+    std::transform(m_stored_shapes.begin(), m_stored_shapes.end(), std::back_inserter(m_waiting_queue),
+                   [&](const auto &pair) { return pair.first; });
+    m_stored_shapes.clear();
 
     /* insert all the new shapes into the grid */
-    for (index_t idx = 0; idx < size; idx++) {
-      m_stored_shapes.push_back(stored_shapes_elem_t{m_stored_shapes[idx].first, std::vector<cell>{}});
-
-      insert(idx);
+    while (!m_waiting_queue.empty()) {
+      insert(m_waiting_queue.back());
+      m_waiting_queue.pop_back();
     }
 
     m_waiting_queue.clear();
@@ -143,20 +138,23 @@ private:
    * find all cells the shape overlaps and insert shape's index into
    * the corresponding lists.
    */
-  void insert(index_t idx) {
-    /* unordered set is there used for storing unique cells */
-    std::unordered_set<int_point_type, cell_hash> cells;
-    find_all_cells_shape_overlaps(cells, idx);
+  void insert(const shape_type &shape) {
+    std::vector<cell> cells_vector;
+    auto              cells = find_all_cells_shape_overlaps(shape);
 
+    auto old_stored_size = m_stored_shapes.size();
     for (auto &cell : cells) {
-      m_stored_shapes[idx].second.push_back(cell);
-      m_map[cell].push_back(idx);
+      cells_vector.push_back(cell);
+      m_map[cell].push_back(old_stored_size);
     }
+
+    m_stored_shapes.emplace_back(shape, std::move(cells_vector));
   }
 
   // fill "cells" with unique cells that "idx"th shape overlapse.
-  void find_all_cells_shape_overlaps(std::unordered_set<int_point_type, cell_hash> &cells, const index_t idx) const {
-    auto          &shape = m_stored_shapes[idx].first;
+  std::unordered_set<int_point_type, cell_hash> find_all_cells_shape_overlaps(const shape_type &shape) const {
+    std::unordered_set<int_point_type, cell_hash> cells;
+
     auto           bbox = shape.bounding_box();
     auto           min_corner = bbox.minimum_corner() - point_type::origin();
     std::vector<T> widths = {2 * bbox.m_halfwidth_x, 2 * bbox.m_halfwidth_y, 2 * bbox.m_halfwidth_x};
@@ -172,6 +170,8 @@ private:
     cells.insert(convert_to_int_point((min_corner + vector_type{widths[0], widths[1], 0}) / m_cell_size));
 
     cells.insert(convert_to_int_point((min_corner + vector_type{widths[0], widths[1], widths[2]}) / m_cell_size));
+
+    return cells;
   }
 
   struct many_to_many_collider {
