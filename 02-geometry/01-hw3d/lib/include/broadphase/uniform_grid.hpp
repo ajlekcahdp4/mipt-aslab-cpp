@@ -40,7 +40,7 @@ template <typename T> vec3<int> convert_to_int_vector(const vec3<T> &vec) {
 
 template <typename T, typename t_shape = collision_shape<T>,
           typename = std::enable_if_t<std::is_base_of_v<collision_shape<T>, t_shape>>>
-class uniform_grid : broadphase_structure<uniform_grid<T, t_shape>, t_shape> {
+class uniform_grid : public broadphase_structure<uniform_grid<T, t_shape>, t_shape> {
   using shape_ptr = t_shape *;
 
   using int_point_type = point3<int>;
