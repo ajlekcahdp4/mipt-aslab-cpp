@@ -5,7 +5,7 @@ set(QUERIES_SOURCES
 add_executable(intersect ${QUERIES_SOURCES})
 target_link_libraries(intersect throttle)
 if(Boost_FOUND)
-  target_link_libraries(intersect    Boost::functional)
+  target_link_libraries(intersect Boost::program_options)
 endif()
 
 install(TARGETS intersect DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin)
