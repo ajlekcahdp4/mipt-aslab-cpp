@@ -31,22 +31,35 @@
 namespace throttle {
 namespace geometry {
 
+namespace detail {
 template <typename T> vec3<int> convert_to_int_vector(const vec3<T> &vec) {
-  return vec3<int>{std::floor(vec.x), std::floor(vec.y), std::floor(vec.z)};
+  return vec3<int>{static_cast<int>(std::floor(vec.x)), static_cast<int>(std::floor(vec.y)),
+                   static_cast<int>(std::floor(vec.z))};
 }
+} // namespace detail
 
 template <typename T, typename t_shape = collision_shape<T>,
           typename = std::enable_if_t<std::is_base_of_v<collision_shape<T>, t_shape>>>
-class uniform_grid : broadphase_structure<uniform_grid<T>, t_shape> {
-
+class uniform_grid : broadphase_structure<uniform_grid<T, t_shape>, t_shape> {
   using shape_ptr = t_shape *;
+
   using int_point_type = point3<int>;
+  using int_vector_type = vec3<int>;
+
   using point_type = point3<T>;
   using vector_type = vec3<T>;
-  using int_vector_type = vec3<int>;
-  using index_t = unsigned;
 
+  using index_t = unsigned;
   using cell_type = int_vector_type;
+
+  T                    m_cell_size;     // grid's cells size
+  std::vector<t_shape> m_waiting_queue; // queue of shapes to insert
+
+  // The vector of inserted elements and vectors from all the cells that the element overlaps
+  using stored_shapes_elem_t = typename std::pair<t_shape, cell_type>;
+  std::vector<stored_shapes_elem_t> m_stored_shapes;
+
+  using shape_idx_vec_t = typename std::vector<index_t>; // A list of indexes of shapes in m_stored_shapes
 
   struct cell_hash {
     std::size_t operator()(const cell_type &cell) const {
@@ -60,51 +73,38 @@ class uniform_grid : broadphase_structure<uniform_grid<T>, t_shape> {
     }
   };
 
-  // grid's cells size
-  T m_cell_size;
-
-  // queue of shapes to insert
-  std::vector<t_shape> m_waiting_queue;
-
-  // The vector of inserted elements and vectors from all the cells that the element overlaps
-  using stored_shapes_elem_t = typename std::pair<t_shape, cell_type>;
-  std::vector<stored_shapes_elem_t> m_stored_shapes;
-
-  /* A list of indexes of shapes in m_stored_shapes */
-  using shape_idx_vec_t = typename std::vector<index_t>;
-  /* map cell into shape_list_t */
-  using map_t = typename std::unordered_map<cell_type, shape_idx_vec_t, cell_hash>;
+  using map_t = typename std::unordered_map<cell_type, shape_idx_vec_t, cell_hash>; // map cell into shape_list_t
   map_t m_map;
 
-  // minimum and maximum values of the bounding box coordinates
-  std::optional<T> m_min_val, m_max_val;
+  std::optional<T> m_min_val, m_max_val; // minimum and maximum values of the bounding box coordinates
 
 public:
   using shape_type = t_shape;
 
-  // ctor with hint about the number of shapes to insert
-  uniform_grid(index_t number_hint) {
+  uniform_grid(index_t number_hint) { // ctor with hint about the number of shapes to insert
     m_waiting_queue.reserve(number_hint);
     m_stored_shapes.reserve(number_hint);
   }
 
   void add_collision_shape(const shape_type &shape) {
     m_waiting_queue.push_back(shape);
+
     auto bbox = shape.bounding_box();
     auto bbox_max_corner = bbox.maximum_corner();
     auto bbox_min_corner = bbox.minimum_corner();
     auto max_width = bbox.max_width();
 
-    /* remain cell size to be large enough to fit the largest shape in any rotation */
-    if (is_definitely_greater(max_width, m_cell_size)) m_cell_size = 2 * max_width;
+    // remain cell size to be large enough to fit the largest shape in any rotation
+    if (max_width > m_cell_size) m_cell_size = max_width;
 
-    if (!m_min_val) { /* first insertion */
+    if (!m_min_val) { // first insertion
       m_min_val = vmin(bbox_min_corner.x, bbox_min_corner.y, bbox_min_corner.z);
       m_max_val = vmax(bbox_max_corner.x, bbox_max_corner.y, bbox_max_corner.z);
-    } else {
-      m_min_val = vmin(m_min_val.value(), bbox_min_corner.x, bbox_min_corner.y, bbox_min_corner.z);
-      m_max_val = vmax(m_max_val.value(), bbox_max_corner.x, bbox_max_corner.y, bbox_max_corner.z);
+      return;
     }
+
+    m_min_val = vmin(m_min_val.value(), bbox_min_corner.x, bbox_min_corner.y, bbox_min_corner.z);
+    m_max_val = vmax(m_max_val.value(), bbox_max_corner.x, bbox_max_corner.y, bbox_max_corner.z);
   }
 
   std::vector<shape_ptr> many_to_many() {
@@ -119,6 +119,13 @@ public:
     return result;
   }
 
+  void flush_waiting() {
+    while (!m_waiting_queue.empty()) { // insert all the new shapes into the grid
+      insert(m_waiting_queue.back());
+      m_waiting_queue.pop_back();
+    }
+  }
+
   void rebuild() {
     m_map.clear();
 
@@ -126,18 +133,11 @@ public:
                    [&](const auto &pair) { return pair.first; });
     m_stored_shapes.clear();
 
-    /* insert all the new shapes into the grid */
-    while (!m_waiting_queue.empty()) {
-      insert(m_waiting_queue.back());
-      m_waiting_queue.pop_back();
-    }
-
-    m_waiting_queue.clear();
+    flush_waiting();
   }
 
 private:
-  /* insert shape into m_stored shapes and into m_map */
-  void insert(const shape_type &shape) {
+  void insert(const shape_type &shape) { // insert shape into m_stored shapes and into m_map
     auto old_stored_size = m_stored_shapes.size();
     auto cell = compute_cell(shape);
 
@@ -149,36 +149,46 @@ private:
   cell_type compute_cell(const shape_type &shape) const {
     auto bbox = shape.bounding_box();
     auto min_corner = bbox.m_center - point_type::origin();
-    return convert_to_int_vector(min_corner / m_cell_size);
+    return detail::convert_to_int_vector(min_corner / m_cell_size);
   }
 
   static constexpr std::array<int_vector_type, 27> offsets() {
+    std::array<int_vector_type, 27> result{};
+
+    std::size_t index = 0;
+    for (int i = -1; i <= 1; ++i) {
+      for (int j = -1; j <= 1; ++j) {
+        for (int k = -1; k <= 1; ++k) {
+          result[index++] = {i, j, k};
+        }
+      }
+    }
+
+    return result;
+
+#if 0
     return std::array<int_vector_type, 27>{
         {{0, 0, 0},   {0, 0, 1},    {0, 0, -1},  {0, 1, 0},   {0, -1, 0},  {1, 0, 0},  {-1, 0, 0},
          {0, 1, -1},  {0, 1, 1},    {0, -1, 1},  {0, -1, -1}, {1, 0, 1},   {1, 0, -1}, {-1, 0, 1},
          {-1, 0, -1}, {1, 1, 1},    {1, 1, -1},  {1, -1, 1},  {1, -1, -1}, {-1, 1, 1}, {-1, 1, -1},
          {-1, -1, 1}, {-1, -1, -1}, {-1, -1, 0}, {-1, 1, 0},  {1, -1, 0},  {1, 1, 0}}};
+#endif
   }
 
   struct many_to_many_collider {
-    std::set<index_t> in_collision;
-
-    map_t &map;
-
+    std::set<index_t>                        in_collision;
+    map_t                                   &map;
     const std::vector<stored_shapes_elem_t> &stored_shapes;
 
     many_to_many_collider(map_t &map_a, const std::vector<stored_shapes_elem_t> &stored_shapes_a)
         : map(map_a), stored_shapes(stored_shapes_a) {}
 
-    // fills "in_collision" set with all intersecting shapes in the grid
-    void collide() {
-      /* For each cell we will test */
-      for (auto &bucket : map) {
+    void collide() {             // fills "in_collision" set with all intersecting shapes in the grid
+      for (auto &bucket : map) { // For each cell we will test
         auto offsets_a = offsets();
-        /* all the neighbors */
-        for (auto &offset : offsets_a) {
+        for (auto &offset : offsets_a) { // all the neighbors
           auto bucket_to_test_with_it = map.find(bucket.first + offset);
-          if (bucket_to_test_with_it != map.end()) /*for all of the shapes they containes to intersect */
+          if (bucket_to_test_with_it != map.end()) // for all of the shapes they containes to intersect
             for (auto to_test_idx : bucket.second)
               for (auto to_test_with_idx : bucket_to_test_with_it->second)
                 if (to_test_idx != to_test_with_idx &&
