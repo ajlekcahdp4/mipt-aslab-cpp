@@ -1,4 +1,4 @@
-find_package(Boost COMPONENTS program_options)
+find_package(Boost COMPONENTS program_options functional)
 
 if(Boost_FOUND)
   add_compile_definitions(BOOST_FOUND__)
