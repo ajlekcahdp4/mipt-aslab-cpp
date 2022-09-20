@@ -63,7 +63,7 @@ static unsigned apporoximate_optimal_depth(unsigned number) {
   return std::min(max_depth, log_num);
 }
 
-template <typename broad> void application_loop(throttle::geometry::broadphase_structure<broad, indexed_geom> &cont, unsigned n, bool hide = false) {
+template <typename broad> bool application_loop(throttle::geometry::broadphase_structure<broad, indexed_geom> &cont, unsigned n, bool hide = false) {
   using point_type = throttle::geometry::point3<float>;
 
   for (unsigned i = 0; i < n; ++i) {
@@ -93,7 +93,7 @@ int main(int argc, char *argv[]) {
   po::options_description desc("Available options");
   desc.add_options()("help,h", "Print this help message")("measure,m", "Print perfomance metrics")(
       "hide", "Hide output")("broad", po::value<std::string>(&opt)->default_value("octree"),
-                             "Algorithm for broad phase (bruteforce, octree)");
+                             "Algorithm for broad phase (bruteforce, octree, uniform-grid)");
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -119,10 +119,13 @@ int main(int argc, char *argv[]) {
 
   if (opt == "octree") {
     throttle::geometry::octree<float, indexed_geom> octree{apporoximate_optimal_depth(n)};
-    application_loop(octree, n, hide);  
+    if (!application_loop(octree, n, hide)) return 1;  
   } else if (opt == "bruteforce") {
     throttle::geometry::bruteforce<float, indexed_geom> bruteforce{n};
-    application_loop(bruteforce, n, hide);  
+    if (!application_loop(bruteforce, n, hide)) return 1;  
+  } else if (opt == "uniform-grid") {
+    throttle::geometry::uniform_grid<float, indexed_geom> uniform{n};
+    if (!application_loop(uniform, n, hide)) return 1;  
   }
 
   auto finish = std::chrono::high_resolution_clock::now();

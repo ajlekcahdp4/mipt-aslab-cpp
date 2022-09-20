@@ -34,7 +34,7 @@ bin/intersect --help
 #  -h [ --help ]         Print this help message
 #  -m [ --measure ]      Print perfomance metrics
 #  --hide                Hide output
-#  --broad arg (=octree) Algorithm for broad phase (bruteforce, octree)
+#  --broad arg (=octree) Algorithm for broad phase (bruteforce, octree, uniform-grid)
 
 # Run sample test
 bin/intersect --hide --measure --broad=octree < resources/large0.dat
