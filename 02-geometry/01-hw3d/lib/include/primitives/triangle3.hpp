@@ -116,8 +116,8 @@ template <typename T> bool triangle_triangle_intersect(const triangle3<T> &t1, c
   if (are_same_sign(d_1[0], d_1[1], d_1[2])) return false;
 
   // 7. Handle degenerate cases when one or more points lies on the plane of the other triangle.
-  auto num_zeros = std::count_if(d_1.begin(), d_1.end(), [](const auto &elem) { return elem == T{0}; });
-  if (num_zeros) {
+  auto num_zeros1 = std::count_if(d_1.begin(), d_1.end(), [](const auto &elem) { return elem == T{0}; });
+  if (num_zeros1) {
     using triangle_vertex_distance_pair = std::pair<typename triangle3<T>::point_type, T>;
     std::array<triangle_vertex_distance_pair, 3> vert_dist_arr = {
         std::make_pair(t1.a, d_1[0]), std::make_pair(t1.b, d_1[1]), std::make_pair(t1.c, d_1[2])};
@@ -127,7 +127,7 @@ template <typename T> bool triangle_triangle_intersect(const triangle3<T> &t1, c
     auto max_index = pi2.normal().max_component().first;
     auto t2_flat = t2.project_coord(max_index);
 
-    switch (num_zeros) {
+    switch (num_zeros1) {
     case 1: {
       auto proj_first = vert_dist_arr[0].first.project_coord(max_index);
       if (t2_flat.point_in_triangle(proj_first)) return true;
@@ -144,6 +144,39 @@ template <typename T> bool triangle_triangle_intersect(const triangle3<T> &t1, c
     }
 
     case 3: return t2_flat.intersect(t1.project_coord(max_index));
+    default: throw std::runtime_error{"Something has gone terribly wrong."};
+    }
+  }
+
+  // Symmetric cases for t2.
+  auto num_zeros2 = std::count_if(d_2.begin(), d_2.end(), [](const auto &elem) { return elem == T{0}; });
+  if (num_zeros2) {
+    using triangle_vertex_distance_pair = std::pair<typename triangle3<T>::point_type, T>;
+    std::array<triangle_vertex_distance_pair, 3> vert_dist_arr = {
+        std::make_pair(t2.a, d_2[0]), std::make_pair(t2.b, d_2[1]), std::make_pair(t2.c, d_2[2])};
+    std::sort(vert_dist_arr.begin(), vert_dist_arr.end(), [](const auto &p_first, const auto &p_second) {
+      return std::abs(p_first.second) < std::abs(p_second.second);
+    });
+    auto max_index = pi1.normal().max_component().first;
+    auto t1_flat = t1.project_coord(max_index);
+
+    switch (num_zeros2) {
+    case 1: {
+      auto proj_first = vert_dist_arr[0].first.project_coord(max_index);
+      if (t1_flat.point_in_triangle(proj_first)) return true;
+      if (!are_same_sign(vert_dist_arr[1].second, vert_dist_arr[2].second))
+        return t1_flat.point_in_triangle(pi1.segment_intersection({vert_dist_arr[1].first, vert_dist_arr[2].first})
+                                      .value()
+                                      .project_coord(max_index));
+      return false;
+    }
+
+    case 2: {
+      return t1_flat.point_in_triangle(vert_dist_arr[0].first.project_coord(max_index)) ||
+             t1_flat.point_in_triangle(vert_dist_arr[1].first.project_coord(max_index));
+    }
+
+    case 3: return t1_flat.intersect(t2.project_coord(max_index));
     default: throw std::runtime_error{"Something has gone terribly wrong."};
     }
   }
