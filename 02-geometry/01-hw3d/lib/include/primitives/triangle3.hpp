@@ -132,7 +132,7 @@ template <typename T> bool triangle_triangle_intersect(const triangle3<T> &t1, c
       auto proj_first = vert_dist_arr[0].first.project_coord(max_index);
       if (t2_flat.point_in_triangle(proj_first)) return true;
       if (!are_same_sign(vert_dist_arr[1].second, vert_dist_arr[2].second))
-        t2_flat.point_in_triangle(pi2.segment_intersection({vert_dist_arr[0].first, vert_dist_arr[1].first})
+        return t2_flat.point_in_triangle(pi2.segment_intersection({vert_dist_arr[1].first, vert_dist_arr[2].first})
                                       .value()
                                       .project_coord(max_index));
       return false;
