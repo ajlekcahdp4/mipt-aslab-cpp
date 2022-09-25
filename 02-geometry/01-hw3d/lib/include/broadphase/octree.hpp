@@ -1,7 +1,7 @@
 /*
  * ----------------------------------------------------------------------------
  * "THE BEER-WARE LICENSE" (Revision 42):
- * <tsimmerman.ss@phystech.edu>, wrote this file.  As long as you
+ * <tsimmerman.ss@phystech.edu>, <alex.rom23@mail.ru> wrote this file.  As long as you
  * retain this notice you can do whatever you want with this stuff. If we meet
  * some day, and you think this stuff is worth it, you can buy me a beer in
  * return.
@@ -20,7 +20,6 @@
 
 #include <algorithm>
 #include <array>
-#include <list>
 #include <queue>
 #include <set>
 #include <stack>
@@ -52,7 +51,7 @@ private:
     point_type              m_center;
     T                       m_halfwidth;
     std::array<unsigned, 8> m_children;
-    std::list<unsigned>     m_contained_shape_indexes;
+    std::vector<unsigned>   m_contained_shape_indexes;
 
     octree_node(point_type center, T halfwidth)
         : m_center{center}, m_halfwidth{halfwidth}, m_children{}, m_contained_shape_indexes{} {}
