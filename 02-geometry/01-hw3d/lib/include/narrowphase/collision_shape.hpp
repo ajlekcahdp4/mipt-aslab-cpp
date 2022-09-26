@@ -26,7 +26,7 @@ public:
   using segment_type = segment3<T>;
   using point_type = point3<T>;
   using triangle_type = triangle3<T>;
-  using aabb_type = aabb<T>;
+  using aabb_type = axis_aligned_bb<T>;
   using variant_type = mpark::variant<segment_type, point_type, triangle_type>;
 
 private:
@@ -44,9 +44,7 @@ public:
                         other.m_shape);
   }
 
-  aabb_type bounding_box() const {
-    return m_aabb;
-  }
+  aabb_type bounding_box() const { return m_aabb; }
 };
 
 template <typename T> bool collide(const collision_shape<T> &shape1, const collision_shape<T> &shape2) {

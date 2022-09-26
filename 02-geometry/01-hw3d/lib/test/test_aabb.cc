@@ -17,10 +17,10 @@
 
 #include "narrowphase/aabb.hpp"
 
-using AABB = typename throttle::geometry::aabb<double>;
+using AABB = typename throttle::geometry::axis_aligned_bb<double>;
 using namespace throttle::geometry;
 
-template struct throttle::geometry::aabb<float>;
+template struct throttle::geometry::axis_aligned_bb<float>;
 
 TEST(TestAABB, test_intersect_1) {
   AABB a{{0, 0, 0}, 0.5, 0.5, 0.5};
