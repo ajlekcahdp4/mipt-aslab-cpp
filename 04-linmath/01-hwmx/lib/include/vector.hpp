@@ -20,6 +20,7 @@
 #include <type_traits>
 #include <climits>
 #include <iterator>
+#include <initializer_list>
 
 namespace throttle {
 namespace containers {
@@ -173,12 +174,12 @@ public:
   const_reference operator[](size_type index) const { return *(m_buffer_ptr + index); }
 
   reference at(size_type index) {
-    if (!(index < size())) throw std::out_of_range("index out of range.");
+    if (index >= size()) throw std::out_of_range("index out of range.");
     return (*this)[index];
   }
 
   const_reference at(size_type index) const {
-    if (!(index < size())) throw std::out_of_range("index out of range.");
+    if (index >= size()) throw std::out_of_range("index out of range.");
     return (*this)[index];
   }
 };

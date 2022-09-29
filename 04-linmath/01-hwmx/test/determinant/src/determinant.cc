@@ -15,18 +15,18 @@ namespace po = boost::program_options;
 int main(int argc, char *argv[]) {
   throttle::containers::vector<std::string> vec;
 
-  for (int i = 0; i < 2 << 16; ++i) {
+  for (auto i = 0; i < 2 << 16; ++i) {
     vec.push_back(std::to_string(i));
   }
 
-  for (int i = 0; i < vec.size(); ++i) {
+  for (auto i = 0; i < vec.size(); ++i) {
     std::cout << vec[i] << " ";
   }
   std::cout << "\n";
 
   auto vec_moved = vec;
 
-  for (int i = 0; i < vec_moved.size(); ++i) {
+  for (auto i = 0; i < vec_moved.size(); ++i) {
     std::cout << vec_moved[i] << " ";
   }
   std::cout << "\n";

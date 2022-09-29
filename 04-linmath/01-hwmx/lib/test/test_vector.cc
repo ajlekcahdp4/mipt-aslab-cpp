@@ -25,12 +25,12 @@ TEST(test_vector, test_ctor) {
 
 TEST(test_vector, test_push_pop_back) {
   vector a{5};
-  for (int i = 0; i < 5; i++)
+  for (auto i = 0; i < 5; i++)
     a.push_back(i);
 
   EXPECT_EQ(a.size(), 5);
 
-  for (int i = 4; i >= 0; i--) {
+  for (auto i = 4; i >= 0; i--) {
     EXPECT_EQ(a.back(), i);
     a.pop_back();
   }
@@ -40,15 +40,14 @@ TEST(test_vector, test_push_pop_back) {
 
 TEST(test_vector, test_copy_ctor) {
   vector a{5};
-  for (int i = 0; i < 5; i++)
+  for (auto i = 0; i < 5; i++)
     a.push_back(i);
 
   vector b = a;
 
-  EXPECT_EQ(a.capacity(), b.capacity());
   EXPECT_EQ(a.size(), b.size());
 
-  for (int i = 4; i >= 0; i--) {
+  for (auto i = 4; i >= 0; i--) {
     EXPECT_EQ(b.back(), i);
     EXPECT_EQ(a.back(), i);
     b.pop_back();
