@@ -11,6 +11,7 @@
 #pragma once
 
 #include <algorithm>
+#include <concepts>
 #include <cstddef>
 #include <cstring>
 #include <limits>
@@ -71,18 +72,25 @@ public:
     std::swap(m_past_end_ptr, rhs.m_past_end_ptr);
   }
 
-  vector(const vector &other) {
+  vector(const vector &other) requires std::copyable<value_type> {
     vector temp{capacity()};
 
     const size_type sz = other.size();
     if constexpr (std::is_trivially_copyable<value_type>::value) {
       std::memcpy(temp.m_buffer_ptr, other.m_buffer_ptr, sz * sizeof(value_type));
     } else {
-      std::copy(other.m_buffer_ptr, other.m_past_end_ptr, temp.m_buffer_ptr);
+      std::uninitialized_copy(other.m_buffer_ptr, other.m_past_end_ptr, temp.m_buffer_ptr);
     }
     temp.m_past_end_ptr += sz;
 
     *this = std::move(temp);
+  }
+
+  vector &operator=(const vector &rhs) requires std::copyable<value_type> {
+    if (this == std::addressof(rhs)) return *this;
+    vector temp{rhs};
+    *this = std::move(temp);
+    return *this;
   }
 
   vector &operator=(vector &&rhs) noexcept {
@@ -102,9 +110,10 @@ public:
     if constexpr (std::is_trivially_copyable<value_type>::value) {
       std::memcpy(temp.m_buffer_ptr, m_buffer_ptr, sz * sizeof(value_type));
     } else {
-      std::move(m_buffer_ptr, m_past_end_ptr, temp.m_buffer_ptr);
+      std::uninitialized_move(m_buffer_ptr, m_past_end_ptr, temp.m_buffer_ptr);
     }
     temp.m_past_end_ptr += sz;
+    m_past_end_ptr = m_buffer_ptr;
 
     *this = std::move(temp);
   }
@@ -116,12 +125,12 @@ private:
   }
 
 public:
-  void push_back(const value_type &val) {
+  void push_back(const value_type &val) requires std::copyable<value_type> {
     reserve_if_necessary();
     new (m_past_end_ptr++) T{val};
   }
 
-  void push_back(value_type &&val) {
+  void push_back(value_type &&val) requires std::movable<value_type> {
     reserve_if_necessary();
     new (m_past_end_ptr++) T{std::move(val)};
   }

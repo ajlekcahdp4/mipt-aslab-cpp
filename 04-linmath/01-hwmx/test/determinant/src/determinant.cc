@@ -14,7 +14,7 @@ namespace po = boost::program_options;
 int main(int argc, char *argv[]) {
   throttle::containers::vector<std::unique_ptr<int>> vec;
 
-  for (int i = 0; i < 16; ++i) {
+  for (int i = 0; i < 1024; ++i) {
     vec.push_back(std::make_unique<int>(i));
   }
 

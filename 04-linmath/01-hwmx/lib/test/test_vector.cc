@@ -11,8 +11,10 @@
 #include <vector.hpp>
 
 #include <gtest/gtest.h>
+#include <memory>
 
 template class throttle::containers::vector<int>;
+template class throttle::containers::vector<std::unique_ptr<int>>;
 
 using vector = typename throttle::containers::vector<int>;
 
@@ -80,4 +82,8 @@ TEST(test_vector, test_reserve_3) {
 
   EXPECT_GE(a.capacity(), 7);
   EXPECT_EQ(a.size(), 5);
+}
+
+TEST(test_vector, test_new_cap) {
+
 }
