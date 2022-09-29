@@ -42,7 +42,6 @@ private:
     using reference = value_type &;
     using pointer = value_type *;
 
-    const vector<T> &m_vector;
     pointer          m_ptr;
 
     pointer get() { return m_ptr; }
@@ -57,7 +56,7 @@ private:
     }
 
     iterator operator++(int) {
-      iterator res{m_vector, m_ptr};
+      iterator res{m_ptr};
       m_ptr++;
       return res;
     }
@@ -68,7 +67,7 @@ private:
     }
 
     iterator operator--(int) {
-      iterator res{m_vector, m_ptr};
+      iterator res{m_ptr};
       m_ptr--;
       return res;
     }
@@ -83,8 +82,8 @@ private:
       return *this;
     }
 
-    iterator operator+(difference_type n) { return iterator{m_vector, m_ptr + n}; }
-    iterator operator-(difference_type n) { return iterator{m_vector, m_ptr - n}; }
+    iterator operator+(difference_type n) { return iterator{m_ptr + n}; }
+    iterator operator-(difference_type n) { return iterator{m_ptr - n}; }
 
     bool operator==(const iterator &other) { return m_ptr == other.m_ptr; }
     bool operator!=(const iterator &other) { return !(*this == other); }
@@ -239,8 +238,8 @@ public:
     if (index >= size()) throw std::out_of_range("index out of range.");
     return (*this)[index];
   }
-  iterator begin() const noexcept { return iterator{*this, m_buffer_ptr}; }
-  iterator end() const noexcept { return iterator{*this, m_past_end_ptr}; }
+  iterator begin() const noexcept { return iterator{m_buffer_ptr}; }
+  iterator end() const noexcept { return iterator{m_past_end_ptr}; }
 };
 
 } // namespace containers
