@@ -2,6 +2,7 @@ add_library(throttle INTERFACE)
 target_include_directories(throttle INTERFACE include)
 
 set(UNIT_TEST_SOURCES
+  test/test_vector.cc
   test/main.cc
 )
 

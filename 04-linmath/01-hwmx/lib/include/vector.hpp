@@ -70,7 +70,7 @@ public:
   vector(const vector &other) {
     vector temp(capacity());
 
-    auto size = size();
+    auto size = this->size();
     auto old_data = data();
     auto new_data = other.data();
 
@@ -113,13 +113,14 @@ public:
 
   bool empty() const noexcept { return (size() == 0); }
 
-  reference       back() { return *m_past_end_ptr; }
-  const_reference back() const { return *m_past_end_ptr; }
+  reference       back() { return *(m_past_end_ptr - 1); }
+  const_reference back() const { return *(m_past_end_ptr - 1); }
 
   reference       front() { return *m_buffer_ptr; }
   const_reference front() const { return *m_buffer_ptr; }
 
-  T *data() { return m_buffer_ptr; }
+  T       *data() { return m_buffer_ptr; }
+  const T *data() const { return m_buffer_ptr; }
 
   reference       operator[](size_type index) { return *(m_buffer_ptr + index); }
   const_reference operator[](size_type index) const { return *(m_buffer_ptr + index); }
