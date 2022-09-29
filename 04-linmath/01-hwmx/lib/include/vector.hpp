@@ -13,8 +13,8 @@
 #include <algorithm>
 #include <cstddef>
 #include <memory>
-#include <type_traits>
 #include <stdexcept>
+#include <type_traits>
 
 namespace throttle {
 namespace containers {
@@ -27,7 +27,7 @@ private:
   T *m_past_capacity_ptr = nullptr;
   T *m_past_end_ptr = nullptr;
 
-  static constexpr std::size_t default_capacity = 128;
+  static constexpr std::size_t default_capacity = 8;
 
 public:
   using size_type = std::size_t;
@@ -36,6 +36,7 @@ public:
 private:
   using pointer = value_type *;
   using reference = value_type &;
+  using const_reference = const value_type &;
 
   void delete_elements() noexcept {
     if constexpr (!std::is_trivially_destructible_v<value_type>) {
@@ -92,8 +93,27 @@ public:
   size_type size() const noexcept { return m_past_end_ptr - m_buffer_ptr; }
   size_type capacity() const noexcept { return m_past_capacity_ptr - m_buffer_ptr; }
 
-  value_type &operator[](size_type index) { return *(m_buffer_ptr + index); }
-  const value_type &operator[](size_type index) const { return *(m_buffer_ptr + index); }
+  bool empty() const noexcept { return (size() == 0); }
+
+  reference       back() { return *m_past_end_ptr; }
+  const_reference back() const { return *m_past_end_ptr; }
+
+  reference       front() { return *m_buffer_ptr; }
+  const_reference front() const { return *m_buffer_ptr; }
+
+  T *data() { return m_buffer_ptr; }
+
+  reference       operator[](size_type index) { return *(m_buffer_ptr + index); }
+  const_reference operator[](size_type index) const { return *(m_buffer_ptr + index); }
+
+  reference at(size_type index) {
+    if (!(index < size())) throw std::out_of_range("index out of range.");
+    return *(m_buffer_ptr + index);
+  }
+  const_reference at(size_type index) const {
+    if (!(index < size())) throw std::out_of_range("index out of range.");
+    return *(m_buffer_ptr + index);
+  }
 };
 
 } // namespace containers
