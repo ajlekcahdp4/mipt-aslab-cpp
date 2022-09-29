@@ -109,7 +109,7 @@ public:
 
       new_vec.m_past_end_ptr += old_size;
 
-      *this = std::move(am_new_cap);
+      *this = std::move(new_vec);
     }
   }
 
