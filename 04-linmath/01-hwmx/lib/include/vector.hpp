@@ -94,17 +94,21 @@ public:
   }
 
   void reserve(size_type new_cap) {
-    auto   am_new_cap = amortized_buffer_size(new_cap);
-    vector new_vec(am_new_cap);
+    if (new_cap > capacity()) {
+      auto   am_new_cap = amortized_buffer_size(new_cap);
+      vector new_vec(am_new_cap);
 
-    auto size = this->size();
-    auto new_data = new_vec.data();
-    auto old_data = data();
+      auto old_size = this->size();
+      auto new_data = new_vec.data();
+      auto old_data = data();
 
-    for (int i = 0; i < size; i++)
-      new_data[i] = std::move(new_data[i]);
+      for (int i = 0; i < old_size; i++)
+        new_data[i] = std::move(old_data[i]);
 
-    *this = std::move(am_new_cap);
+      new_vec.m_past_end_ptr += old_size;
+
+      *this = std::move(am_new_cap);
+    }
   }
 
 private:
