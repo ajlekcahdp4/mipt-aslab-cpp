@@ -37,6 +37,8 @@ public:
 
 private:
   using pointer = value_type *;
+  using const_pointer = const value_type *;
+
   using reference = value_type &;
   using const_reference = const value_type &;
 
@@ -47,7 +49,7 @@ private:
     m_past_end_ptr = m_buffer_ptr;
   }
 
-  size_type amortized_buffer_size(size_type x) { return 1 << (sizeof(size_type) * CHAR_BIT - __builtin_clz(x)); }
+  static size_type amortized_buffer_size(size_type x) { return 1 << (sizeof(size_type) * CHAR_BIT - __builtin_clz(x)); }
 
 public:
   vector(size_type capacity = default_capacity)
@@ -70,19 +72,15 @@ public:
   }
 
   vector(const vector &other) {
-    vector temp(capacity());
+    vector temp{capacity()};
 
-    auto size = other.size();
-    auto temp_data = temp.data();
-    auto other_data = other.data();
-
-    if constexpr (std::is_trivially_copyable<T>::value)
-      std::memcpy(temp_data, other_data, size * sizeof(T));
-    else
-      for (int i = 0; i < size; i++)
-        std::copy(other_data[i], temp_data[i]);
-
-    temp.m_past_end_ptr += size;
+    const size_type sz = other.size();
+    if constexpr (std::is_trivially_copyable<value_type>::value) {
+      std::memcpy(temp.m_buffer_ptr, other.m_buffer_ptr, sz * sizeof(value_type));
+    } else {
+      std::copy(other.m_buffer_ptr, other.m_past_end_ptr, temp.m_buffer_ptr);
+    }
+    temp.m_past_end_ptr += sz;
 
     *this = std::move(temp);
   }
@@ -96,36 +94,35 @@ public:
   }
 
   void reserve(size_type new_cap) {
-    if (new_cap > capacity()) {
-      auto   am_new_cap = amortized_buffer_size(new_cap);
-      vector new_vec(am_new_cap);
+    if (new_cap <= capacity()) return;
 
-      auto old_size = this->size();
-      auto new_data = new_vec.data();
-      auto old_data = data();
+    vector temp{amortized_buffer_size(new_cap)};
 
-      for (int i = 0; i < old_size; i++)
-        new_data[i] = std::move(old_data[i]);
-
-      new_vec.m_past_end_ptr += old_size;
-
-      *this = std::move(new_vec);
+    const size_type sz = size();
+    if constexpr (std::is_trivially_copyable<value_type>::value) {
+      std::memcpy(temp.m_buffer_ptr, m_buffer_ptr, sz * sizeof(value_type));
+    } else {
+      std::move(m_buffer_ptr, m_past_end_ptr, temp.m_buffer_ptr);
     }
+    temp.m_past_end_ptr += sz;
+
+    *this = std::move(temp);
   }
 
 private:
-  void resize_if_necessary() {
-    if (m_past_capacity_ptr == m_past_end_ptr) throw std::runtime_error{"Not yet implemented resize"};
+  void reserve_if_necessary() {
+    if (m_past_capacity_ptr != m_past_end_ptr) return;
+    reserve(amortized_buffer_size(capacity()));
   }
 
 public:
   void push_back(const value_type &val) {
-    resize_if_necessary();
+    reserve_if_necessary();
     new (m_past_end_ptr++) T{val};
   }
 
   void push_back(value_type &&val) {
-    resize_if_necessary();
+    reserve_if_necessary();
     new (m_past_end_ptr++) T{std::move(val)};
   }
 
@@ -143,19 +140,20 @@ public:
   reference       front() { return *m_buffer_ptr; }
   const_reference front() const { return *m_buffer_ptr; }
 
-  T       *data() { return m_buffer_ptr; }
-  const T *data() const { return m_buffer_ptr; }
+  value_type       *data() { return m_buffer_ptr; }
+  const value_type *data() const { return m_buffer_ptr; }
 
   reference       operator[](size_type index) { return *(m_buffer_ptr + index); }
   const_reference operator[](size_type index) const { return *(m_buffer_ptr + index); }
 
   reference at(size_type index) {
     if (!(index < size())) throw std::out_of_range("index out of range.");
-    return *(m_buffer_ptr + index);
+    return (*this)[index];
   }
+
   const_reference at(size_type index) const {
     if (!(index < size())) throw std::out_of_range("index out of range.");
-    return *(m_buffer_ptr + index);
+    return (*this)[index];
   }
 };
 
