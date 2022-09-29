@@ -18,6 +18,8 @@
 #include <memory>
 #include <stdexcept>
 #include <type_traits>
+#include <climits>
+#include <iterator>
 
 namespace throttle {
 namespace containers {
@@ -59,6 +61,18 @@ public:
         m_past_capacity_ptr{m_buffer_ptr + std::max(amortized_buffer_size(capacity), default_capacity)},
         m_past_end_ptr{m_buffer_ptr} {}
 
+  vector(size_type count, const value_type &value) requires std::copyable<value_type> {
+    for (size_type i = 0; i < count; ++i) push_back(value);
+  }
+
+  template <std::input_iterator it> vector(it start, it finish) {
+    for (; start != finish; ++start) push_back(*start);
+  }
+
+  template <std::random_access_iterator it> vector(it start, it finish) : vector{finish - start} {
+    for (; start != finish; ++start) push_back(*start);
+  }
+
   ~vector() {
     auto deleter = [](pointer ptr) { ::operator delete(ptr); };
 
@@ -73,7 +87,7 @@ public:
   }
 
   vector(const vector &other) requires std::copyable<value_type> {
-    vector temp{capacity()};
+    vector temp{other.capacity()};
 
     const size_type sz = other.size();
     if constexpr (std::is_trivially_copyable<value_type>::value) {
@@ -101,10 +115,9 @@ public:
     return *this;
   }
 
-  void reserve(size_type new_cap) {
-    if (new_cap <= capacity()) return;
-
-    vector temp{amortized_buffer_size(new_cap)};
+  void reserve_exact(size_type cap) {
+    if (cap <= capacity()) return;
+    vector temp{cap};
 
     const size_type sz = size();
     if constexpr (std::is_trivially_copyable<value_type>::value) {
@@ -116,6 +129,10 @@ public:
     m_past_end_ptr = m_buffer_ptr;
 
     *this = std::move(temp);
+  }
+
+  void reserve(size_type cap) {
+    reserve_exact(amortized_buffer_size(cap));    
   }
 
 private:
