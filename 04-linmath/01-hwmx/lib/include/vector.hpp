@@ -51,8 +51,10 @@ private:
 
 public:
   vector(size_type capacity = default_capacity)
-      : m_buffer_ptr{static_cast<pointer>(::operator new(sizeof(value_type) * std::max(capacity, default_capacity)))},
-        m_past_capacity_ptr{m_buffer_ptr + std::max(capacity, default_capacity)}, m_past_end_ptr{m_buffer_ptr} {}
+      : m_buffer_ptr{static_cast<pointer>(
+            ::operator new(sizeof(value_type) * std::max(amortized_buffer_size(capacity), default_capacity)))},
+        m_past_capacity_ptr{m_buffer_ptr + std::max(amortized_buffer_size(capacity), default_capacity)},
+        m_past_end_ptr{m_buffer_ptr} {}
 
   ~vector() {
     auto deleter = [](pointer ptr) { ::operator delete(ptr); };
