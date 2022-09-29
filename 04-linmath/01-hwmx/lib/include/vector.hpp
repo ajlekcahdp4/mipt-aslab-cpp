@@ -12,6 +12,8 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <cstring>
+#include <limits>
 #include <memory>
 #include <stdexcept>
 #include <type_traits>
@@ -45,6 +47,8 @@ private:
     m_past_end_ptr = m_buffer_ptr;
   }
 
+  size_type amortized_buffer_size(size_type x) { return 1 << (sizeof(size_type) * CHAR_BIT - __builtin_clz(x)); }
+
 public:
   vector(size_type capacity = default_capacity)
       : m_buffer_ptr{static_cast<pointer>(::operator new(sizeof(value_type) * std::max(capacity, default_capacity)))},
@@ -61,6 +65,20 @@ public:
     std::swap(m_buffer_ptr, rhs.m_buffer_ptr);
     std::swap(m_past_capacity_ptr, rhs.m_past_capacity_ptr);
     std::swap(m_past_end_ptr, rhs.m_past_end_ptr);
+  }
+
+  vector(const vector &other) {
+    vector temp(capacity());
+
+    auto size = size();
+    auto old_data = data();
+    auto new_data = other.data();
+
+    if constexpr (std::is_trivially_copyable<T>::value)
+      std::memcpy(temp.data(), data(), size);
+    else
+      for (int i = 0; i < size; i++)
+        std::copy(old_data[i], new_data[i]);
   }
 
   vector &operator=(vector &&rhs) noexcept {
