@@ -25,3 +25,19 @@ TEST(test_vector, test_push_pop_back) {
 
   EXPECT_EQ(a.size(), 0);
 }
+
+TEST(test_vector, test_copy_ctor) {
+  vector a(5);
+  for (int i = 0; i < 5; i++)
+    a.push_back(i);
+
+  vector b = a;
+
+  EXPECT_EQ(a.capacity(), b.capacity());
+  EXPECT_EQ(a.size(), b.size());
+
+  for (int i = 4; i >= 0; i--) {
+    EXPECT_EQ(b.back(), i);
+    b.pop_back();
+  }
+}

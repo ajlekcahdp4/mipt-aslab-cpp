@@ -70,15 +70,19 @@ public:
   vector(const vector &other) {
     vector temp(capacity());
 
-    auto size = this->size();
-    auto old_data = data();
-    auto new_data = other.data();
+    auto size = other.size();
+    auto temp_data = temp.data();
+    auto other_data = other.data();
 
     if constexpr (std::is_trivially_copyable<T>::value)
-      std::memcpy(temp.data(), data(), size);
+      std::memcpy(temp_data, other_data, size * sizeof(T));
     else
       for (int i = 0; i < size; i++)
-        std::copy(old_data[i], new_data[i]);
+        std::copy(other_data[i], temp_data[i]);
+
+    temp.m_past_end_ptr += size;
+
+    *this = std::move(temp);
   }
 
   vector &operator=(vector &&rhs) noexcept {
@@ -87,6 +91,20 @@ public:
     std::swap(m_past_capacity_ptr, rhs.m_past_capacity_ptr);
     std::swap(m_past_end_ptr, rhs.m_past_end_ptr);
     return *this;
+  }
+
+  void reserve(size_type new_cap) {
+    auto   am_new_cap = amortized_buffer_size(new_cap);
+    vector new_vec(am_new_cap);
+
+    auto size = this->size();
+    auto new_data = new_vec.data();
+    auto old_data = data();
+
+    for (int i = 0; i < size; i++)
+      new_data[i] = std::move(new_data[i]);
+
+    *this = std::move(am_new_cap);
   }
 
 private:
