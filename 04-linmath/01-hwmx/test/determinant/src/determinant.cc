@@ -19,14 +19,14 @@ int main(int argc, char *argv[]) {
     vec.push_back(std::to_string(i));
   }
 
-  for (auto i = 0; i < vec.size(); ++i) {
+  for (unsigned i = 0; i < vec.size(); ++i) {
     std::cout << vec[i] << " ";
   }
   std::cout << "\n";
 
   auto vec_moved = vec;
 
-  for (auto i = 0; i < vec_moved.size(); ++i) {
+  for (unsigned i = 0; i < vec_moved.size(); ++i) {
     std::cout << vec_moved[i] << " ";
   }
   std::cout << "\n";

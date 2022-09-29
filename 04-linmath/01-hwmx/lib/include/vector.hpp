@@ -35,6 +35,61 @@ private:
 
   static constexpr std::size_t default_capacity = 8;
 
+  struct iterator {
+    using iterator_category = std::random_access_iterator_tag;
+    using difference_type = std::ptrdiff_t;
+    using value_type = T;
+    using reference = value_type &;
+    using pointer = value_type *;
+
+    const vector<T> &m_vector;
+    pointer          m_ptr;
+
+    pointer get() { return m_ptr; }
+
+    reference operator*() const { return *m_ptr; }
+
+    pointer operator->() { return get(); }
+
+    iterator operator++() {
+      m_ptr++;
+      return *this;
+    }
+
+    iterator operator++(int) {
+      iterator res{m_vector, m_ptr};
+      m_ptr++;
+      return res;
+    }
+
+    iterator operator--() {
+      m_ptr--;
+      return *this;
+    }
+
+    iterator operator--(int) {
+      iterator res{m_vector, m_ptr};
+      m_ptr--;
+      return res;
+    }
+
+    iterator operator+=(difference_type n) {
+      m_ptr += n;
+      return *this;
+    }
+
+    iterator operator-=(difference_type n) {
+      m_ptr -= n;
+      return *this;
+    }
+
+    iterator operator+(difference_type n) { return iterator{m_vector, m_ptr + n}; }
+    iterator operator-(difference_type n) { return iterator{m_vector, m_ptr - n}; }
+
+    bool operator==(const iterator &other) { return m_ptr == other.m_ptr; }
+    bool operator!=(const iterator &other) { return !(*this == other); }
+  };
+
 public:
   using size_type = std::size_t;
   using value_type = T;
@@ -45,6 +100,8 @@ private:
 
   using reference = value_type &;
   using const_reference = const value_type &;
+
+  using self = vector<T>;
 
   void delete_elements() noexcept {
     if constexpr (!std::is_trivially_destructible_v<value_type>) {
@@ -182,6 +239,8 @@ public:
     if (index >= size()) throw std::out_of_range("index out of range.");
     return (*this)[index];
   }
+  iterator begin() const noexcept { return iterator{*this, m_buffer_ptr}; }
+  iterator end() const noexcept { return iterator{*this, m_past_end_ptr}; }
 };
 
 } // namespace containers

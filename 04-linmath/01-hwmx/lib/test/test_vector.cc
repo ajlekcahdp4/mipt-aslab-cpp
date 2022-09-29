@@ -8,10 +8,10 @@
  * ----------------------------------------------------------------------------
  */
 
-#include <vector.hpp>
-
 #include <gtest/gtest.h>
 #include <memory>
+#include <vector.hpp>
+#include <vector>
 
 template class throttle::containers::vector<int>;
 template class throttle::containers::vector<std::unique_ptr<int>>;
@@ -83,6 +83,47 @@ TEST(test_vector, test_reserve_3) {
   EXPECT_EQ(a.size(), 5);
 }
 
-TEST(test_vector, test_new_cap) {
+TEST(test_vector, test_iterator_1) {
+  vector a;
+  for (auto i = 0; i < 10; i++)
+    a.push_back(i);
 
+  int i = 0;
+  for (auto &elem : a) {
+    EXPECT_EQ(elem, i);
+    i++;
+  }
+}
+
+TEST(test_vector, test_iterator_2) {
+  vector a;
+  for (auto i = 0; i < 10; i++)
+    a.push_back(i);
+
+  int i = 9;
+  for (auto it = a.end() - 1; it != a.begin(); it--) {
+    EXPECT_EQ(*it, i);
+    i--;
+  }
+}
+
+TEST(test_vector, test_iterator_3) {
+  vector a;
+  for (auto i = 0; i < 10; i++)
+    a.push_back(i);
+
+  auto it = a.begin();
+
+  EXPECT_EQ(*std::next(it, 5), 5);
+}
+
+TEST(test_vector, test_iterator_4) {
+  vector a;
+  for (auto i = 0; i < 10; i++)
+    a.push_back(i);
+
+  auto it = a.end();
+
+  EXPECT_EQ(*std::prev(it, 1), 9);
+  EXPECT_EQ(*std::prev(it, 5), 5);
 }
