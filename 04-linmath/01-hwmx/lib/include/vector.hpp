@@ -60,13 +60,13 @@ private:
     iterator operator-=(difference_type n) { m_ptr -= n; return *this; }
 
     // clang-format on
-    iterator operator+(difference_type n) { return iterator{m_ptr + n}; }
-    iterator operator-(difference_type n) { return iterator{m_ptr - n}; }
+    iterator operator+(difference_type n) const { return iterator{m_ptr + n}; }
+    iterator operator-(difference_type n) const { return iterator{m_ptr - n}; }
 
     difference_type operator-(const iterator other) const { return (m_ptr - other.m_ptr); }
 
-    bool operator==(const iterator &other) { return m_ptr == other.m_ptr; }
-    bool operator!=(const iterator &other) { return !(*this == other); }
+    bool operator==(const iterator &other) const { return m_ptr == other.m_ptr; }
+    bool operator!=(const iterator &other) const { return !(*this == other); }
   };
 
 public:
@@ -216,7 +216,7 @@ public:
 
   template <typename... Ts> void emplace_back(Ts&&... args) {
     reserve_if_necessary();
-    new (m_past_end_ptr++) value_type{args...};
+    new (m_past_end_ptr++) value_type{(std::forward<Ts>(args))...};
   }
 
   void clear() { delete_elements(); }

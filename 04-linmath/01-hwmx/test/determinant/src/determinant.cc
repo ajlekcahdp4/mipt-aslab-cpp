@@ -26,4 +26,12 @@ int main(int argc, char *argv[]) {
     }
     std::cout << "\n";
   }
+
+  throttle::containers::vector<std::unique_ptr<int>> p;
+  p.emplace_back(std::make_unique<int>(1));
+  p.emplace_back(std::make_unique<int>(2));
+
+  for (const auto &v: p) {
+    std::cout << *v << " ";
+  }
 }

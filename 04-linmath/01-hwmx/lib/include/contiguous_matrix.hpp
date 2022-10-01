@@ -77,6 +77,7 @@ public:
 
   size_type rows() const { return m_rows; }
   size_type cols() const { return m_cols; }
+  bool      square() const { return rows() == cols(); }
 
   contiguous_matrix &operator+=(const contiguous_matrix &other) {
     if ((m_cols != other.m_cols) || (m_rows != other.m_rows)) throw std::runtime_error("Mismatched matrix sizes");
@@ -162,7 +163,7 @@ template <typename T> bool operator!=(const contiguous_matrix<T> &lhs, const con
 }
 
 template <typename T> contiguous_matrix<T> transpose(const contiguous_matrix<T> &matrix) {
-  contiguous_matrix<T> res = matrix;
+  contiguous_matrix res = matrix;
   res.transpose();
   return res;
 }
