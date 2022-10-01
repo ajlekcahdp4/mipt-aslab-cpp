@@ -82,6 +82,15 @@ public:
     return *this;
   }
 
+  contiguous_matrix &operator-=(const contiguous_matrix &other) {
+    if ((m_cols != other.m_cols) || (m_rows != other.m_rows)) throw std::runtime_error("Mismatched matrix sizes");
+    for (auto mybegin = m_buffer.begin(), otherbegin = other.m_buffer.begin(), otherend = other.m_buffer.end();
+         otherbegin != otherend; ++otherbegin, ++mybegin) {
+      *mybegin -= *otherbegin;
+    }
+    return *this;
+  }
+
   contiguous_matrix &operator*=(value_type rhs) {
     for (auto &elem : m_buffer) {
       elem *= rhs;
@@ -94,6 +103,29 @@ public:
     for (auto &elem : m_buffer) {
       elem /= rhs;
     }
+    return *this;
+  }
+
+  bool equal(const self &other) const {
+    return (m_rows == other.m_rows) && (m_cols == other.m_cols) &&
+           (std::equal(m_buffer.begin(), m_buffer.end(), other.m_buffer.begin()));
+  }
+
+  self &transpose() & {
+    if (m_rows == m_cols) {
+      for (size_type i = 0; i < m_rows - 1; i++)
+        for (size_type j = i + 1; j < m_rows; j++)
+          std::swap(m_buffer[i * m_rows + j], m_buffer[j * m_rows + i]);
+      std::swap(m_cols, m_rows);
+      std::swap(m_rows, m_cols);
+    } else {
+      self transpose(m_cols, m_rows, T{});
+      for (size_type i = 0; i < m_rows; i++)
+        for (size_type j = 0; j < m_cols; j++)
+          transpose.m_buffer[j * m_rows + i] = std::move(m_buffer[i * m_cols + j]);
+      std::swap(*this, transpose);
+    }
+
     return *this;
   }
 };
@@ -114,6 +146,20 @@ template <typename T> contiguous_matrix<T> operator/(const contiguous_matrix<T> 
   contiguous_matrix ret = lhs;
   ret /= rhs;
   return ret;
+}
+
+template <typename T> bool operator==(const contiguous_matrix<T> &lhs, const contiguous_matrix<T> &rhs) {
+  return lhs.equal(rhs);
+}
+
+template <typename T> bool operator!=(const contiguous_matrix<T> &lhs, const contiguous_matrix<T> &rhs) {
+  return !(lhs.equal(rhs));
+}
+
+template <typename T> contiguous_matrix<T> transpose(const contiguous_matrix<T> &matrix) {
+  contiguous_matrix<T> res = matrix;
+  res.transpose();
+  return res;
 }
 
 } // namespace linmath
