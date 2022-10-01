@@ -24,16 +24,18 @@ namespace linmath {
 template <typename T>
 requires std::is_arithmetic_v<T>
 class contiguous_matrix {
+public:
   using value_type = T;
   using reference = T &;
   using const_reference = const T &;
   using pointer = T *;
   using const_pointer = const T *;
   using size_type = typename std::size_t;
-  using self = contiguous_matrix<value_type>;
 
-  size_type                      m_cols = 0;
-  size_type                      m_rows = 0;
+private:
+  size_type m_cols = 0;
+  size_type m_rows = 0;
+
   containers::vector<value_type> m_buffer;
 
 public:
@@ -49,10 +51,10 @@ public:
   contiguous_matrix(size_type rows, size_type cols, std::initializer_list<value_type> list)
       : contiguous_matrix{rows, cols, list.begin(), list.end()} {}
 
-  static contiguous_matrix zero(size_type cols, size_type rows) { return self{cols, rows}; }
+  static contiguous_matrix zero(size_type cols, size_type rows) { return contiguous_matrix{cols, rows}; }
 
   static contiguous_matrix unity(size_type size) {
-    self ret{size, size};
+    contiguous_matrix ret{size, size};
     for (size_type i = 0; i < size * size; i += size + 1)
       ret.m_buffer[i] = 1;
     return ret;
@@ -109,12 +111,12 @@ public:
     return *this;
   }
 
-  bool equal(const self &other) const {
+  bool equal(const contiguous_matrix &other) const {
     return (m_rows == other.m_rows) && (m_cols == other.m_cols) &&
            (std::equal(m_buffer.begin(), m_buffer.end(), other.m_buffer.begin()));
   }
 
-  self &transpose() & {
+  contiguous_matrix &transpose() & {
     if (m_rows == m_cols) {
       for (size_type i = 0; i < m_rows - 1; i++)
         for (size_type j = i + 1; j < m_rows; j++)
@@ -122,7 +124,7 @@ public:
       std::swap(m_cols, m_rows);
       std::swap(m_rows, m_cols);
     } else {
-      self transpose(m_cols, m_rows, T{});
+      contiguous_matrix transpose(m_cols, m_rows, T{});
       for (size_type i = 0; i < m_rows; i++)
         for (size_type j = 0; j < m_cols; j++)
           transpose.m_buffer[j * m_rows + i] = std::move(m_buffer[i * m_cols + j]);
