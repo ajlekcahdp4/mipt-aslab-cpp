@@ -94,7 +94,7 @@ TEST(test_contiguous_matrix, test_transponse) {
       ++it;
     }
 
-  matrix b(3, 4, {1, 4, 7, 10, 2, 5, 8, 11, 3, 6, 9, 12});
+  matrix b{3, 4, {1, 4, 7, 10, 2, 5, 8, 11, 3, 6, 9, 12}};
   auto   c = transpose(a);
 
   EXPECT_TRUE(c == b);
@@ -111,16 +111,16 @@ TEST(test_contiguous_matrix, test_multiplication_1) {
 }
 
 TEST(test_contiguous_matrix, test_multiplication_2) {
-  matrix A(3, 3, {5, 8, -4, 6, 9, -5, 4, 7, -3});
-  matrix B(3, 1, {2, -3, 1});
+  matrix A{3, 3, {5, 8, -4, 6, 9, -5, 4, 7, -3}};
+  matrix B{3, 1, {2, -3, 1}};
 
   A *= B;
   EXPECT_TRUE(A == matrix(3, 1, {-18, -20, -16}));
 }
 
 TEST(test_contiguous_matrix, test_multiplication_3) {
-  matrix A(3, 3, {5, 8, -4, 6, 9, -5, 4, 7, -3});
-  matrix B(3, 1, {2, -3, 1});
+  matrix A{3, 3, {5, 8, -4, 6, 9, -5, 4, 7, -3}};
+  matrix B{3, 1, {2, -3, 1}};
 
   auto C = A * B;
   EXPECT_TRUE(C == matrix(3, 1, {-18, -20, -16}));

@@ -55,8 +55,10 @@ public:
 
   static contiguous_matrix unity(size_type size) {
     contiguous_matrix ret{size, size};
-    for (size_type i = 0; i < size * size; i += size + 1)
-      ret.m_buffer[i] = 1;
+    auto start = ret.m_buffer.begin();
+    for (size_type i = 0; i < size; ++i, start += size + 1) {
+      *start = 1;
+    }
     return ret;
   }
 
@@ -119,36 +121,40 @@ public:
 
   contiguous_matrix &transpose() & {
     if (m_rows == m_cols) {
-      for (size_type i = 0; i < m_rows - 1; i++)
-        for (size_type j = i + 1; j < m_rows; j++)
+      for (size_type i = 0; i < m_rows; i++) {
+        for (size_type j = i + 1; j < m_rows; j++) {
           std::swap(m_buffer[i * m_rows + j], m_buffer[j * m_rows + i]);
+        }
+      }
       std::swap(m_cols, m_rows);
-      std::swap(m_rows, m_cols);
-    } else {
-      contiguous_matrix transpose(m_cols, m_rows, T{});
-      for (size_type i = 0; i < m_rows; i++)
-        for (size_type j = 0; j < m_cols; j++)
-          transpose.m_buffer[j * m_rows + i] = std::move(m_buffer[i * m_cols + j]);
-      std::swap(*this, transpose);
+      return *this;
     }
 
+    contiguous_matrix transposed{m_cols, m_rows};
+    for (size_type i = 0; i < m_rows; i++) {
+      for (size_type j = 0; j < m_cols; j++) {
+        transposed.m_buffer[j * m_rows + i] = m_buffer[i * m_cols + j];
+      }
+    }
+
+    *this = std::move(transposed);
     return *this;
   }
 
   contiguous_matrix &operator*=(const contiguous_matrix &rhs) & {
     if (m_rows != rhs.m_rows) throw std::runtime_error("Mismatched matrix sizes");
 
-    contiguous_matrix res(m_cols, rhs.m_cols, value_type{});
-    contiguous_matrix t_rhs = rhs;
+    contiguous_matrix res{m_cols, rhs.m_cols}, t_rhs = rhs;
     t_rhs.transpose();
 
-    for (size_type i = 0; i < m_rows; i++)
+    for (size_type i = 0; i < m_rows; i++) {
       for (size_type j = 0; j < rhs.m_cols; j++) {
         value_type tmp{};
         for (size_type l = 0; l < m_cols; l++)
           tmp += m_buffer[m_cols * i + l] * t_rhs.m_buffer[rhs.m_cols * j + l];
         res.m_buffer[rhs.m_cols * i + j] = tmp;
       }
+    }
 
     std::swap(*this, res);
     return *this;
@@ -169,7 +175,6 @@ template <typename T> contiguous_matrix<T> operator*(T lhs, const contiguous_mat
 
 template <typename T> contiguous_matrix<T> operator*(const contiguous_matrix<T> lhs, const contiguous_matrix<T> rhs) {
   contiguous_matrix res = lhs;
-
   res *= rhs;
   return res;
 }
