@@ -3,6 +3,7 @@ target_include_directories(throttle INTERFACE include)
 
 set(UNIT_TEST_SOURCES
   test/test_vector.cc
+  test/test_contiguous_matrix.cc
   test/main.cc
 )
 
