@@ -21,7 +21,9 @@
 namespace throttle {
 namespace linmath {
 
-template <typename T, typename = std::enable_if<std::is_arithmetic<T>::value>> class contiguous_matrix {
+template <typename T>
+requires std::is_arithmetic_v<T>
+class contiguous_matrix {
   using value_type = T;
   using reference = T &;
   using const_reference = const T &;
@@ -40,7 +42,8 @@ public:
 
   template <std::input_iterator it>
   contiguous_matrix(size_type rows, size_type cols, it start, it finish) : contiguous_matrix{rows, cols} {
-    std::copy(start, finish, m_buffer.begin());
+    size_type count = rows * cols;
+    std::copy_if(start, finish, m_buffer.begin(), [&count](const auto &) { return count && count--; });
   }
 
   contiguous_matrix(size_type rows, size_type cols, std::initializer_list<value_type> list)

@@ -11,16 +11,16 @@
 #pragma once
 
 #include <algorithm>
+#include <climits>
 #include <concepts>
 #include <cstddef>
 #include <cstring>
+#include <initializer_list>
+#include <iterator>
 #include <limits>
 #include <memory>
 #include <stdexcept>
 #include <type_traits>
-#include <climits>
-#include <iterator>
-#include <initializer_list>
 
 namespace throttle {
 namespace containers {
@@ -45,47 +45,21 @@ private:
   private:
     pointer m_ptr;
 
-    pointer get() { return m_ptr; }
-
   public:
     iterator(pointer ptr) : m_ptr{ptr} {}
 
+    // clang-format off
     reference operator*() const { return *m_ptr; }
+    pointer operator->() { return m_ptr; }
 
-    pointer operator->() { return get(); }
+    iterator operator++() { m_ptr++; return *this; }
+    iterator operator++(int) { iterator res{m_ptr}; m_ptr++; return res; }
+    iterator operator--() { m_ptr--; return *this; }
+    iterator operator--(int) { iterator res{m_ptr}; m_ptr--; return res; }
+    iterator operator+=(difference_type n) { m_ptr += n; return *this; }
+    iterator operator-=(difference_type n) { m_ptr -= n; return *this; }
 
-    iterator operator++() {
-      m_ptr++;
-      return *this;
-    }
-
-    iterator operator++(int) {
-      iterator res{m_ptr};
-      m_ptr++;
-      return res;
-    }
-
-    iterator operator--() {
-      m_ptr--;
-      return *this;
-    }
-
-    iterator operator--(int) {
-      iterator res{m_ptr};
-      m_ptr--;
-      return res;
-    }
-
-    iterator operator+=(difference_type n) {
-      m_ptr += n;
-      return *this;
-    }
-
-    iterator operator-=(difference_type n) {
-      m_ptr -= n;
-      return *this;
-    }
-
+    // clang-format on
     iterator operator+(difference_type n) { return iterator{m_ptr + n}; }
     iterator operator-(difference_type n) { return iterator{m_ptr - n}; }
 
@@ -106,8 +80,6 @@ private:
   using reference = value_type &;
   using const_reference = const value_type &;
 
-  using self = vector<T>;
-
   void delete_elements() noexcept {
     if constexpr (!std::is_trivially_destructible_v<value_type>) {
       std::destroy(m_buffer_ptr, m_past_end_ptr);
@@ -118,22 +90,28 @@ private:
   static size_type amortized_buffer_size(size_type x) { return 1 << (sizeof(size_type) * CHAR_BIT - __builtin_clz(x)); }
 
 public:
-  vector(size_type capacity = default_capacity)
-      : m_buffer_ptr{static_cast<pointer>(
-            ::operator new(sizeof(value_type) * std::max(amortized_buffer_size(capacity), default_capacity)))},
-        m_past_capacity_ptr{m_buffer_ptr + std::max(amortized_buffer_size(capacity), default_capacity)},
-        m_past_end_ptr{m_buffer_ptr} {}
+  vector()
+      : m_buffer_ptr{static_cast<pointer>(::operator new(sizeof(value_type) * default_capacity))},
+        m_past_capacity_ptr{m_buffer_ptr + default_capacity}, m_past_end_ptr{m_buffer_ptr} {}
 
-  vector(size_type count, const value_type &value) requires std::copyable<value_type> {
-    for (size_type i = 0; i < count; ++i) push_back(value);
+  vector(size_type count, const value_type &value = value_type{}) requires std::copyable<value_type> {
+    reserve(count);
+    for (size_type i = 0; i < count; ++i) {
+      push_back(value);
+    }
   }
 
   template <std::input_iterator it> vector(it start, it finish) {
-    for (; start != finish; ++start) push_back(*start);
+    for (; start != finish; ++start) {
+      push_back(*start);
+    }
   }
 
-  template <std::random_access_iterator it> vector(it start, it finish) : vector{finish - start} {
-    for (; start != finish; ++start) push_back(*start);
+  template <std::random_access_iterator it> vector(it start, it finish) {
+    reserve(std::distance(finish, start));
+    for (; start != finish; ++start) {
+      push_back(*start);
+    }
   }
 
   ~vector() {
@@ -150,7 +128,8 @@ public:
   }
 
   vector(const vector &other) requires std::copyable<value_type> {
-    vector temp{other.capacity()};
+    vector temp{};
+    temp.reserve(other.capacity());
 
     const size_type sz = other.size();
     if constexpr (std::is_trivially_copyable<value_type>::value) {
@@ -180,22 +159,42 @@ public:
 
   void reserve_exact(size_type cap) {
     if (cap <= capacity()) return;
-    vector temp{cap};
+
+    pointer temp_buf = static_cast<pointer>(::operator new(sizeof(value_type) * cap));
+    auto    deleter = [](pointer ptr) { ::operator delete(ptr); };
+    std::unique_ptr<value_type, decltype(deleter)> uptr{temp_buf, deleter};
 
     const size_type sz = size();
     if constexpr (std::is_trivially_copyable<value_type>::value) {
-      std::memcpy(temp.m_buffer_ptr, m_buffer_ptr, sz * sizeof(value_type));
+      std::memcpy(uptr.get(), m_buffer_ptr, sz * sizeof(value_type));
     } else {
-      std::uninitialized_move(m_buffer_ptr, m_past_end_ptr, temp.m_buffer_ptr);
+      std::uninitialized_move(m_buffer_ptr, m_past_end_ptr, uptr.get());
     }
-    temp.m_past_end_ptr += sz;
-    m_past_end_ptr = m_buffer_ptr;
 
-    *this = std::move(temp);
+    ::operator delete(m_buffer_ptr);
+    m_buffer_ptr = uptr.release();
+    m_past_end_ptr = m_buffer_ptr + sz;
+    m_past_capacity_ptr = m_buffer_ptr + cap;
   }
 
-  void reserve(size_type cap) {
-    reserve_exact(amortized_buffer_size(cap));    
+  void reserve(size_type cap) { reserve_exact(amortized_buffer_size(cap)); }
+
+  void resize(size_type count, const value_type &val = value_type{}) requires std::copyable<value_type> {
+    const size_type sz = size();
+    if (count == sz) return;
+
+    if (count < sz) {
+      for (size_type i = 0; i < (sz - count); ++i) {
+        pop_back();
+      }
+    }
+
+    else {
+      reserve(count);
+      for (size_type i = 0; i < (count - sz); ++i) {
+        push_back(val);
+      }
+    }
   }
 
 private:
@@ -207,12 +206,17 @@ private:
 public:
   void push_back(const value_type &val) requires std::copyable<value_type> {
     reserve_if_necessary();
-    new (m_past_end_ptr++) T{val};
+    new (m_past_end_ptr++) value_type{val};
   }
 
   void push_back(value_type &&val) requires std::movable<value_type> {
     reserve_if_necessary();
-    new (m_past_end_ptr++) T{std::move(val)};
+    new (m_past_end_ptr++) value_type{std::move(val)};
+  }
+
+  template <typename... Ts> void emplace_back(Ts&&... args) {
+    reserve_if_necessary();
+    new (m_past_end_ptr++) value_type{args...};
   }
 
   void clear() { delete_elements(); }

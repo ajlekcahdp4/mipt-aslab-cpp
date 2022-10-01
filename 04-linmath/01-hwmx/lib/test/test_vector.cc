@@ -24,7 +24,7 @@ TEST(test_vector, test_ctor) {
 }
 
 TEST(test_vector, test_push_pop_back) {
-  vector a{5};
+  vector a;
   for (auto i = 0; i < 5; i++)
     a.push_back(i);
 
@@ -39,7 +39,7 @@ TEST(test_vector, test_push_pop_back) {
 }
 
 TEST(test_vector, test_copy_ctor) {
-  vector a{5};
+  vector a;
   for (auto i = 0; i < 5; i++)
     a.push_back(i);
 
@@ -63,14 +63,14 @@ TEST(test_vector, test_reserve_1) {
 }
 
 TEST(test_vector, test_reserve_2) {
-  vector a{5};
+  vector a;
   a.reserve(7);
   EXPECT_GE(a.capacity(), 7);
   EXPECT_EQ(a.size(), 0);
 }
 
 TEST(test_vector, test_reserve_3) {
-  vector a{5};
+  vector a;
 
   for (int i = 0; i < 5; i++)
     a.push_back(i);
@@ -85,7 +85,7 @@ TEST(test_vector, test_reserve_3) {
 
 TEST(test_vector, test_iterator_1) {
   vector a;
-  for (auto i = 0; i < 10; i++)
+  for (auto i = 0; i < 4096; i++)
     a.push_back(i);
 
   int i = 0;

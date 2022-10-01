@@ -16,8 +16,8 @@ namespace po = boost::program_options;
 template class throttle::linmath::contiguous_matrix<int>;
 
 int main(int argc, char *argv[]) {
-  throttle::linmath::contiguous_matrix<int> m{2, 4, {1, 2, 3, 4, 5, 6}};
-  const throttle::linmath::contiguous_matrix<int> m2{2, 4, {1, 2, 3, 4, 5, 6}};
+  throttle::linmath::contiguous_matrix<int> m{2, 2, {1, 2, 3, 4, 5, 6}};
+  const throttle::linmath::contiguous_matrix<int> m2{2, 2, {1, 2, 3, 4, 5, 6}};
 
   m += m2;
   for (unsigned i = 0; i < m.rows(); ++i) {
