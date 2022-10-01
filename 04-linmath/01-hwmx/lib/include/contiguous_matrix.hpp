@@ -134,6 +134,25 @@ public:
 
     return *this;
   }
+
+  self &operator*=(const self &rhs) & {
+    if (m_rows != rhs.m_rows) throw std::runtime_error("Mismatched matrix sizes");
+
+    self res(m_cols, rhs.m_cols, T{});
+    self t_rhs = rhs;
+    t_rhs.transpose();
+
+    for (size_type i = 0; i < m_rows; i++)
+      for (size_type j = 0; j < rhs.m_cols; j++) {
+        value_type tmp{};
+        for (size_type l = 0; l < m_cols; l++)
+          tmp += m_buffer[m_cols * i + l] * t_rhs.m_buffer[rhs.m_cols * j + l];
+        res.m_buffer[rhs.m_cols * i + j] = tmp;
+      }
+
+    std::swap(*this, res);
+    return *this;
+  }
 };
 
 template <typename T> contiguous_matrix<T> operator*(const contiguous_matrix<T> &lhs, T rhs) {
@@ -146,6 +165,13 @@ template <typename T> contiguous_matrix<T> operator*(T lhs, const contiguous_mat
   contiguous_matrix ret = rhs;
   ret *= lhs;
   return ret;
+}
+
+template <typename T> contiguous_matrix<T> operator*(const contiguous_matrix<T> lhs, const contiguous_matrix<T> rhs) {
+  contiguous_matrix res = lhs;
+
+  res *= rhs;
+  return res;
 }
 
 template <typename T> contiguous_matrix<T> operator/(const contiguous_matrix<T> &lhs, T rhs) {
