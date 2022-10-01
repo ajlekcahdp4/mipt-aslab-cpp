@@ -31,7 +31,20 @@ int main(int argc, char *argv[]) {
   p.emplace_back(std::make_unique<int>(1));
   p.emplace_back(std::make_unique<int>(2));
 
-  for (const auto &v: p) {
-    std::cout << *v << " ";
-  }
+  // for (const auto &v: p) {
+  //   std::cout << *v << " ";
+  // }
+
+  // std::cout << p.capacity() << " ";
+
+  p.emplace_back(std::make_unique<int>(1));
+  p.emplace_back(std::make_unique<int>(2));
+  p.emplace_back(std::make_unique<int>(1));
+  p.emplace_back(std::make_unique<int>(2));
+  p.emplace_back(std::make_unique<int>(1));
+  p.emplace_back(std::make_unique<int>(2));
+
+  // std::cout << p.capacity() << "\n";
+  std::cout << throttle::containers::vector<int>::amortized_buffer_size(2);
+
 }

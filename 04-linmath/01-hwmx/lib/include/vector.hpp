@@ -22,6 +22,8 @@
 #include <stdexcept>
 #include <type_traits>
 
+#include "utility.hpp"
+
 namespace throttle {
 namespace containers {
 
@@ -87,7 +89,8 @@ private:
     m_past_end_ptr = m_buffer_ptr;
   }
 
-  static size_type amortized_buffer_size(size_type x) { return 1 << (sizeof(size_type) * CHAR_BIT - __builtin_clz(x)); }
+public:
+  static size_type amortized_buffer_size(size_type x) { return 1 << (CHAR_BIT * sizeof(size_type) - clz(x)); }
 
 public:
   vector()
@@ -101,17 +104,11 @@ public:
     }
   }
 
-  template <std::input_iterator it> vector(it start, it finish) {
-    for (; start != finish; ++start) {
-      push_back(*start);
-    }
-  }
+  template <std::input_iterator it> vector(it start, it finish) { std::copy(start, finish, std::back_inserter(*this)); }
 
   template <std::random_access_iterator it> vector(it start, it finish) {
-    reserve(std::distance(finish, start));
-    for (; start != finish; ++start) {
-      push_back(*start);
-    }
+    reserve(std::distance(start, finish));
+    std::copy(start, finish, std::back_inserter(*this));
   }
 
   ~vector() {
@@ -184,23 +181,20 @@ public:
     if (count == sz) return;
 
     if (count < sz) {
-      for (size_type i = 0; i < (sz - count); ++i) {
-        pop_back();
-      }
+      do_for_n(sz - count, [&]() {pop_back(); });
+      return;
     }
 
     else {
       reserve(count);
-      for (size_type i = 0; i < (count - sz); ++i) {
-        push_back(val);
-      }
+      do_for_n(count - sz, [&]() {pop_back(val); });
     }
   }
 
 private:
   void reserve_if_necessary() {
-    if (m_past_capacity_ptr != m_past_end_ptr) return;
-    reserve(amortized_buffer_size(capacity()));
+    if (m_past_capacity_ptr - m_past_end_ptr > 0) return;
+    reserve(capacity());
   }
 
 public:
@@ -214,7 +208,7 @@ public:
     new (m_past_end_ptr++) value_type{std::move(val)};
   }
 
-  template <typename... Ts> void emplace_back(Ts&&... args) {
+  template <typename... Ts> void emplace_back(Ts &&...args) {
     reserve_if_necessary();
     new (m_past_end_ptr++) value_type{(std::forward<Ts>(args))...};
   }
@@ -248,6 +242,7 @@ public:
     if (index >= size()) throw std::out_of_range("index out of range.");
     return (*this)[index];
   }
+
   iterator begin() const noexcept { return iterator{m_buffer_ptr}; }
   iterator end() const noexcept { return iterator{m_past_end_ptr}; }
 };
