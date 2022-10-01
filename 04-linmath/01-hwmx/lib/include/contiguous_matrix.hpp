@@ -66,6 +66,32 @@ private:
 public:
   proxy_row       operator[](size_type index) { return proxy_row{&m_buffer[index * m_cols]}; }
   const_proxy_row operator[](size_type index) const { return const_proxy_row{&m_buffer[index * m_cols]}; }
+
+  self &operator*=(T rhs) {
+    for (size_type i = 0; i < m_cols * m_rows; i++)
+      m_buffer[i] *= rhs;
+    return *this;
+  }
+
+  self &operator/=(T rhs) {
+    if (rhs == 0) throw std::invalid_argument("devision by zero");
+    for (size_type i = 0; i < m_cols * m_rows; i++)
+      m_buffer[i] /= rhs;
+    return *this;
+  }
 };
+
+template <typename T> contiguous_matrix<T> operator*(const contiguous_matrix<T> &lhs, T rhs) {
+  contiguous_matrix ret = lhs;
+  ret *= rhs;
+  return ret;
+}
+
+template <typename T> contiguous_matrix<T> operator/(const contiguous_matrix<T> &lhs, T rhs) {
+  contiguous_matrix ret = lhs;
+  ret /= rhs;
+  return ret;
+}
+
 } // namespace linmath
 } // namespace throttle
