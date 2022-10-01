@@ -89,7 +89,7 @@ private:
     iterator operator+(difference_type n) { return iterator{m_ptr + n}; }
     iterator operator-(difference_type n) { return iterator{m_ptr - n}; }
 
-    difference_type operator-(const iterator other) const { return (m_ptr - other.m_ptr) / sizeof(T); }
+    difference_type operator-(const iterator other) const { return (m_ptr - other.m_ptr); }
 
     bool operator==(const iterator &other) { return m_ptr == other.m_ptr; }
     bool operator!=(const iterator &other) { return !(*this == other); }

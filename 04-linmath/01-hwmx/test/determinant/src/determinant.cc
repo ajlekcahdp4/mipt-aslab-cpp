@@ -4,6 +4,7 @@
 #include <set>
 #include <string>
 
+#include "contiguous_matrix.hpp"
 #include "vector.hpp"
 
 #ifdef BOOST_FOUND__
@@ -12,22 +13,17 @@
 namespace po = boost::program_options;
 #endif
 
+template class throttle::linmath::contiguous_matrix<int>;
+
 int main(int argc, char *argv[]) {
-  throttle::containers::vector<std::string> vec;
+  throttle::linmath::contiguous_matrix<int> m{2, 4, {1, 2, 3, 4, 5, 6}};
+  const throttle::linmath::contiguous_matrix<int> m2{2, 4, {1, 2, 3, 4, 5, 6}};
 
-  for (auto i = 0; i < 2 << 16; ++i) {
-    vec.push_back(std::to_string(i));
+  m += m2;
+  for (unsigned i = 0; i < m.rows(); ++i) {
+    for (unsigned j = 0; j < m.cols(); ++j) {
+      std::cout << m[i][j] << " ";
+    }
+    std::cout << "\n";
   }
-
-  for (unsigned i = 0; i < vec.size(); ++i) {
-    std::cout << vec[i] << " ";
-  }
-  std::cout << "\n";
-
-  auto vec_moved = vec;
-
-  for (unsigned i = 0; i < vec_moved.size(); ++i) {
-    std::cout << vec_moved[i] << " ";
-  }
-  std::cout << "\n";
 }
