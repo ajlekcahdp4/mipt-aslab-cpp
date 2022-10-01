@@ -10,22 +10,24 @@
 
 #pragma once
 
-#include "contiguous_matrix.hpp"
+#include "vector.hpp"
 
 #include <algorithm>
-#include <cstddef>
 #include <initializer_list>
 #include <iterator>
+#include <memory>
 #include <stdexcept>
 
 namespace throttle {
 namespace linmath {
-using value_type = T;
-using reference = T &;
-using const_reference = const T &;
-using pointer = T *;
-using const_pointer = const T *;
 
-template <typename T> class matrix : private contiguous_matrix { containers::vector<pointer> m_rows; };
+template <typename T> class contiguous_matrix {
+  using value_type = T;
+  using reference = T &;
+  using const_reference = const T &;
+  using pointer = T *;
+  using const_pointer = const T *;
+  containers::vector<value_type> m_buffer;
+};
 } // namespace linmath
 } // namespace throttle
