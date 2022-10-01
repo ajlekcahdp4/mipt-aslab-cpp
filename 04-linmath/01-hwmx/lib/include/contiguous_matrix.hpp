@@ -135,11 +135,11 @@ public:
     return *this;
   }
 
-  self &operator*=(const self &rhs) & {
+  contiguous_matrix &operator*=(const contiguous_matrix &rhs) & {
     if (m_rows != rhs.m_rows) throw std::runtime_error("Mismatched matrix sizes");
 
-    self res(m_cols, rhs.m_cols, T{});
-    self t_rhs = rhs;
+    contiguous_matrix res(m_cols, rhs.m_cols, value_type{});
+    contiguous_matrix t_rhs = rhs;
     t_rhs.transpose();
 
     for (size_type i = 0; i < m_rows; i++)
