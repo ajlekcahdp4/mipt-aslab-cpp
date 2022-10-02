@@ -22,7 +22,7 @@ namespace throttle {
 namespace linmath {
 template <typename T>
 requires std::is_arithmetic_v<T>
-class matrix : {
+class matrix {
   using value_type = T;
   using reference = T &;
   using const_reference = const T &;
@@ -31,34 +31,53 @@ class matrix : {
   using size_type = typename std::size_t;
 
   contiguous_matrix<T>        m_contiguous_matrix;
-  containers::vector<pointer> m_rows;
+  containers::vector<pointer> m_rows_vec;
 
 public:
   matrix(size_type rows, size_type cols, value_type val = value_type{}) : m_contiguous_matrix{rows, cols, val} {
     for (size_type i = 0; i < rows; i++)
-      m_rows.push_back(&m_buffer[i * cols]);
+      m_rows_vec.push_back(&m_contiguous_matrix[i][0]);
   }
 
   template <std::input_iterator it>
   matrix(size_type rows, size_type cols, it start, it finish) : m_contiguous_matrix{rows, cols, start, finish} {
     for (size_type i = 0; i < rows; i++)
-      m_rows.push_back(&m_buffer[i * cols]);
+      m_rows_vec.push_back(&m_contiguous_matrix[i][0]);
   }
 
   matrix(size_type rows, size_type cols, std::initializer_list<value_type> list)
       : m_contiguous_matrix{rows, cols, list} {
     for (size_type i = 0; i < rows; i++)
-      m_rows.push_back(&m_buffer[i * cols]);
+      m_rows_vec.push_back(&m_contiguous_matrix[i][0]);
   }
 
-  matrix(contiguous_matrix &&c_matrix) : m_contiguous_matrix(std::move(c_matrix)) {
-    for (size_type i = 0; i < rows; i++)
-      m_rows.push_back(&m_buffer[i * cols]);
+  matrix(contiguous_matrix<T> &&c_matrix) : m_contiguous_matrix(std::move(c_matrix)) {
+    for (size_type i = 0; i < m_contiguous_matrix.rows(); i++)
+      m_rows_vec.push_back(&m_contiguous_matrix[i][0]);
   }
 
-  static matrix zero(size_type rows, size_type cols) { return matrix{rows, cols}; }
+  static matrix zero(size_type rows, size_type cols) { return matrix<T>{rows, cols}; }
 
-  static matrix unity(size_type size) { return matrix{std::move(contiguous_matrix::unity(size))}; }
+  static matrix unity(size_type size) { return matrix{std::move(contiguous_matrix<T>::unity(size))}; }
+
+private:
+  struct proxy_row {
+    pointer   m_row;
+    reference operator[](size_type index) { return m_row[index]; }
+  };
+
+  struct const_proxy_row {
+    const_pointer   m_row;
+    const_reference operator[](size_type index) { return m_row[index]; }
+  };
+
+public:
+  proxy_row       operator[](size_type index) { return proxy_row{m_rows_vec[index]}; }
+  const_proxy_row operator[](size_type index) const { return const_proxy_row{m_rows_vec[index]}; }
+
+  size_type rows() { return m_contiguous_matrix.rows(); }
+
+  size_type cols() { return m_contiguous_matrix.cols(); }
 };
 } // namespace linmath
 } // namespace throttle
