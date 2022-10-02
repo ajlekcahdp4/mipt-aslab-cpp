@@ -51,7 +51,7 @@ public:
   contiguous_matrix(size_type rows, size_type cols, std::initializer_list<value_type> list)
       : contiguous_matrix{rows, cols, list.begin(), list.end()} {}
 
-  static contiguous_matrix zero(size_type cols, size_type rows) { return contiguous_matrix{cols, rows}; }
+  static contiguous_matrix zero(size_type rows, size_type cols) { return contiguous_matrix{rows, cols}; }
 
   static contiguous_matrix unity(size_type size) {
     contiguous_matrix ret{size, size};
