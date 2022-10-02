@@ -20,12 +20,18 @@
 
 namespace throttle {
 namespace linmath {
-using value_type = T;
-using reference = T &;
-using const_reference = const T &;
-using pointer = T *;
-using const_pointer = const T *;
+template <typename T>
+requires std::is_arithmetic_v<T>
+class matrix : {
+  using value_type = T;
+  using reference = T &;
+  using const_reference = const T &;
+  using pointer = T *;
+  using const_pointer = const T *;
+  using size_type = typename std::size_t;
 
-template <typename T> class matrix : private contiguous_matrix { containers::vector<pointer> m_rows; };
+  contiguous_matrix<T>        m_contiguous_matrix;
+  containers::vector<pointer> m_rows;
+};
 } // namespace linmath
 } // namespace throttle
