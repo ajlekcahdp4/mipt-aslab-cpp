@@ -80,9 +80,19 @@ public:
   proxy_row       operator[](size_type index) { return proxy_row{m_rows_vec[index]}; }
   const_proxy_row operator[](size_type index) const { return const_proxy_row{m_rows_vec[index]}; }
 
-  size_type rows() { return m_contiguous_matrix.rows(); }
+  size_type rows() const { return m_contiguous_matrix.rows(); }
 
-  size_type cols() { return m_contiguous_matrix.cols(); }
+  size_type cols() const { return m_contiguous_matrix.cols(); }
+
+  bool equal(const matrix &other) const {
+    return (rows() == other.rows()) && (cols() == other.cols()) && (m_contiguous_matrix == other.m_contiguous_matrix) &&
+           (std::equal(m_rows_vec.begin(), m_rows_vec.end(), other.m_rows_vec.begin()));
+  }
 };
+
+template <typename T> bool operator==(const matrix<T> &lhs, const matrix<T> &rhs) { return lhs.equal(rhs); }
+
+template <typename T> bool operator!=(const matrix<T> &lhs, const matrix<T> &rhs) { return !(lhs.equal(rhs)); }
+
 } // namespace linmath
 } // namespace throttle

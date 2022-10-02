@@ -27,3 +27,4 @@ TEST(test_matrix, test_ctor_2) {
   for (unsigned i = 0; i < 10; i++)
     EXPECT_EQ(A[i][i], 1.0f);
 }
+
