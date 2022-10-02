@@ -35,24 +35,29 @@ class matrix {
 
 public:
   matrix(size_type rows, size_type cols, value_type val = value_type{}) : m_contiguous_matrix{rows, cols, val} {
+    m_rows_vec.reserve(rows);
     for (size_type i = 0; i < rows; i++)
       m_rows_vec.push_back(&m_contiguous_matrix[i][0]);
   }
 
   template <std::input_iterator it>
   matrix(size_type rows, size_type cols, it start, it finish) : m_contiguous_matrix{rows, cols, start, finish} {
+    m_rows_vec.reserve(rows);
     for (size_type i = 0; i < rows; i++)
       m_rows_vec.push_back(&m_contiguous_matrix[i][0]);
   }
 
   matrix(size_type rows, size_type cols, std::initializer_list<value_type> list)
       : m_contiguous_matrix{rows, cols, list} {
+    m_rows_vec.reserve(rows);
     for (size_type i = 0; i < rows; i++)
       m_rows_vec.push_back(&m_contiguous_matrix[i][0]);
   }
 
   matrix(contiguous_matrix<T> &&c_matrix) : m_contiguous_matrix(std::move(c_matrix)) {
-    for (size_type i = 0; i < m_contiguous_matrix.rows(); i++)
+    auto rows = m_contiguous_matrix.rows();
+    m_rows_vec.reserve(rows);
+    for (size_type i = 0; i < rows; i++)
       m_rows_vec.push_back(&m_contiguous_matrix[i][0]);
   }
 
