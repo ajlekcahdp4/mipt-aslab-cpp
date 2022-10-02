@@ -151,8 +151,8 @@ public:
       for (size_type j = 0; j < rhs.m_cols; j++) {
         value_type tmp{};
         for (size_type l = 0; l < m_cols; l++)
-          tmp += m_buffer[m_cols * i + l] * t_rhs.m_buffer[rhs.m_cols * j + l];
-        res.m_buffer[rhs.m_cols * i + j] = tmp;
+          tmp += (*this)[i][l] * t_rhs[j][l];
+        res[i][j] = tmp;
       }
     }
 
