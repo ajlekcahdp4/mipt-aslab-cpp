@@ -121,7 +121,7 @@ public:
   }
 
   matrix &operator*=(const matrix &rhs) & {
-    if (rows() != rhs.rows()) throw std::runtime_error("Mismatched matrix sizes");
+    if (cols() != rhs.rows()) throw std::runtime_error("Mismatched matrix sizes");
 
     matrix res{rows(), rhs.cols()}, t_rhs = rhs;
     t_rhs.transpose();

@@ -172,7 +172,7 @@ public:
   }
 
   contiguous_matrix &operator*=(const contiguous_matrix &rhs) {
-    if (m_rows != rhs.m_rows) throw std::runtime_error("Mismatched matrix sizes");
+    if (m_cols != rhs.m_rows) throw std::runtime_error("Mismatched matrix sizes");
 
     contiguous_matrix res{m_rows, rhs.m_cols}, t_rhs = rhs;
     t_rhs.transpose();
