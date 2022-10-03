@@ -81,6 +81,14 @@ TEST(test_matrix, test_max_in_row) {
   EXPECT_EQ(a.max_in_col(2).second, 12);
 }
 
+TEST(test_matrix, test_gauss_jordan_elimination_1) {
+  matrix A{3, 2, {1, 2, 3, 4, 5, 6}};
+  A.gauss_jordan_elimination();
+
+  matrix B{3, 2, {5, 0, 0, 0.8, 0, 0}};
+  EXPECT_TRUE(A == B);
+}
+
 TEST(test_matrix, test_determinant_for_fields_1) {
   matrix A{2, 2, {1, 0, 0, 1}};
   EXPECT_EQ(A.determinant(), 1);

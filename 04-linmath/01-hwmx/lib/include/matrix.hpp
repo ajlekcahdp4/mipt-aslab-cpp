@@ -112,7 +112,10 @@ public:
   bool      square() const { return (cols() == rows()); }
 
   bool equal(const matrix &other) const {
-    return (rows() == other.rows()) && (cols() == other.cols()) && (m_contiguous_matrix == other.m_contiguous_matrix);
+    bool res = (rows() == other.rows()) && (cols() == other.cols());
+    for (size_type i = 0; i < m_rows_vec.size(); i++)
+      res = res && std::equal((*this)[i].begin(), (*this)[i].end(), other[i].begin());
+    return res;
   }
 
   matrix &transpose() {
@@ -130,8 +133,8 @@ public:
   void swap_rows(size_type idx1, size_type idx2) { std::swap(m_rows_vec[idx1], m_rows_vec[idx2]); }
 
   template <typename Comp = std::less<value_type>>
-  std::pair<size_type, value_type> max_in_col_greater_then(size_type col, size_type minimum_row, Comp cmp = Comp{}) {
-    size_type max_row_idx = 0;
+  std::pair<size_type, value_type> max_in_col_greater_eq(size_type col, size_type minimum_row, Comp cmp = Comp{}) {
+    size_type max_row_idx = minimum_row;
     auto      rows = this->rows();
     for (size_type row = minimum_row; row < rows; row++)
       max_row_idx = (cmp(std::abs((*this)[max_row_idx][col]), std::abs((*this)[row][col])) ? row : max_row_idx);
@@ -140,7 +143,7 @@ public:
 
   template <typename Comp = std::less<value_type>>
   std::pair<size_type, value_type> max_in_col(size_type col, Comp cmp = Comp{}) {
-    return max_in_col_greater_then(col, 0, cmp);
+    return max_in_col_greater_eq(col, 0, cmp);
   }
 
   void gauss_jordan_elimination() {
@@ -148,7 +151,7 @@ public:
     auto    rows = mat.rows();
     auto    cols = mat.cols();
     for (size_type i = 0; i < rows; i++) {
-      auto [pivot_row, pivot_elem] = max_in_col_greater_then(i, i);
+      auto [pivot_row, pivot_elem] = max_in_col_greater_eq(i, i);
       swap_rows(i, pivot_row);
       for (size_type to_elim_row = 0; to_elim_row < rows; to_elim_row++) //!
         if (i != to_elim_row) {
