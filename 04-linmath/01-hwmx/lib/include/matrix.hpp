@@ -24,6 +24,7 @@
 
 namespace throttle {
 namespace linmath {
+
 template <typename T> class matrix {
   using value_type = T;
   using reference = T &;

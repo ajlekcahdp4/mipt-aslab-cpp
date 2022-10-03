@@ -37,43 +37,12 @@ private:
 
   static constexpr std::size_t default_capacity = 8;
 
-  struct iterator {
-    using iterator_category = std::random_access_iterator_tag;
-    using difference_type = std::ptrdiff_t;
-    using value_type = T;
-    using reference = value_type &;
-    using pointer = value_type *;
-
-  private:
-    pointer m_ptr;
-
-  public:
-    iterator(pointer ptr) : m_ptr{ptr} {}
-
-    // clang-format off
-    reference operator*() const { return *m_ptr; }
-    pointer operator->() { return m_ptr; }
-
-    iterator operator++() { m_ptr++; return *this; }
-    iterator operator++(int) { iterator res{m_ptr}; m_ptr++; return res; }
-    iterator operator--() { m_ptr--; return *this; }
-    iterator operator--(int) { iterator res{m_ptr}; m_ptr--; return res; }
-    iterator operator+=(difference_type n) { m_ptr += n; return *this; }
-    iterator operator-=(difference_type n) { m_ptr -= n; return *this; }
-
-    // clang-format on
-    iterator operator+(difference_type n) const { return iterator{m_ptr + n}; }
-    iterator operator-(difference_type n) const { return iterator{m_ptr - n}; }
-
-    difference_type operator-(const iterator other) const { return (m_ptr - other.m_ptr); }
-
-    bool operator==(const iterator &other) const { return m_ptr == other.m_ptr; }
-    bool operator!=(const iterator &other) const { return !(*this == other); }
-  };
-
 public:
   using size_type = std::size_t;
   using value_type = T;
+
+  using iterator = utility::contiguous_iterator<value_type>;
+  using const_iterator = utility::const_contiguous_iterator<value_type>;
 
 private:
   using pointer = value_type *;
@@ -90,7 +59,7 @@ private:
   }
 
 public:
-  static size_type amortized_buffer_size(size_type x) { return 1 << (CHAR_BIT * sizeof(size_type) - clz(x)); }
+  static size_type amortized_buffer_size(size_type x) { return 1 << (CHAR_BIT * sizeof(size_type) - utility::clz(x)); }
 
 public:
   vector()
@@ -181,13 +150,13 @@ public:
     if (count == sz) return;
 
     if (count < sz) {
-      do_for_n(sz - count, [&]() {pop_back(); });
+      do_for_n(sz - count, [&]() { pop_back(); });
       return;
     }
 
     else {
       reserve(count);
-      do_for_n(count - sz, [&]() {pop_back(val); });
+      do_for_n(count - sz, [&]() { pop_back(val); });
     }
   }
 
@@ -245,6 +214,9 @@ public:
 
   iterator begin() const noexcept { return iterator{m_buffer_ptr}; }
   iterator end() const noexcept { return iterator{m_past_end_ptr}; }
+
+  const_iterator cbegin() const noexcept { return const_iterator{m_buffer_ptr}; }
+  const_iterator cend() const noexcept { return const_iterator{m_past_end_ptr}; }
 };
 
 } // namespace containers
