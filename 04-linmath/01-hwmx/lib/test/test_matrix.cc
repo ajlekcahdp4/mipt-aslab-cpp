@@ -11,6 +11,7 @@
 #include "matrix.hpp"
 
 #include <gtest/gtest.h>
+#include <vector>
 
 using matrix = typename throttle::linmath::matrix<float>;
 template class throttle::linmath::matrix<float>;
@@ -26,6 +27,20 @@ TEST(test_matrix, test_ctor_2) {
   matrix A = matrix::unity(10);
   for (unsigned i = 0; i < 10; i++)
     EXPECT_EQ(A[i][i], 1.0f);
+}
+
+TEST(test_matrix, test_ctor_3) {
+  std::vector vec{1, 2, 3, 4};
+  matrix      A = matrix::diag(3, vec.begin(), vec.end());
+  matrix      B{3, 3, {1, 0, 0, 0, 2, 0, 0, 0, 3}};
+  EXPECT_TRUE(A == B);
+}
+
+TEST(test_matrix, test_ctor_4) {
+  std::vector vec{1, 2};
+  matrix      A = matrix::diag(3, vec.begin(), vec.end());
+  matrix      B{3, 3, {1, 0, 0, 0, 2, 0, 0, 0, 0}};
+  EXPECT_TRUE(A == B);
 }
 
 TEST(test_matrix, test_transponse) {

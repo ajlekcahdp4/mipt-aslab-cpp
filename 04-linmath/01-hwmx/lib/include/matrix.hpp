@@ -68,6 +68,13 @@ public:
 
   static matrix zero(size_type rows, size_type cols) { return matrix<T>{rows, cols}; }
   static matrix unity(size_type size) { return matrix{std::move(contiguous_matrix<T>::unity(size))}; }
+  template <std::input_iterator it> static matrix diag(size_type size, it start, it finish) {
+    matrix    ret{size, size, value_type{}};
+    size_type i = 0;
+    for (; (i < size) && (start != finish); i++, start++)
+      ret[i][i] = *start;
+    return ret;
+  }
 
 private:
   class proxy_row {
