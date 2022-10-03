@@ -104,11 +104,6 @@ public:
     std::swap(*this, res);
     return *this;
   }
-
-  requires std::numeric_limits<T>::is_integer value_type determinant()
-  const;
-
-  requires !std::numeric_limits<T>::is_float value_type determinant() const;
 };
 
 template <typename T> bool operator==(const matrix<T> &lhs, const matrix<T> &rhs) { return lhs.equal(rhs); }
