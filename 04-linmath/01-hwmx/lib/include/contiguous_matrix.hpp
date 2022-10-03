@@ -12,6 +12,7 @@
 
 #include "algorithm.hpp"
 #include "vector.hpp"
+#include "utility.hpp"
 
 #include <algorithm>
 #include <initializer_list>
@@ -173,11 +174,11 @@ public:
   contiguous_matrix &operator*=(const contiguous_matrix &rhs) {
     if (m_rows != rhs.m_rows) throw std::runtime_error("Mismatched matrix sizes");
 
-    contiguous_matrix res{m_cols, rhs.m_cols}, t_rhs = rhs;
+    contiguous_matrix res{m_rows, rhs.m_cols}, t_rhs = rhs;
     t_rhs.transpose();
 
     for (size_type i = 0; i < m_rows; i++) {
-      for (size_type j = 0; j < rhs.m_cols; j++) {
+      for (size_type j = 0; j < t_rhs.m_rows; j++) {
         res[i][j] = algorithm::multiply_accumulate((*this)[i].cbegin(), (*this)[i].cend(), t_rhs[j].cbegin(), 0);
       }
     }

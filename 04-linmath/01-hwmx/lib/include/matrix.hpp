@@ -11,6 +11,8 @@
 #pragma once
 
 #include "contiguous_matrix.hpp"
+#include "utility.hpp"
+#include "algorithm.hpp"
 
 #include <algorithm>
 #include <cstddef>
@@ -61,23 +63,46 @@ public:
   matrix(contiguous_matrix<T> &&c_matrix) : m_contiguous_matrix(std::move(c_matrix)) { update_rows_vec(); }
 
   static matrix zero(size_type rows, size_type cols) { return matrix<T>{rows, cols}; }
-
   static matrix unity(size_type size) { return matrix{std::move(contiguous_matrix<T>::unity(size))}; }
 
 private:
-  struct proxy_row {
-    pointer   m_row;
-    reference operator[](size_type index) { return m_row[index]; }
+  class proxy_row {
+    pointer m_row, m_past_row;
+
+  public:
+    proxy_row() = default;
+    proxy_row(pointer row, size_type n_cols) : m_row{row}, m_past_row{m_row + n_cols} {}
+
+    using iterator = utility::contiguous_iterator<value_type>;
+    using const_iterator = utility::const_contiguous_iterator<value_type>;
+
+    reference      operator[](size_type index) { return m_row[index]; }
+    iterator       begin() const { return iterator{m_row}; }
+    iterator       end() const { return iterator{m_past_row}; }
+    const_iterator cbegin() const { return const_iterator{m_row}; }
+    const_iterator cend() const { return const_iterator{m_past_row}; }
   };
 
-  struct const_proxy_row {
-    const_pointer   m_row;
+  class const_proxy_row {
+    const_pointer m_row, m_past_row;
+
+  public:
+    const_proxy_row() = default;
+    const_proxy_row(const_pointer row, size_type n_cols) : m_row{row}, m_past_row{m_row + n_cols} {}
+
+    using iterator = utility::const_contiguous_iterator<value_type>;
+    using const_iterator = iterator;
+
     const_reference operator[](size_type index) { return m_row[index]; }
+    iterator        begin() const { return iterator{m_row}; }
+    iterator        end() const { return iterator{m_past_row}; }
+    const_iterator  cbegin() const { return const_iterator{m_row}; }
+    const_iterator  cend() const { return const_iterator{m_past_row}; }
   };
 
 public:
-  proxy_row       operator[](size_type index) { return proxy_row{m_rows_vec[index]}; }
-  const_proxy_row operator[](size_type index) const { return const_proxy_row{m_rows_vec[index]}; }
+  proxy_row       operator[](size_type index) { return proxy_row{m_rows_vec[index], m_contiguous_matrix.cols()}; }
+  const_proxy_row operator[](size_type index) const { return const_proxy_row{m_rows_vec[index], m_contiguous_matrix.cols()}; }
 
   size_type rows() const { return m_contiguous_matrix.rows(); }
 
@@ -97,16 +122,16 @@ public:
 
   matrix &operator*=(const matrix &rhs) & {
     if (rows() != rhs.rows()) throw std::runtime_error("Mismatched matrix sizes");
-    matrix res{cols(), rhs.cols()}, t_rhs = rhs;
+
+    matrix res{rows(), rhs.cols()}, t_rhs = rhs;
     t_rhs.transpose();
+
     for (size_type i = 0; i < rows(); i++) {
-      for (size_type j = 0; j < rhs.cols(); j++) {
-        value_type tmp{};
-        for (size_type l = 0; l < cols(); l++)
-          tmp += (*this)[i][l] * t_rhs[j][l];
-        res[i][j] = tmp;
+      for (size_type j = 0; j < t_rhs.rows(); j++) {
+        res[i][j] = algorithm::multiply_accumulate((*this)[i].cbegin(), (*this)[i].cend(), t_rhs[j].cbegin(), 0);
       }
     }
+
     std::swap(*this, res);
     return *this;
   }
