@@ -16,6 +16,7 @@
 #include <cstddef>
 #include <functional>
 #include <initializer_list>
+#include <iostream>
 #include <iterator>
 #include <limits>
 #include <stdexcept>
@@ -85,6 +86,8 @@ public:
     return (rows() == other.rows()) && (cols() == other.cols()) && (m_contiguous_matrix == other.m_contiguous_matrix);
   }
 
+  bool is_square() const { return (cols() == rows()); }
+
   matrix &transpose() & {
     m_contiguous_matrix.transpose();
     update_rows_vec();
@@ -110,17 +113,48 @@ public:
   void swap_rows(size_type idx1, size_type idx2) { std::swap(m_rows_vec[idx1], m_rows_vec[idx2]); }
 
   template <typename Comp = std::less<value_type>>
-  std::pair<size_type, value_type> max_in_col(size_type col, Comp cmp = Comp{}) {
+  std::pair<size_type, value_type> max_in_col_greater_then(size_type col, size_type minimum_row, Comp cmp = Comp{}) {
     size_type max_row_idx = 0;
     auto      rows = this->rows();
-    for (size_type row = 0; row < rows; row++)
-      max_row_idx = (cmp((*this)[max_row_idx][col], (*this)[row][col]) ? row : max_row_idx);
+    for (size_type row = minimum_row; row < rows; row++)
+      max_row_idx = (cmp(std::abs((*this)[max_row_idx][col]), std::abs((*this)[row][col])) ? row : max_row_idx);
     return std::pair<size_type, value_type>{max_row_idx, (*this)[max_row_idx][col]};
+  }
+
+  template <typename Comp = std::less<value_type>>
+  std::pair<size_type, value_type> max_in_col(size_type col, Comp cmp = Comp{}) {
+    return max_in_col_greater_then(col, 0, cmp);
+  }
+
+  void gauss_jordan_elimination() {
+    matrix &mat = *this;
+    auto    rows = mat.rows();
+    auto    cols = mat.cols();
+    for (size_type i = 0; i < rows; i++) {
+      auto [pivot_row, pivot_elem] = max_in_col_greater_then(i, i);
+      swap_rows(i, pivot_row);
+      for (size_type to_elim_row = 0; to_elim_row < rows; to_elim_row++) //!
+        if (i != to_elim_row) {
+          auto coef = mat[to_elim_row][i] / pivot_elem;
+          for (size_type col = 0; col < cols; col++) {
+            mat[to_elim_row][col] -= coef * mat[i][col];
+          }
+        }
+    }
   }
 
   value_type determinant() const requires std::is_integral_v<value_type>;
 
-  value_type determinant() const requires std::is_floating_point_v<value_type>;
+  value_type determinant() const requires std::is_floating_point_v<value_type> {
+    if (!is_square()) throw std::runtime_error("Mismatched matrix size for determinant");
+    matrix tmp = *this;
+    tmp.gauss_jordan_elimination();
+    value_type res = 1;
+    auto       rows = tmp.rows();
+    for (size_type i = 0; i < rows; i++)
+      res *= tmp[i][i];
+    return res;
+  }
 };
 
 template <typename T> bool operator==(const matrix<T> &lhs, const matrix<T> &rhs) { return lhs.equal(rhs); }

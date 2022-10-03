@@ -80,3 +80,18 @@ TEST(test_matrix, test_max_in_row) {
   EXPECT_EQ(a.max_in_col(2).first, 3);
   EXPECT_EQ(a.max_in_col(2).second, 12);
 }
+
+TEST(test_matrix, test_determinant_for_fields_1) {
+  matrix A{2, 2, {1, 0, 0, 1}};
+  EXPECT_EQ(A.determinant(), 1);
+}
+
+TEST(test_matrix, test_determinant_for_fields_2) {
+  matrix A{3, 3, {1, 3, 2, -3, -1, -3, 2, 3, 1}};
+  EXPECT_EQ(A.determinant(), -15);
+}
+
+TEST(test_matrix, test_determinant_for_fields_3) {
+  matrix A{3, 4, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}};
+  EXPECT_THROW(A.determinant(), std::runtime_error);
+}
