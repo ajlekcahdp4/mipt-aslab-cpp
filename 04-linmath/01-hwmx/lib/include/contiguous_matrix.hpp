@@ -11,8 +11,8 @@
 #pragma once
 
 #include "algorithm.hpp"
-#include "vector.hpp"
 #include "utility.hpp"
+#include "vector.hpp"
 
 #include <algorithm>
 #include <initializer_list>
@@ -133,7 +133,7 @@ public:
   }
 
   contiguous_matrix &operator/=(value_type rhs) {
-    if (rhs == 0) throw std::invalid_argument("devision by zero");
+    if (rhs == 0) throw std::invalid_argument("Division by zero");
     for (auto &elem : m_buffer) {
       elem /= rhs;
     }
@@ -187,21 +187,26 @@ public:
     return *this;
   }
 
-  pointer data() { return m_buffer.data(); }
+  pointer       data() { return m_buffer.data(); }
   const_pointer data() const { return m_buffer.data(); }
 };
 
 // clang-format off
-template <typename T> contiguous_matrix<T> operator*(const contiguous_matrix<T> &lhs, T rhs) { return contiguous_matrix{lhs} *= rhs; }
-template <typename T> contiguous_matrix<T> operator*(T lhs, const contiguous_matrix<T> &rhs) { return contiguous_matrix{rhs} *= lhs; }
+template <typename T> contiguous_matrix<T> operator*(const contiguous_matrix<T> &lhs, T rhs) { auto res = lhs; res *= rhs; return res; }
+template <typename T> contiguous_matrix<T> operator*(T lhs, const contiguous_matrix<T> &rhs) { auto res = rhs; res *= lhs; return res; }
 
-template <typename T> contiguous_matrix<T> operator*(const contiguous_matrix<T> &lhs, const contiguous_matrix<T> &rhs) { return contiguous_matrix{lhs} *= rhs; }
-template <typename T> contiguous_matrix<T> operator/(const contiguous_matrix<T> &lhs, T rhs) { return contiguous_matrix{lhs} /= rhs; }
+template <typename T> contiguous_matrix<T> operator+(const contiguous_matrix<T> &lhs, const contiguous_matrix<T> &rhs) { auto res = lhs; res += rhs; return res; }
+template <typename T> contiguous_matrix<T> operator-(const contiguous_matrix<T> &lhs, const contiguous_matrix<T> &rhs) { auto res = lhs; res -= rhs; return res; }
+
+template <typename T> contiguous_matrix<T> operator*(const contiguous_matrix<T> &lhs, const contiguous_matrix<T> &rhs) { auto res = lhs; res *= rhs; return res; }
+template <typename T> contiguous_matrix<T> operator/(const contiguous_matrix<T> &lhs, T rhs) { auto res = lhs; res /= rhs; return res; }
 
 template <typename T> bool operator==(const contiguous_matrix<T> &lhs, const contiguous_matrix<T> &rhs) { return lhs.equal(rhs); }
 template <typename T> bool operator!=(const contiguous_matrix<T> &lhs, const contiguous_matrix<T> &rhs) { return !(lhs.equal(rhs)); }
 
-template <typename T> contiguous_matrix<T> transpose(const contiguous_matrix<T> &matrix) { return contiguous_matrix{matrix}.transpose(); }
+template <typename T> contiguous_matrix<T> transpose(const contiguous_matrix<T> &mat) { auto res = mat; res.transpose(); return res; }
+
+// clang-format on
 
 } // namespace linmath
 } // namespace throttle

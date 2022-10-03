@@ -40,11 +40,12 @@ template <typename T> class matrix {
 
   void update_rows_vec() {
     m_rows_vec.reserve(rows());
-    std::generate_n(std::back_inserter(m_rows_vec), rows(), [ptr = m_contiguous_matrix.data(), n_cols = cols()]() mutable {
-      auto old_ptr = ptr;
-      ptr += n_cols;
-      return old_ptr;
-    });
+    std::generate_n(std::back_inserter(m_rows_vec), rows(),
+                    [ptr = m_contiguous_matrix.data(), n_cols = cols()]() mutable {
+                      auto old_ptr = ptr;
+                      ptr += n_cols;
+                      return old_ptr;
+                    });
   }
 
 public:
@@ -126,22 +127,6 @@ public:
     return *this;
   }
 
-  matrix &operator*=(const matrix &rhs) & {
-    if (cols() != rhs.rows()) throw std::runtime_error("Mismatched matrix sizes");
-
-    matrix res{rows(), rhs.cols()}, t_rhs = rhs;
-    t_rhs.transpose();
-
-    for (size_type i = 0; i < rows(); i++) {
-      for (size_type j = 0; j < t_rhs.rows(); j++) {
-        res[i][j] = algorithm::multiply_accumulate((*this)[i].cbegin(), (*this)[i].cend(), t_rhs[j].cbegin(), 0);
-      }
-    }
-
-    std::swap(*this, res);
-    return *this;
-  }
-
   void swap_rows(size_type idx1, size_type idx2) { std::swap(m_rows_vec[idx1], m_rows_vec[idx2]); }
 
   template <typename Comp = std::less<value_type>>
@@ -187,23 +172,70 @@ public:
       res *= tmp[i][i];
     return res;
   }
+
+  matrix &operator*=(value_type rhs) {
+    m_contiguous_matrix *= rhs;
+    return *this;
+  }
+
+  matrix &operator/=(value_type rhs) {
+    m_contiguous_matrix /= rhs;
+    return *this;
+  }
+
+  matrix &operator+=(const matrix &other) {
+    if (rows() != other.rows() || cols() != other.cols()) throw std::runtime_error("Mismatched matrix sizes");
+    for (size_type i = 0; i < rows(); ++i) {
+      auto row_first = (*this)[i], row_second = other[i];
+      std::transform(row_first.begin(), row_first.end(), row_second.cbegin(), row_first.begin(),
+                     std::plus<value_type>{});
+    }
+    return *this;
+  }
+
+  matrix &operator-=(const matrix &other) {
+    if (rows() != other.rows() || cols() != other.cols()) throw std::runtime_error("Mismatched matrix sizes");
+    for (size_type i = 0; i < rows(); ++i) {
+      auto row_first = (*this)[i], row_second = other[i];
+      std::transform(row_first.begin(), row_first.end(), row_second.cbegin(), row_first.begin(),
+                     std::minus<value_type>{});
+    }
+    return *this;
+  }
+
+  matrix &operator*=(const matrix &rhs) {
+    if (cols() != rhs.rows()) throw std::runtime_error("Mismatched matrix sizes");
+
+    matrix res{rows(), rhs.cols()}, t_rhs = rhs;
+    t_rhs.transpose();
+
+    for (size_type i = 0; i < rows(); i++) {
+      for (size_type j = 0; j < t_rhs.rows(); j++) {
+        res[i][j] = algorithm::multiply_accumulate((*this)[i].cbegin(), (*this)[i].cend(), t_rhs[j].cbegin(), 0);
+      }
+    }
+
+    std::swap(*this, res);
+    return *this;
+  }
 };
 
-template <typename T> bool operator==(const matrix<T> &lhs, const matrix<T> &rhs) { return lhs.equal(rhs); }
+// clang-format off
+template <typename T> matrix<T> operator*(const matrix<T> &lhs, T rhs) { auto res = lhs; res *= rhs; return res; }
+template <typename T> matrix<T> operator*(T lhs, const matrix<T> &rhs) { auto res = rhs; res *= lhs; return res; }
 
+template <typename T> matrix<T> operator+(const matrix<T> &lhs, const matrix<T> &rhs) { auto res = lhs; res += rhs; return res; }
+template <typename T> matrix<T> operator-(const matrix<T> &lhs, const matrix<T> &rhs) { auto res = lhs; res -= rhs; return res; }
+
+template <typename T> matrix<T> operator*(const matrix<T> &lhs, const matrix<T> &rhs) { auto res = lhs; res *= rhs; return res; }
+template <typename T> matrix<T> operator/(const matrix<T> &lhs, T rhs) { auto res = lhs; res /= rhs; return res; }
+
+template <typename T> bool operator==(const matrix<T> &lhs, const matrix<T> &rhs) { return lhs.equal(rhs); }
 template <typename T> bool operator!=(const matrix<T> &lhs, const matrix<T> &rhs) { return !(lhs.equal(rhs)); }
 
-template <typename T> matrix<T> operator*(const matrix<T> &lhs, const matrix<T> &rhs) {
-  matrix res = lhs;
-  res *= rhs;
-  return res;
-}
+template <typename T> matrix<T> transpose(const matrix<T> &mat) { auto res = mat; res.transpose(); return res; }
 
-template <typename T> matrix<T> transpose(const matrix<T> &mat) {
-  matrix res = mat;
-  res.transpose();
-  return res;
-}
+// clang-format on
 
 } // namespace linmath
 } // namespace throttle
