@@ -173,7 +173,7 @@ template <typename T> contiguous_matrix<T> operator*(T lhs, const contiguous_mat
   return ret;
 }
 
-template <typename T> contiguous_matrix<T> operator*(const contiguous_matrix<T> lhs, const contiguous_matrix<T> rhs) {
+template <typename T> contiguous_matrix<T> operator*(const contiguous_matrix<T> &lhs, const contiguous_matrix<T> &rhs) {
   contiguous_matrix res = lhs;
   res *= rhs;
   return res;

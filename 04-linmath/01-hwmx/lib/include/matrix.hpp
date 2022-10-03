@@ -20,9 +20,7 @@
 
 namespace throttle {
 namespace linmath {
-template <typename T>
-requires std::is_arithmetic_v<T>
-class matrix {
+template <typename T> class matrix {
   using value_type = T;
   using reference = T &;
   using const_reference = const T &;
@@ -33,33 +31,29 @@ class matrix {
   contiguous_matrix<T>        m_contiguous_matrix;
   containers::vector<pointer> m_rows_vec;
 
-public:
-  matrix(size_type rows, size_type cols, value_type val = value_type{}) : m_contiguous_matrix{rows, cols, val} {
+  void update_rows_vec() {
+    auto rows = this->rows();
     m_rows_vec.reserve(rows);
     for (size_type i = 0; i < rows; i++)
       m_rows_vec.push_back(&m_contiguous_matrix[i][0]);
+  }
+
+public:
+  matrix(size_type rows, size_type cols, value_type val = value_type{}) : m_contiguous_matrix{rows, cols, val} {
+    update_rows_vec();
   }
 
   template <std::input_iterator it>
   matrix(size_type rows, size_type cols, it start, it finish) : m_contiguous_matrix{rows, cols, start, finish} {
-    m_rows_vec.reserve(rows);
-    for (size_type i = 0; i < rows; i++)
-      m_rows_vec.push_back(&m_contiguous_matrix[i][0]);
+    update_rows_vec();
   }
 
   matrix(size_type rows, size_type cols, std::initializer_list<value_type> list)
       : m_contiguous_matrix{rows, cols, list} {
-    m_rows_vec.reserve(rows);
-    for (size_type i = 0; i < rows; i++)
-      m_rows_vec.push_back(&m_contiguous_matrix[i][0]);
+    update_rows_vec();
   }
 
-  matrix(contiguous_matrix<T> &&c_matrix) : m_contiguous_matrix(std::move(c_matrix)) {
-    auto rows = m_contiguous_matrix.rows();
-    m_rows_vec.reserve(rows);
-    for (size_type i = 0; i < rows; i++)
-      m_rows_vec.push_back(&m_contiguous_matrix[i][0]);
-  }
+  matrix(contiguous_matrix<T> &&c_matrix) : m_contiguous_matrix(std::move(c_matrix)) { update_rows_vec(); }
 
   static matrix zero(size_type rows, size_type cols) { return matrix<T>{rows, cols}; }
 
@@ -85,14 +79,50 @@ public:
   size_type cols() const { return m_contiguous_matrix.cols(); }
 
   bool equal(const matrix &other) const {
-    return (rows() == other.rows()) && (cols() == other.cols()) && (m_contiguous_matrix == other.m_contiguous_matrix) &&
-           (std::equal(m_rows_vec.begin(), m_rows_vec.end(), other.m_rows_vec.begin()));
+    return (rows() == other.rows()) && (cols() == other.cols()) && (m_contiguous_matrix == other.m_contiguous_matrix);
+  }
+
+  matrix &transpose() & {
+    m_contiguous_matrix.transpose();
+    update_rows_vec();
+    return *this;
+  }
+
+  matrix &operator*=(const matrix &rhs) & {
+    if (rows() != rhs.rows()) throw std::runtime_error("Mismatched matrix sizes");
+
+    matrix res{cols(), rhs.cols()}, t_rhs = rhs;
+    t_rhs.transpose();
+
+    for (size_type i = 0; i < rows(); i++) {
+      for (size_type j = 0; j < rhs.cols(); j++) {
+        value_type tmp{};
+        for (size_type l = 0; l < cols(); l++)
+          tmp += (*this)[i][l] * t_rhs[j][l];
+        res[i][j] = tmp;
+      }
+    }
+
+    std::swap(*this, res);
+    return *this;
   }
 };
 
 template <typename T> bool operator==(const matrix<T> &lhs, const matrix<T> &rhs) { return lhs.equal(rhs); }
 
 template <typename T> bool operator!=(const matrix<T> &lhs, const matrix<T> &rhs) { return !(lhs.equal(rhs)); }
+
+template <typename T> matrix<T> operator*(const matrix<T> &lhs, const matrix<T> &rhs) {
+  matrix res = lhs;
+  res *= rhs;
+  return res;
+}
+
+template <typename T> matrix<T> transpose(const matrix<T> &mat) {
+  matrix res = mat;
+  res.transpose();
+  return res;
+}
 
 } // namespace linmath
 } // namespace throttle
