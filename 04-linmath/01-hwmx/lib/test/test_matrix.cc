@@ -98,7 +98,7 @@ TEST(test_matrix, test_max_in_row) {
 
 TEST(test_matrix, test_gauss_jordan_elimination_1) {
   matrix A{3, 2, {1, 2, 3, 4, 5, 6}};
-  A.gauss_jordan_elimination();
+  A.convert_to_row_echelon();
 
   matrix B{3, 2, {5, 0, 0, 0.8, 0, 0}};
   EXPECT_TRUE(A == B);
