@@ -73,3 +73,10 @@ TEST(test_matrix, test_multiplication_3) {
   EXPECT_TRUE(C == matrix(3, 1, {-18, -20, -16}));
   EXPECT_TRUE(A != C);
 }
+
+TEST(test_matrix, test_max_in_row) {
+  std::vector vals{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+  matrix      a(4, 3, vals.begin(), vals.end());
+  EXPECT_EQ(a.max_in_col(2).first, 3);
+  EXPECT_EQ(a.max_in_col(2).second, 12);
+}

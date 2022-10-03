@@ -14,10 +14,12 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <functional>
 #include <initializer_list>
 #include <iterator>
 #include <limits>
 #include <stdexcept>
+#include <utility>
 
 namespace throttle {
 namespace linmath {
@@ -104,6 +106,21 @@ public:
     std::swap(*this, res);
     return *this;
   }
+
+  void swap_rows(size_type idx1, size_type idx2) { std::swap(m_rows_vec[idx1], m_rows_vec[idx2]); }
+
+  template <typename Comp = std::less<value_type>>
+  std::pair<size_type, value_type> max_in_col(size_type col, Comp cmp = Comp{}) {
+    size_type max_row_idx = 0;
+    auto      rows = this->rows();
+    for (size_type row = 0; row < rows; row++)
+      max_row_idx = (cmp((*this)[max_row_idx][col], (*this)[row][col]) ? row : max_row_idx);
+    return std::pair<size_type, value_type>{max_row_idx, (*this)[max_row_idx][col]};
+  }
+
+  value_type determinant() const requires std::is_integral_v<value_type>;
+
+  value_type determinant() const requires std::is_floating_point_v<value_type>;
 };
 
 template <typename T> bool operator==(const matrix<T> &lhs, const matrix<T> &rhs) { return lhs.equal(rhs); }
