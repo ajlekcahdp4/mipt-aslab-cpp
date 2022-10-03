@@ -150,13 +150,17 @@ public:
     return max_in_col_greater_eq(col, 0, cmp);
   }
 
-  void gauss_jordan_elimination() {
+  int gauss_jordan_elimination() {
+    int     sign = 1;
     matrix &mat = *this;
     auto    rows = mat.rows();
     auto    cols = mat.cols();
     for (size_type i = 0; i < rows; i++) {
       auto [pivot_row, pivot_elem] = max_in_col_greater_eq(i, i);
-      swap_rows(i, pivot_row);
+      if (i != pivot_row) {
+        swap_rows(i, pivot_row);
+        sign *= -1;
+      }
       for (size_type to_elim_row = 0; to_elim_row < rows; to_elim_row++) //!
         if (i != to_elim_row) {
           auto coef = mat[to_elim_row][i] / pivot_elem;
@@ -165,6 +169,7 @@ public:
           }
         }
     }
+    return sign;
   }
 
   value_type determinant() const requires std::is_integral_v<value_type>;
@@ -172,12 +177,12 @@ public:
   value_type determinant() const requires std::is_floating_point_v<value_type> {
     if (!square()) throw std::runtime_error("Mismatched matrix size for determinant");
     matrix tmp = *this;
-    tmp.gauss_jordan_elimination();
+    auto       sign = tmp.gauss_jordan_elimination();
     value_type res = 1;
     auto       rows = tmp.rows();
     for (size_type i = 0; i < rows; i++)
       res *= tmp[i][i];
-    return res;
+    return res * sign;
   }
 
   matrix &operator*=(value_type rhs) {
