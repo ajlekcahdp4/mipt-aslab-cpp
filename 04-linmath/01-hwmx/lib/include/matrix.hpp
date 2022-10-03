@@ -189,7 +189,8 @@ public:
   matrix &operator+=(const matrix &other) {
     if (rows() != other.rows() || cols() != other.cols()) throw std::runtime_error("Mismatched matrix sizes");
     for (size_type i = 0; i < rows(); ++i) {
-      auto row_first = (*this)[i], row_second = other[i];
+      auto row_first = (*this)[i];
+      auto row_second = other[i];
       std::transform(row_first.begin(), row_first.end(), row_second.cbegin(), row_first.begin(),
                      std::plus<value_type>{});
     }
@@ -199,7 +200,8 @@ public:
   matrix &operator-=(const matrix &other) {
     if (rows() != other.rows() || cols() != other.cols()) throw std::runtime_error("Mismatched matrix sizes");
     for (size_type i = 0; i < rows(); ++i) {
-      auto row_first = (*this)[i], row_second = other[i];
+      auto row_first = (*this)[i];
+      auto row_second = other[i];
       std::transform(row_first.begin(), row_first.end(), row_second.cbegin(), row_first.begin(),
                      std::minus<value_type>{});
     }
