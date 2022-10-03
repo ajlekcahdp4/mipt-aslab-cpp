@@ -10,9 +10,9 @@
 
 #pragma once
 
+#include "algorithm.hpp"
 #include "contiguous_matrix.hpp"
 #include "utility.hpp"
-#include "algorithm.hpp"
 
 #include <algorithm>
 #include <cstddef>
@@ -39,10 +39,12 @@ template <typename T> class matrix {
   containers::vector<pointer> m_rows_vec;
 
   void update_rows_vec() {
-    auto rows = this->rows();
-    m_rows_vec.reserve(rows);
-    for (size_type i = 0; i < rows; i++)
-      m_rows_vec.push_back(&m_contiguous_matrix[i][0]);
+    m_rows_vec.reserve(rows());
+    std::generate_n(std::back_inserter(m_rows_vec), rows(), [ptr = m_contiguous_matrix.data(), n_cols = cols()]() mutable {
+      auto old_ptr = ptr;
+      ptr += n_cols;
+      return old_ptr;
+    });
   }
 
 public:
@@ -101,22 +103,26 @@ private:
   };
 
 public:
-  proxy_row       operator[](size_type index) { return proxy_row{m_rows_vec[index], m_contiguous_matrix.cols()}; }
-  const_proxy_row operator[](size_type index) const { return const_proxy_row{m_rows_vec[index], m_contiguous_matrix.cols()}; }
+  proxy_row       operator[](size_type index) { return proxy_row{m_rows_vec[index], cols()}; }
+  const_proxy_row operator[](size_type index) const { return const_proxy_row{m_rows_vec[index], cols()}; }
 
   size_type rows() const { return m_contiguous_matrix.rows(); }
-
   size_type cols() const { return m_contiguous_matrix.cols(); }
+  bool      square() const { return (cols() == rows()); }
 
   bool equal(const matrix &other) const {
     return (rows() == other.rows()) && (cols() == other.cols()) && (m_contiguous_matrix == other.m_contiguous_matrix);
   }
 
-  bool is_square() const { return (cols() == rows()); }
+  matrix &transpose() {
+    matrix transposed{cols(), rows()};
+    for (size_type i = 0; i < rows(); i++) {
+      for (size_type j = 0; j < cols(); j++) {
+        transposed[j][i] = (*this)[i][j];
+      }
+    }
 
-  matrix &transpose() & {
-    m_contiguous_matrix.transpose();
-    update_rows_vec();
+    *this = std::move(transposed);
     return *this;
   }
 
@@ -172,7 +178,7 @@ public:
   value_type determinant() const requires std::is_integral_v<value_type>;
 
   value_type determinant() const requires std::is_floating_point_v<value_type> {
-    if (!is_square()) throw std::runtime_error("Mismatched matrix size for determinant");
+    if (!square()) throw std::runtime_error("Mismatched matrix size for determinant");
     matrix tmp = *this;
     tmp.gauss_jordan_elimination();
     value_type res = 1;

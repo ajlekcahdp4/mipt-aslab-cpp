@@ -153,7 +153,7 @@ public:
     if (m_rows == m_cols) {
       for (size_type i = 0; i < m_rows; i++) {
         for (size_type j = i + 1; j < m_rows; j++) {
-          std::swap(m_buffer[i * m_rows + j], m_buffer[j * m_rows + i]);
+          std::swap((*this)[i][j], (*this)[j][i]);
         }
       }
       std::swap(m_cols, m_rows);
@@ -163,7 +163,7 @@ public:
     contiguous_matrix transposed{m_cols, m_rows};
     for (size_type i = 0; i < m_rows; i++) {
       for (size_type j = 0; j < m_cols; j++) {
-        transposed.m_buffer[j * m_rows + i] = m_buffer[i * m_cols + j];
+        transposed[j][i] = (*this)[i][j];
       }
     }
 
@@ -186,6 +186,9 @@ public:
     std::swap(*this, res);
     return *this;
   }
+
+  pointer data() { return m_buffer.data(); }
+  const_pointer data() const { return m_buffer.data(); }
 };
 
 // clang-format off
