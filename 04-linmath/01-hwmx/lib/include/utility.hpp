@@ -26,8 +26,7 @@ template <std::invocable functor> void do_for_n(std::size_t count, functor f) {
     f();
 }
 
-template <typename T>
-struct contiguous_iterator {
+template <typename T> struct contiguous_iterator {
   using iterator_category = std::random_access_iterator_tag;
   using difference_type = std::ptrdiff_t;
   using value_type = T;
@@ -41,15 +40,15 @@ public:
   contiguous_iterator(pointer ptr) : m_ptr{ptr} {}
 
   // clang-format off
-    reference operator*() const { return *m_ptr; }
-    pointer operator->() { return m_ptr; }
+  reference operator*() const { return *m_ptr; }
+  pointer operator->() { return m_ptr; }
 
-    contiguous_iterator operator++() { m_ptr++; return *this; }
-    contiguous_iterator operator++(int) { contiguous_iterator res{m_ptr}; m_ptr++; return res; }
-    contiguous_iterator operator--() { m_ptr--; return *this; }
-    contiguous_iterator operator--(int) { contiguous_iterator res{m_ptr}; m_ptr--; return res; }
-    contiguous_iterator operator+=(difference_type n) { m_ptr += n; return *this; }
-    contiguous_iterator operator-=(difference_type n) { m_ptr -= n; return *this; }
+  contiguous_iterator &operator++() { m_ptr++; return *this; }
+  contiguous_iterator operator++(int) { contiguous_iterator res{m_ptr}; m_ptr++; return res; }
+  contiguous_iterator &operator--() { m_ptr--; return *this; }
+  contiguous_iterator operator--(int) { contiguous_iterator res{m_ptr}; m_ptr--; return res; }
+  contiguous_iterator operator+=(difference_type n) { m_ptr += n; return *this; }
+  contiguous_iterator operator-=(difference_type n) { m_ptr -= n; return *this; }
 
   // clang-format on
   contiguous_iterator operator+(difference_type n) const { return contiguous_iterator{m_ptr + n}; }
@@ -61,11 +60,10 @@ public:
   bool operator!=(const contiguous_iterator &other) const { return !(*this == other); }
 };
 
-template <typename T>
-struct const_contiguous_iterator {
+template <typename T> struct const_contiguous_iterator {
   using iterator_category = std::random_access_iterator_tag;
   using difference_type = std::ptrdiff_t;
-  using value_type = const T;
+  using value_type = T;
   using reference = const T &;
   using pointer = const T *;
 
@@ -76,15 +74,15 @@ public:
   const_contiguous_iterator(pointer ptr) : m_ptr{ptr} {}
 
   // clang-format off
-    reference operator*() const { return *m_ptr; }
-    pointer operator->() { return m_ptr; }
+  reference operator*() const { return *m_ptr; }
+  pointer operator->() { return m_ptr; }
 
-    const_contiguous_iterator operator++() { m_ptr++; return *this; }
-    const_contiguous_iterator operator++(int) { const_contiguous_iterator res{m_ptr}; m_ptr++; return res; }
-    const_contiguous_iterator operator--() { m_ptr--; return *this; }
-    const_contiguous_iterator operator--(int) { const_contiguous_iterator res{m_ptr}; m_ptr--; return res; }
-    const_contiguous_iterator operator+=(difference_type n) { m_ptr += n; return *this; }
-    const_contiguous_iterator operator-=(difference_type n) { m_ptr -= n; return *this; }
+  const_contiguous_iterator &operator++() { m_ptr++; return *this; }
+  const_contiguous_iterator operator++(int) { const_contiguous_iterator res{m_ptr}; m_ptr++; return res; }
+  const_contiguous_iterator &operator--() { m_ptr--; return *this; }
+  const_contiguous_iterator operator--(int) { const_contiguous_iterator res{m_ptr}; m_ptr--; return res; }
+  const_contiguous_iterator operator+=(difference_type n) { m_ptr += n; return *this; }
+  const_contiguous_iterator operator-=(difference_type n) { m_ptr -= n; return *this; }
 
   // clang-format on
   const_contiguous_iterator operator+(difference_type n) const { return const_contiguous_iterator{m_ptr + n}; }

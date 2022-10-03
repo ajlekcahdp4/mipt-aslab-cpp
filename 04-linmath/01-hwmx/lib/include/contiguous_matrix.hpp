@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include "algorithm.hpp"
 #include "vector.hpp"
 
 #include <algorithm>
@@ -55,7 +56,7 @@ public:
 
   static contiguous_matrix unity(size_type size) {
     contiguous_matrix ret{size, size};
-    auto start = ret.m_buffer.begin();
+    auto              start = ret.m_buffer.begin();
     for (size_type i = 0; i < size; ++i, start += size + 1) {
       *start = 1;
     }
@@ -63,19 +64,43 @@ public:
   }
 
 private:
-  struct proxy_row {
-    pointer   m_row;
-    reference operator[](size_type index) { return m_row[index]; }
+  class proxy_row {
+    pointer m_row, m_past_row;
+
+  public:
+    proxy_row() = default;
+    proxy_row(pointer row, size_type n_cols) : m_row{row}, m_past_row{m_row + n_cols} {}
+
+    using iterator = utility::contiguous_iterator<value_type>;
+    using const_iterator = utility::const_contiguous_iterator<value_type>;
+
+    reference      operator[](size_type index) { return m_row[index]; }
+    iterator       begin() const { return iterator{m_row}; }
+    iterator       end() const { return iterator{m_past_row}; }
+    const_iterator cbegin() const { return const_iterator{m_row}; }
+    const_iterator cend() const { return const_iterator{m_past_row}; }
   };
 
-  struct const_proxy_row {
-    const_pointer   m_row;
+  class const_proxy_row {
+    const_pointer m_row, m_past_row;
+
+  public:
+    const_proxy_row() = default;
+    const_proxy_row(const_pointer row, size_type n_cols) : m_row{row}, m_past_row{m_row + n_cols} {}
+
+    using iterator = utility::const_contiguous_iterator<value_type>;
+    using const_iterator = iterator;
+
     const_reference operator[](size_type index) { return m_row[index]; }
+    iterator        begin() const { return iterator{m_row}; }
+    iterator        end() const { return iterator{m_past_row}; }
+    const_iterator  cbegin() const { return const_iterator{m_row}; }
+    const_iterator  cend() const { return const_iterator{m_past_row}; }
   };
 
 public:
-  proxy_row       operator[](size_type index) { return proxy_row{&m_buffer[index * m_cols]}; }
-  const_proxy_row operator[](size_type index) const { return const_proxy_row{&m_buffer[index * m_cols]}; }
+  proxy_row       operator[](size_type index) { return proxy_row{&m_buffer[index * m_cols], m_cols}; }
+  const_proxy_row operator[](size_type index) const { return const_proxy_row{&m_buffer[index * m_cols], m_cols}; }
 
   size_type rows() const { return m_rows; }
   size_type cols() const { return m_cols; }
@@ -119,7 +144,11 @@ public:
            (std::equal(m_buffer.begin(), m_buffer.end(), other.m_buffer.begin()));
   }
 
-  contiguous_matrix &transpose() & {
+private:
+  void transpose_impl() {}
+
+public:
+  contiguous_matrix &transpose() {
     if (m_rows == m_cols) {
       for (size_type i = 0; i < m_rows; i++) {
         for (size_type j = i + 1; j < m_rows; j++) {
@@ -141,7 +170,7 @@ public:
     return *this;
   }
 
-  contiguous_matrix &operator*=(const contiguous_matrix &rhs) & {
+  contiguous_matrix &operator*=(const contiguous_matrix &rhs) {
     if (m_rows != rhs.m_rows) throw std::runtime_error("Mismatched matrix sizes");
 
     contiguous_matrix res{m_cols, rhs.m_cols}, t_rhs = rhs;
@@ -149,10 +178,7 @@ public:
 
     for (size_type i = 0; i < m_rows; i++) {
       for (size_type j = 0; j < rhs.m_cols; j++) {
-        value_type tmp{};
-        for (size_type l = 0; l < m_cols; l++)
-          tmp += (*this)[i][l] * t_rhs[j][l];
-        res[i][j] = tmp;
+        res[i][j] = algorithm::multiply_accumulate((*this)[i].cbegin(), (*this)[i].cend(), t_rhs[j].cbegin(), 0);
       }
     }
 
@@ -161,43 +187,17 @@ public:
   }
 };
 
-template <typename T> contiguous_matrix<T> operator*(const contiguous_matrix<T> &lhs, T rhs) {
-  contiguous_matrix ret = lhs;
-  ret *= rhs;
-  return ret;
-}
+// clang-format off
+template <typename T> contiguous_matrix<T> operator*(const contiguous_matrix<T> &lhs, T rhs) { return contiguous_matrix{lhs} *= rhs; }
+template <typename T> contiguous_matrix<T> operator*(T lhs, const contiguous_matrix<T> &rhs) { return contiguous_matrix{rhs} *= lhs; }
 
-template <typename T> contiguous_matrix<T> operator*(T lhs, const contiguous_matrix<T> &rhs) {
-  contiguous_matrix ret = rhs;
-  ret *= lhs;
-  return ret;
-}
+template <typename T> contiguous_matrix<T> operator*(const contiguous_matrix<T> &lhs, const contiguous_matrix<T> &rhs) { return contiguous_matrix{lhs} *= rhs; }
+template <typename T> contiguous_matrix<T> operator/(const contiguous_matrix<T> &lhs, T rhs) { return contiguous_matrix{lhs} /= rhs; }
 
-template <typename T> contiguous_matrix<T> operator*(const contiguous_matrix<T> &lhs, const contiguous_matrix<T> &rhs) {
-  contiguous_matrix res = lhs;
-  res *= rhs;
-  return res;
-}
+template <typename T> bool operator==(const contiguous_matrix<T> &lhs, const contiguous_matrix<T> &rhs) { return lhs.equal(rhs); }
+template <typename T> bool operator!=(const contiguous_matrix<T> &lhs, const contiguous_matrix<T> &rhs) { return !(lhs.equal(rhs)); }
 
-template <typename T> contiguous_matrix<T> operator/(const contiguous_matrix<T> &lhs, T rhs) {
-  contiguous_matrix ret = lhs;
-  ret /= rhs;
-  return ret;
-}
-
-template <typename T> bool operator==(const contiguous_matrix<T> &lhs, const contiguous_matrix<T> &rhs) {
-  return lhs.equal(rhs);
-}
-
-template <typename T> bool operator!=(const contiguous_matrix<T> &lhs, const contiguous_matrix<T> &rhs) {
-  return !(lhs.equal(rhs));
-}
-
-template <typename T> contiguous_matrix<T> transpose(const contiguous_matrix<T> &matrix) {
-  contiguous_matrix res = matrix;
-  res.transpose();
-  return res;
-}
+template <typename T> contiguous_matrix<T> transpose(const contiguous_matrix<T> &matrix) { return contiguous_matrix{matrix}.transpose(); }
 
 } // namespace linmath
 } // namespace throttle

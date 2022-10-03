@@ -105,17 +105,14 @@ TEST(test_contiguous_matrix, test_multiplication_1) {
   matrix A(2, 2, {2, -3, 4, -6});
   matrix B(2, 2, {9, -6, 6, -4});
 
-  A *= B;
-
-  EXPECT_TRUE(A == matrix::zero(2, 2));
+  EXPECT_TRUE(A * B == matrix::zero(2, 2));
 }
 
 TEST(test_contiguous_matrix, test_multiplication_2) {
   matrix A{3, 3, {5, 8, -4, 6, 9, -5, 4, 7, -3}};
   matrix B{3, 1, {2, -3, 1}};
 
-  A *= B;
-  EXPECT_TRUE(A == matrix(3, 1, {-18, -20, -16}));
+  EXPECT_TRUE(A * B == matrix(3, 1, {-18, -20, -16}));
 }
 
 TEST(test_contiguous_matrix, test_multiplication_3) {
