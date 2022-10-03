@@ -16,6 +16,7 @@
 #include <cstddef>
 #include <initializer_list>
 #include <iterator>
+#include <limits>
 #include <stdexcept>
 
 namespace throttle {
@@ -90,10 +91,8 @@ public:
 
   matrix &operator*=(const matrix &rhs) & {
     if (rows() != rhs.rows()) throw std::runtime_error("Mismatched matrix sizes");
-
     matrix res{cols(), rhs.cols()}, t_rhs = rhs;
     t_rhs.transpose();
-
     for (size_type i = 0; i < rows(); i++) {
       for (size_type j = 0; j < rhs.cols(); j++) {
         value_type tmp{};
@@ -102,10 +101,14 @@ public:
         res[i][j] = tmp;
       }
     }
-
     std::swap(*this, res);
     return *this;
   }
+
+  requires std::numeric_limits<T>::is_integer value_type determinant()
+  const;
+
+  requires !std::numeric_limits<T>::is_float value_type determinant() const;
 };
 
 template <typename T> bool operator==(const matrix<T> &lhs, const matrix<T> &rhs) { return lhs.equal(rhs); }
