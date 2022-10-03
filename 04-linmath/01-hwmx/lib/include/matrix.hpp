@@ -12,6 +12,7 @@
 
 #include "algorithm.hpp"
 #include "contiguous_matrix.hpp"
+#include "equal.hpp"
 #include "utility.hpp"
 
 #include <algorithm>
@@ -111,11 +112,14 @@ public:
   size_type cols() const { return m_contiguous_matrix.cols(); }
   bool      square() const { return (cols() == rows()); }
 
-  bool equal(const matrix &other) const {
-    bool res = (rows() == other.rows()) && (cols() == other.cols());
-    for (size_type i = 0; i < m_rows_vec.size(); i++)
-      res = res && std::equal((*this)[i].begin(), (*this)[i].end(), other[i].begin());
-    return res;
+  bool equal(const matrix &other, const value_type &precision = default_precision<value_type>::m_prec) const {
+    if ((rows() != other.rows()) || (cols() != other.cols())) return false;
+    for (size_type i = 0; i < m_rows_vec.size(); i++) {
+      if (!std::equal((*this)[i].begin(), (*this)[i].end(), other[i].begin(),
+                      [&precision](auto first, auto second) { return is_roughly_equal(first, second, precision); }))
+        return false;
+    }
+    return true;
   }
 
   matrix &transpose() {
