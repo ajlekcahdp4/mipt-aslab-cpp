@@ -20,6 +20,10 @@
 #include <memory>
 #include <stdexcept>
 
+#include <range/v3/action.hpp>
+#include <range/v3/algorithm.hpp>
+#include <range/v3/view.hpp>
+
 namespace throttle {
 namespace linmath {
 
@@ -57,10 +61,12 @@ public:
 
   static contiguous_matrix unity(size_type size) {
     contiguous_matrix ret{size, size};
-    auto              start = ret.m_buffer.begin();
+    auto start = ret.begin();
+
     for (size_type i = 0; i < size; ++i, start += size + 1) {
       *start = 1;
     }
+
     return ret;
   }
 
@@ -189,6 +195,14 @@ public:
 
   pointer       data() { return m_buffer.data(); }
   const_pointer data() const { return m_buffer.data(); }
+
+  using iterator = typename containers::vector<value_type>::iterator;
+  using const_iterator = typename containers::vector<value_type>::const_iterator;
+
+  iterator begin() const { return m_buffer.begin(); }
+  iterator end() const { return m_buffer.end(); }
+  const_iterator cbegin() const { return m_buffer.cbegin(); }
+  const_iterator cend() const { return m_buffer.cend(); }
 };
 
 // clang-format off

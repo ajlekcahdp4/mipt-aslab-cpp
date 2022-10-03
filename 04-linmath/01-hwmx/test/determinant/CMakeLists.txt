@@ -10,6 +10,6 @@ endif()
 
 install(TARGETS determinant DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 
-# if(BASH_PROGRAM)
-#   add_test(NAME test.determinant COMMAND ${BASH_PROGRAM} ${CMAKE_CURRENT_SOURCE_DIR}/test.sh "$<TARGET_FILE:determinant>" ${CMAKE_CURRENT_SOURCE_DIR})
-# endif()
+if(BASH_PROGRAM)
+  add_test(NAME test.determinant COMMAND ${BASH_PROGRAM} ${CMAKE_CURRENT_SOURCE_DIR}/test.sh "$<TARGET_FILE:determinant>" ${CMAKE_CURRENT_SOURCE_DIR})
+endif()

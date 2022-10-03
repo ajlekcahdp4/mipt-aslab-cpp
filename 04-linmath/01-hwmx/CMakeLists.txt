@@ -68,5 +68,7 @@ if (SANITIZE)
     add_link_options(-fsanitize=address -fno-omit-frame-pointer)
 endif()
 
+add_subdirectory(3rd-party/range-v3 EXCLUDE_FROM_ALL)
+
 add_subdirectory(lib)
 add_subdirectory(test)

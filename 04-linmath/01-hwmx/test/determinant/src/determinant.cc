@@ -14,20 +14,23 @@
 namespace po = boost::program_options;
 #endif
 
-template class throttle::linmath::contiguous_matrix<int>;
-
 int main(int argc, char *argv[]) {
-  throttle::linmath::matrix<int> m{3, 1, {1, 2, 3}};
-  const throttle::linmath::matrix<int> m2{1, 3, {1, 2, 3}};
-
-  auto res = m * m2;
-
-  for (unsigned i = 0; i < res.rows(); ++i) {
-    for (unsigned j = 0; j < res.cols(); ++j) {
-      std::cout << res[i][j] << " ";
-    }
-    std::cout << "\n";
+  unsigned n;
+  if (!(std::cin >> n)) {
+    return 1;
   }
 
-  std::cout << m.equal(m2, 1);
+  throttle::linmath::matrix<float> m{n, n};
+
+  for (unsigned i = 0; i < n * n; ++i) {
+    float temp;
+    if (!(std::cin >> temp)) {
+      return 1;
+    }
+    m[i / n][i % n] = temp;
+  }
+
+  auto det = m.determinant();
+
+  std::cout << det;
 }

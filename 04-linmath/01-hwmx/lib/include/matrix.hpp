@@ -25,6 +25,10 @@
 #include <stdexcept>
 #include <utility>
 
+#include <range/v3/action.hpp>
+#include <range/v3/algorithm.hpp>
+#include <range/v3/view.hpp>
+
 namespace throttle {
 namespace linmath {
 
@@ -41,13 +45,16 @@ template <typename T> class matrix {
 
   void update_rows_vec() {
     m_rows_vec.reserve(rows());
-    std::generate_n(std::back_inserter(m_rows_vec), rows(),
-                    [ptr = m_contiguous_matrix.data(), n_cols = cols()]() mutable {
-                      auto old_ptr = ptr;
-                      ptr += n_cols;
-                      return old_ptr;
-                    });
-  }
+
+    // Just messing around with range-v3. Nothing to see here.
+    // clang-format off
+    ranges::copy(
+        ranges::view::ints(0, ranges::unreachable) 
+        | ranges::view::stride(cols()) 
+        | ranges::view::transform([start = m_contiguous_matrix.data()](auto value) { return start + value; })
+        | ranges::view::take(rows()),
+        std::back_inserter(m_rows_vec)); }
+  // clang-format on
 
 public:
   matrix(size_type rows, size_type cols, value_type val = value_type{}) : m_contiguous_matrix{rows, cols, val} {
@@ -68,11 +75,14 @@ public:
 
   static matrix zero(size_type rows, size_type cols) { return matrix<T>{rows, cols}; }
   static matrix unity(size_type size) { return matrix{std::move(contiguous_matrix<T>::unity(size))}; }
+
   template <std::input_iterator it> static matrix diag(size_type size, it start, it finish) {
-    matrix    ret{size, size, value_type{}};
-    size_type i = 0;
-    for (; (i < size) && (start != finish); i++, start++)
+    matrix ret{size, size, value_type{}};
+
+    for (size_type i = 0; (i < size) && (start != finish); i++, start++) {
       ret[i][i] = *start;
+    }
+
     return ret;
   }
 
@@ -143,8 +153,8 @@ public:
 
   void swap_rows(size_type idx1, size_type idx2) { std::swap(m_rows_vec[idx1], m_rows_vec[idx2]); }
 
-  template <typename Comp = std::less<value_type>>
-  std::pair<size_type, value_type> max_in_col_greater_eq(size_type col, size_type minimum_row, Comp cmp = Comp{}) {
+  template <typename comp = std::less<value_type>>
+  std::pair<size_type, value_type> max_in_col_greater_eq(size_type col, size_type minimum_row, comp cmp = comp{}) {
     size_type max_row_idx = minimum_row;
     auto      rows = this->rows();
     for (size_type row = minimum_row; row < rows; row++)
@@ -160,22 +170,27 @@ public:
   int gauss_jordan_elimination() {
     int     sign = 1;
     matrix &mat = *this;
-    auto    rows = mat.rows();
-    auto    cols = mat.cols();
+
+    auto rows = mat.rows();
+    auto cols = mat.cols();
+
     for (size_type i = 0; i < rows; i++) {
       auto [pivot_row, pivot_elem] = max_in_col_greater_eq(i, i);
+
       if (i != pivot_row) {
         swap_rows(i, pivot_row);
         sign *= -1;
       }
-      for (size_type to_elim_row = 0; to_elim_row < rows; to_elim_row++) //!
-        if (i != to_elim_row) {
-          auto coef = mat[to_elim_row][i] / pivot_elem;
-          for (size_type col = 0; col < cols; col++) {
-            mat[to_elim_row][col] -= coef * mat[i][col];
-          }
+
+      for (size_type to_elim_row = 0; to_elim_row < rows; to_elim_row++) {
+        if (i == to_elim_row) continue;
+        auto coef = mat[to_elim_row][i] / pivot_elem;
+        for (size_type col = 0; col < cols; col++) {
+          mat[to_elim_row][col] -= coef * mat[i][col];
         }
+      }
     }
+
     return sign;
   }
 
@@ -183,13 +198,14 @@ public:
 
   value_type determinant() const requires std::is_floating_point_v<value_type> {
     if (!square()) throw std::runtime_error("Mismatched matrix size for determinant");
-    matrix tmp = *this;
-    auto       sign = tmp.gauss_jordan_elimination();
-    value_type res = 1;
-    auto       rows = tmp.rows();
-    for (size_type i = 0; i < rows; i++)
+    matrix     tmp = *this;
+    value_type res = tmp.gauss_jordan_elimination();
+
+    for (size_type i = 0; i < rows(); i++) {
       res *= tmp[i][i];
-    return res * sign;
+    }
+
+    return res;
   }
 
   matrix &operator*=(value_type rhs) {

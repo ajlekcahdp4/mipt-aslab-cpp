@@ -14,3 +14,5 @@ if (ENABLE_GTEST)
   target_link_libraries(unit_test throttle ${GTEST_BOTH_LIBRARIES})
   gtest_discover_tests(unit_test)
 endif()
+
+target_link_libraries(throttle INTERFACE range-v3::range-v3)
