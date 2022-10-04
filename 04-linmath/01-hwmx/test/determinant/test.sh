@@ -18,7 +18,7 @@ for file in ${current_folder}/${base_folder}/*.dat; do
     fi
 
     # Compare inputs
-    if diff -Z ${file}.ans ${current_folder}/${base_folder}/temp.tmp; then
+    if $3 ${file}.ans ${current_folder}/${base_folder}/temp.tmp; then
         echo "${green}Passed${reset}"
     else
         echo "${red}Failed${reset}"

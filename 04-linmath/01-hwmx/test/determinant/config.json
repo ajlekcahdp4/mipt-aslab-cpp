@@ -34,6 +34,40 @@
         
         "test_fmt_string": "medium{}.dat",
         "ans_fmt_string": "medium{}.dat.ans"
+      },
+      { 
+        "number": 4,
+        "size": {
+          "min": 64,
+          "max": 96
+        },
+        
+        "diag": {
+          "right": 2
+        },
+        
+        "additions": 1024,
+        "shuffles": 128,
+        
+        "test_fmt_string": "huge{}.dat",
+        "ans_fmt_string": "huge{}.dat.ans"
+      },
+      { 
+        "number": 4,
+        "size": {
+          "min": 32,
+          "max": 48
+        },
+        
+        "diag": {
+          "right": 3
+        },
+        
+        "additions": 256,
+        "shuffles": 64,
+        
+        "test_fmt_string": "large{}.dat",
+        "ans_fmt_string": "large{}.dat.ans"
       }
     ],
   "output_path": "./resources/"

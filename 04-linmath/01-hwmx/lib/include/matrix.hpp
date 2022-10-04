@@ -170,7 +170,7 @@ public:
   int convert_to_row_echelon() {
     matrix &mat = *this;
     int     sign = 1;
-    
+
     for (size_type i = 0; i < rows(); i++) {
       auto [pivot_row, pivot_elem] = max_in_col_greater_eq(i, i);
 
@@ -182,15 +182,45 @@ public:
       for (size_type to_elim_row = 0; to_elim_row < rows(); to_elim_row++) {
         if (i == to_elim_row) continue;
         auto coef = mat[to_elim_row][i] / pivot_elem;
-        std::transform(mat[to_elim_row].begin(), mat[to_elim_row].end(), mat[i].begin(),
-                          mat[to_elim_row].begin(), [coef](auto &&left, auto &&right) { return left - coef * right; });
+        std::transform(mat[to_elim_row].begin(), mat[to_elim_row].end(), mat[i].begin(), mat[to_elim_row].begin(),
+                       [coef](auto &&left, auto &&right) { return left - coef * right; });
       }
     }
 
     return sign;
   }
 
-  value_type determinant() const requires std::is_integral_v<value_type>;
+  value_type determinant() const requires std::is_integral_v<value_type> {
+    if (!square()) throw std::runtime_error("Mismatched matrix size for determinant");
+
+    value_type sign = 1;
+    auto       size = rows();
+    matrix     mat{*this};
+
+    for (size_type k = 0; k < size - 1; ++k) {
+      if (mat[k][k] == 0) {
+        size_type m = 0;
+        for (m = k + 1; m < size; ++m) { // Find first non zero element
+          if (mat[m][k] == 0) continue;
+          mat.swap_rows(m, k);
+          sign *= -1;
+          break;
+        }
+
+        if (m == size) return 0;
+      }
+
+      for (size_type i = k + 1; i < size; ++i) {
+        for (size_type j = k + 1; j < size; ++j) {
+          mat[i][j] = mat[k][k] * mat[i][j] - mat[i][k] * mat[k][j];
+          if (k == 0) continue;
+          mat[i][j] /= mat[k - 1][k - 1];
+        }
+      }
+    }
+
+    return sign * mat[size - 1][size - 1];
+  }
 
   value_type determinant() const requires std::is_floating_point_v<value_type> {
     if (!square()) throw std::runtime_error("Mismatched matrix size for determinant");
