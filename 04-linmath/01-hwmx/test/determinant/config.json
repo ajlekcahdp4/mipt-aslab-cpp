@@ -39,7 +39,7 @@
         "number": 4,
         "size": {
           "min": 64,
-          "max": 96
+          "max": 150
         },
         
         "diag": {
