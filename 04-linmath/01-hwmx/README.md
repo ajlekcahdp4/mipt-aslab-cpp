@@ -29,12 +29,15 @@ cd ../test/determinant
 # Help message
 bin/determinant --help
 # Available options:
-#  -h [ --help ]         Print this help message
-#  -m [ --measure ]      Print perfomance metrics
-#  --hide                Hide output
-#  --broad arg (=octree) Algorithm for broad phase (bruteforce, octree, uniform-grid)
+#   -h [ --help ]               Print this help message
+#   -m [ --measure ]            Print perfomance metrics
+#   -t [ --type ] arg (=double) Type for matrix element (int, long, float, 
+#                               double)
 
 # Run sample test
-bin/determinant --measure --type double < resources/huge1.dat
-# octree took 217.537ms to run
+bin/determinant --type long < resources/medium3.dat
+# 69984
+bin/determinant --type double < resources/medium3.dat
+# 69984.000000
+
 ```

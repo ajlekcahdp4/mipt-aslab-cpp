@@ -28,7 +28,7 @@ namespace throttle {
 namespace containers {
 
 template <typename T>
-requires std::is_nothrow_move_assignable_v<T> && std::is_nothrow_destructible_v<T>
+requires std::is_nothrow_move_constructible_v<T> && std::is_nothrow_destructible_v<T>
 class vector {
 private:
   T *m_buffer_ptr = nullptr;
