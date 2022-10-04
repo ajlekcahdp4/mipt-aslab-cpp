@@ -24,6 +24,7 @@
 #include <limits>
 #include <stdexcept>
 #include <utility>
+#include <optional>
 
 #include <range/v3/action.hpp>
 #include <range/v3/algorithm.hpp>
@@ -49,10 +50,10 @@ template <typename T> class matrix {
     // Just messing around with range-v3. Nothing to see here.
     // clang-format off
     ranges::copy(
-        ranges::view::ints(0, ranges::unreachable) 
-        | ranges::view::stride(cols()) 
-        | ranges::view::transform([start = m_contiguous_matrix.data()](auto value) { return start + value; })
-        | ranges::view::take(rows()),
+        ranges::views::ints(0, ranges::unreachable) 
+        | ranges::views::stride(cols()) 
+        | ranges::views::transform([start = m_contiguous_matrix.data()](auto value) { return start + value; })
+        | ranges::views::take(rows()),
         std::back_inserter(m_rows_vec)); }
   // clang-format on
 
@@ -153,21 +154,32 @@ public:
 
   void swap_rows(size_type idx1, size_type idx2) { std::swap(m_rows_vec[idx1], m_rows_vec[idx2]); }
 
+public:
   template <typename comp = std::less<value_type>>
   std::pair<size_type, value_type> max_in_col_greater_eq(size_type col, size_type minimum_row, comp cmp = comp{}) {
     size_type max_row_idx = minimum_row;
     auto      rows = this->rows();
-    for (size_type row = minimum_row; row < rows; row++)
+    for (size_type row = minimum_row; row < rows; row++) {
       max_row_idx = (cmp(std::abs((*this)[max_row_idx][col]), std::abs((*this)[row][col])) ? row : max_row_idx);
+    }
     return std::pair<size_type, value_type>{max_row_idx, (*this)[max_row_idx][col]};
   }
 
-  template <typename Comp = std::less<value_type>>
-  std::pair<size_type, value_type> max_in_col(size_type col, Comp cmp = Comp{}) {
+  template <typename comp = std::less<value_type>>
+  std::pair<size_type, value_type> max_in_col(size_type col, comp cmp = comp{}) {
     return max_in_col_greater_eq(col, 0, cmp);
   }
 
-  int convert_to_row_echelon() {
+  std::optional<std::pair<size_type, value_type>> first_non_zero_in_col(size_type col, size_type start_row = 0) const {
+    for (size_type m = start_row; m < rows(); ++m) {
+      if ((*this)[m][col] == 0) continue;
+      return std::make_pair(m, (*this)[m][col]);
+    }
+    return std::nullopt;
+  }
+
+public:
+  int convert_to_row_echelon() requires std::is_floating_point_v<value_type> {
     matrix &mat = *this;
     int     sign = 1;
 
@@ -198,16 +210,13 @@ public:
     matrix     mat{*this};
 
     for (size_type k = 0; k < size - 1; ++k) {
-      if (mat[k][k] == 0) {
-        size_type m = 0;
-        for (m = k + 1; m < size; ++m) { // Find first non zero element
-          if (mat[m][k] == 0) continue;
-          mat.swap_rows(m, k);
-          sign *= -1;
-          break;
-        }
+      auto result = mat.first_non_zero_in_col(k, k);
+      if (!result) return 0;
+      auto [pivot_row, pivot_elem] = result.value();
 
-        if (m == size) return 0;
+      if (k != pivot_row) {
+        mat.swap_rows(k, pivot_row);
+        sign *= -1;
       }
 
       for (size_type i = k + 1; i < size; ++i) {

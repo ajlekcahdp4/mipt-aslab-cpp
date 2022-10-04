@@ -14,7 +14,6 @@
 #include <vector>
 
 using matrix = typename throttle::linmath::matrix<float>;
-template class throttle::linmath::matrix<float>;
 
 TEST(test_matrix, test_ctor_1) {
   matrix A = matrix::zero(3, 4);

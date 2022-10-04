@@ -5,7 +5,6 @@
 #include <vector>
 
 using matrix = throttle::linmath::contiguous_matrix<float>;
-template class throttle::linmath::contiguous_matrix<float>;
 
 TEST(test_contiguous_matrix, test_zero) {
   matrix a = matrix::zero(9, 8);
