@@ -43,10 +43,10 @@
         },
         
         "diag": {
-          "right": 2
+          "right": 3
         },
         
-        "additions": 1024,
+        "additions": 512,
         "shuffles": 128,
         
         "test_fmt_string": "huge{}.dat",
