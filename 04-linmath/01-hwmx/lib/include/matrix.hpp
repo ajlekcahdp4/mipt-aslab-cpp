@@ -50,10 +50,10 @@ template <typename T> class matrix {
     // Just messing around with range-v3. Nothing to see here.
     // clang-format off
     ranges::copy(
-        ranges::view::ints(0, ranges::unreachable) 
-        | ranges::view::stride(cols()) 
-        | ranges::view::transform([start = m_contiguous_matrix.data()](auto value) { return start + value; })
-        | ranges::view::take(rows()),
+        ranges::views::ints(0, ranges::unreachable) 
+        | ranges::views::stride(cols()) 
+        | ranges::views::transform([start = m_contiguous_matrix.data()](auto value) { return start + value; })
+        | ranges::views::take(rows()),
         std::back_inserter(m_rows_vec)); }
   // clang-format on
 
@@ -218,18 +218,6 @@ public:
         mat.swap_rows(k, pivot_row);
         sign *= -1;
       }
-
-      // if (mat[k][k] == 0) {
-      //   size_type m = 0;
-      //   for (m = k + 1; m < size; ++m) { // Find first non zero element
-      //     if (mat[m][k] == 0) continue;
-      //     mat.swap_rows(m, k);
-      //     sign *= -1;
-      //     break;
-      //   }
-
-      //   if (m == size) return 0;
-      // }
 
       for (size_type i = k + 1; i < size; ++i) {
         for (size_type j = k + 1; j < size; ++j) {
