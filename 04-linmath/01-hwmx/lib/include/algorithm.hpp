@@ -16,9 +16,9 @@
 namespace throttle {
 namespace algorithm {
 
-template <std::input_iterator iter>
-auto multiply_accumulate(iter start1, iter finish1, iter start2,
-                         typename std::remove_cv_t<typename std::iterator_traits<iter>::value_type> init) {
+template <std::input_iterator iter1, std::input_iterator iter2>
+auto multiply_accumulate(iter1 start1, iter1 finish1, iter2 start2,
+                         typename std::remove_cv_t<typename std::iterator_traits<iter1>::value_type> init) {
   for (; start1 != finish1; ++start1, ++start2) {
     init += (*start1) * (*start2);
   }
