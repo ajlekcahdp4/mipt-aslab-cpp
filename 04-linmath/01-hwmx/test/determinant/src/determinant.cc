@@ -25,6 +25,7 @@ bool main_loop_determinant(unsigned n, bool measure = false) {
   for (unsigned i = 0; i < n * n; ++i) {
     long temp;
     if (!(std::cin >> temp)) {
+      std::cout << "Can't read " << i << "-th element";
       return false;
     }
     m[i / n][i % n] = temp;
@@ -70,7 +71,8 @@ int main(int argc, char *argv[]) {
 #endif
 
   unsigned n;
-  if (!(std::cin >> n)) {
+  if (!(std::cin >> n) || (n == 0)) {
+    std::cout << "Invalid matrix size\n";
     return 1;
   }
 
