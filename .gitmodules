@@ -1,6 +1,6 @@
 [submodule "02-geometry/01-hw3d/3rd-party/variant"]
-	path = 02-geometry/01-hw3d/3rd-party/variant
+	path = 3rd-party/variant
 	url = https://github.com/mpark/variant.git
 [submodule "04-linmath/01-hwmx/3rd-party/range-v3"]
-	path = 04-linmath/01-hwmx/3rd-party/range-v3
+	path = 3rd-party/range-v3
 	url = https://github.com/ericniebler/range-v3.git
