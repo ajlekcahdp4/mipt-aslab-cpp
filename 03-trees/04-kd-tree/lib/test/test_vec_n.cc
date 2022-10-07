@@ -23,7 +23,6 @@ template struct throttle::vec_n<float, 4>;
 
 TEST(test_vec_n, test_1) {
   using vec4 = throttle::vec_n<float, 4>;
-  using point4 = throttle::point_n<float, 4>;
 
   vec4 a{1, 2, 3, 4}, b{1, 1, 1, 1};
   EXPECT_EQ(a.dot(b), 10);
@@ -45,7 +44,6 @@ TEST(test_vec_n, test_1) {
 
 TEST(test_vec_n, test_2) {
   using vec4 = throttle::vec_n<float, 4>;
-  using point4 = throttle::point_n<float, 4>;
 
   vec4 a{1, 2, 3, 4}, b{1, 1, 1, 1};
   vec4 c = a + b;

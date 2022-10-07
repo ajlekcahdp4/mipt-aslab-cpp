@@ -14,18 +14,24 @@
 #include <cstddef>
 #include <utility>
 
+#include <range/v3/action.hpp>
 #include <range/v3/algorithm.hpp>
+#include <range/v3/iterator.hpp>
 #include <range/v3/numeric.hpp>
 #include <range/v3/view.hpp>
+
+#
 
 namespace throttle {
 
 template <typename T, std::size_t N> struct point_n {
   std::array<T, N> arr;
 
+  using value_type = T;
+
   static constexpr std::size_t dimension = N;
-  static point_n origin() { return point_n{}; }
-  
+  static point_n               origin() { return point_n{}; }
+
   T       &operator[](std::size_t index) { return arr[index]; }
   const T &operator[](std::size_t index) const { return arr[index]; }
 
@@ -55,6 +61,19 @@ template <typename T, std::size_t N> point_n<T, N> operator+(const vec_n<T, N> &
   vec_n<T, N> result{};
   ranges::transform(lhs.arr, rhs.arr, result.arr.begin(), std::plus<T>{});
   return result;
+}
+
+template <typename T, std::size_t N> T distance_sq(const point_n<T, N> &lhs, const point_n<T, N> &rhs) {
+  return (lhs - rhs).length_sq();
+}
+
+template <typename T, std::size_t N> T distance(const point_n<T, N> &lhs, const point_n<T, N> &rhs) {
+  return (lhs - rhs).length();
+}
+
+template <typename T, std::size_t N, typename t_stream> t_stream &operator>>(t_stream &istream, point_n<T, N> &rhs) {
+  std::copy_n(std::istream_iterator<T>{istream}, N, rhs.arr.begin());
+  return istream;
 }
 
 } // namespace throttle

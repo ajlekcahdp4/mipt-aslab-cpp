@@ -1,8 +1,9 @@
 #include <chrono>
 #include <iostream>
 
-#include "vec_n.hpp"
+#include "kd_tree.hpp"
 #include "point_n.hpp"
+#include "vec_n.hpp"
 
 #ifdef BOOST_FOUND__
 #include <boost/program_options.hpp>
@@ -12,16 +13,47 @@ namespace po = boost::program_options;
 
 #include <cstdlib>
 
-using point4 = throttle::point_n<float, 4>;
-using vec4 = throttle::vec_n<float, 4>;
+template <typename T, std::size_t N> struct indexed_point_n : public throttle::point_n<T, N> {
+  unsigned index;
+};
+
+using point4 = indexed_point_n<float, 4>;
 
 int main(int argc, char *argv[]) {
-  point4 a{1, 2};
-  point4 b{3, 4};
-  
-  auto c = b - a;
-  for (const auto &v: c.arr) {
-    std::cout << v << " ";
+  std::vector<point4> points;
+
+  unsigned n;
+  if (!(std::cin >> n)) {
+    std::cout << "Can't read number of points\n";
+    return 1;
+  }
+
+  for (unsigned i = 0; i < n; ++i) {
+    point4 point;
+    if (!(std::cin >> point)) {
+      std::cout << "Can't read point\n";
+      return 1;
+    }
+
+    point.index = i;
+    points.push_back(point);
+  }
+
+  unsigned m;
+  if (!(std::cin >> m)) {
+    std::cout << "Can't read number of requests\n";
+    return 1;
+  }
+
+  for (unsigned i = 0; i < m; ++i) {
+    point4 point;
+    if (!(std::cin >> point)) {
+      std::cout << "Can't read point\n";
+      return 1;
+    }
+
+    auto closest_point = throttle::compute_closest(points, point).second;
+    std::cout << closest_point.index;
   }
 
   std::cout << "\n";

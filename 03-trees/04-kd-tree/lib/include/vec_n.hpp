@@ -26,6 +26,8 @@ namespace throttle {
 template <typename T, std::size_t N> struct vec_n {
   std::array<T, N> arr;
 
+  using value_type = T;
+
   static constexpr std::size_t dimension = N;
   static vec_n zero() { return vec_n{}; }
 
@@ -104,6 +106,12 @@ template <typename T, std::size_t N> vec_n<T, N> operator*(auto lhs, const vec_n
 template <typename T, std::size_t N> vec_n<T, N> operator/(const vec_n<T, N> &lhs, auto rhs) {
   auto res = lhs; res /= rhs; return res; 
 }
+
+template <typename T, std::size_t N> auto compute_closest(auto &&point_range, const point_n<T, N> &point) {
+    auto closest =
+        ranges::min_element(point_range, std::less{}, [point](auto &&elem) { return distance_sq(point, elem); });
+    return std::make_pair(distance_sq(*closest, point), *closest);
+  }
 
 // clang-format on
 } // namespace throttle
