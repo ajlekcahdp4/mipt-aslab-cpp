@@ -73,7 +73,6 @@ private:
 public:
   const_contiguous_iterator(pointer ptr) : m_ptr{ptr} {}
 
-  // clang-format off
   reference operator*() const { return *m_ptr; }
   pointer operator->() { return m_ptr; }
 
@@ -84,7 +83,6 @@ public:
   const_contiguous_iterator operator+=(difference_type n) { m_ptr += n; return *this; }
   const_contiguous_iterator operator-=(difference_type n) { m_ptr -= n; return *this; }
 
-  // clang-format on
   const_contiguous_iterator operator+(difference_type n) const { return const_contiguous_iterator{m_ptr + n}; }
   const_contiguous_iterator operator-(difference_type n) const { return const_contiguous_iterator{m_ptr - n}; }
 

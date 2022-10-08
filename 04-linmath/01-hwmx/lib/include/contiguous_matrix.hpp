@@ -203,7 +203,6 @@ public:
   const_iterator cend() const { return m_buffer.cend(); }
 };
 
-// clang-format off
 template <typename T> contiguous_matrix<T> operator*(const contiguous_matrix<T> &lhs, T rhs) { auto res = lhs; res *= rhs; return res; }
 template <typename T> contiguous_matrix<T> operator*(T lhs, const contiguous_matrix<T> &rhs) { auto res = rhs; res *= lhs; return res; }
 
@@ -217,8 +216,6 @@ template <typename T> bool operator==(const contiguous_matrix<T> &lhs, const con
 template <typename T> bool operator!=(const contiguous_matrix<T> &lhs, const contiguous_matrix<T> &rhs) { return !(lhs.equal(rhs)); }
 
 template <typename T> contiguous_matrix<T> transpose(const contiguous_matrix<T> &mat) { auto res = mat; res.transpose(); return res; }
-
-// clang-format on
 
 } // namespace linmath
 } // namespace throttle
