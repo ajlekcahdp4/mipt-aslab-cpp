@@ -27,9 +27,7 @@
 namespace throttle {
 namespace linmath {
 
-template <typename T>
-requires std::is_arithmetic_v<T>
-class contiguous_matrix {
+template <typename T> class contiguous_matrix {
 public:
   using value_type = T;
   using reference = T &;
