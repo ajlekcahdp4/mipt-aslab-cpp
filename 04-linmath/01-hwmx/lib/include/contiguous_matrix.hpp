@@ -15,6 +15,7 @@
 #include "vector.hpp"
 
 #include <algorithm>
+#include <functional>
 #include <initializer_list>
 #include <iterator>
 #include <memory>
@@ -113,19 +114,13 @@ public:
 
   contiguous_matrix &operator+=(const contiguous_matrix &other) {
     if ((m_cols != other.m_cols) || (m_rows != other.m_rows)) throw std::runtime_error("Mismatched matrix sizes");
-    for (auto mybegin = m_buffer.begin(), otherbegin = other.m_buffer.begin(), otherend = other.m_buffer.end();
-         otherbegin != otherend; ++otherbegin, ++mybegin) {
-      *mybegin += *otherbegin;
-    }
+    std::ranges::transform(m_buffer, other.m_buffer, m_buffer.begin(), std::plus{});
     return *this;
   }
 
   contiguous_matrix &operator-=(const contiguous_matrix &other) {
     if ((m_cols != other.m_cols) || (m_rows != other.m_rows)) throw std::runtime_error("Mismatched matrix sizes");
-    for (auto mybegin = m_buffer.begin(), otherbegin = other.m_buffer.begin(), otherend = other.m_buffer.end();
-         otherbegin != otherend; ++otherbegin, ++mybegin) {
-      *mybegin -= *otherbegin;
-    }
+    std::ranges::transform(m_buffer, other.m_buffer, m_buffer.begin(), std::minus{});
     return *this;
   }
 
