@@ -236,11 +236,13 @@ public:
     return (*this)[index];
   }
 
-  iterator begin() const noexcept { return iterator{m_buffer_ptr}; }
-  iterator end() const noexcept { return iterator{m_past_end_ptr}; }
+  iterator begin() { return iterator{m_buffer_ptr}; }
+  iterator end() { return iterator{m_past_end_ptr}; }
+  const_iterator begin() const { return cbegin(); }
+  const_iterator end() const { return cend(); }
 
-  const_iterator cbegin() const noexcept { return const_iterator{m_buffer_ptr}; }
-  const_iterator cend() const noexcept { return const_iterator{m_past_end_ptr}; }
+  const_iterator cbegin() const { return const_iterator{m_buffer_ptr}; }
+  const_iterator cend() const { return const_iterator{m_past_end_ptr}; }
 };
 
 } // namespace containers
