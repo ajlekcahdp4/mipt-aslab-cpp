@@ -63,6 +63,26 @@ TEST(test_matrix, test_transponse) {
   EXPECT_TRUE(c != a);
 }
 
+TEST(test_matrix, test_sum_1) {
+  matrix A{3, 3, {-1, 2, 3, -3, 1, 4, 5, 3, 2}};
+  matrix B{3, 3, {1, -2, -3, 3, -1, -4, -5, -3, -2}};
+  matrix C = A + B;
+  EXPECT_EQ(C, matrix::zero(3, 3));
+}
+
+TEST(test_matrix, test_sum_2) {
+  matrix A{3, 3, {-1, 2, 3, -3, 1, 4, 5, 3, 2}};
+  matrix B{3, 2, {1, -2, -3, 3, -1, -4}};
+  EXPECT_THROW(A + B, std::runtime_error);
+}
+
+TEST(test_matrix, test_dif_1) {
+  matrix A{3, 3, {-1, 2, 3, -3, 1, 4, 5, 3, 2}};
+  matrix B{3, 3, {-1, 2, 3, -3, 1, 4, 5, 3, 2}};
+  matrix C = A - B;
+  EXPECT_EQ(C, matrix::zero(3, 3));
+}
+
 TEST(test_matrix, test_multiplication_1) {
   matrix A(2, 2, {2, -3, 4, -6});
   matrix B(2, 2, {9, -6, 6, -4});
@@ -87,6 +107,14 @@ TEST(test_matrix, test_multiplication_3) {
   auto C = A * B;
   EXPECT_TRUE(C == matrix(3, 1, {-18, -20, -16}));
   EXPECT_TRUE(A != C);
+}
+
+TEST(test_matrix, test_multiplication_4) {
+  matrix A{2, 3, {1, 2, 3, 4, 5, 6}};
+  matrix B{3, 2, {7, 8, 9, 10, 11, 12}};
+
+  auto C = A * B;
+  EXPECT_EQ(C, matrix(2, 2, {58, 64, 139, 154}));
 }
 
 TEST(test_matrix, test_max_in_row) {
