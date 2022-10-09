@@ -81,6 +81,24 @@ TEST(test_vector, test_reserve_3) {
   EXPECT_EQ(a.size(), 5);
 }
 
+TEST(test_vector, test_resize_1) {
+  std::vector<int> range{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+  vector           a{range.begin(), range.end()};
+  range.resize(5);
+  vector b{range.begin(), range.end()};
+  a.resize(5);
+  EXPECT_TRUE(std::equal(a.begin(), a.end(), b.begin()));
+}
+
+TEST(test_vector, test_resize_2) {
+  std::vector<int> range{1, 2, 3, 4, 5};
+  vector           a{range.begin(), range.end()};
+  range.resize(8);
+  vector b{range.begin(), range.end()};
+  a.resize(8);
+  EXPECT_TRUE(std::equal(a.begin(), a.end(), b.begin()));
+}
+
 TEST(test_vector, test_iterator_1) {
   vector a;
   for (auto i = 0; i < 4096; i++)
