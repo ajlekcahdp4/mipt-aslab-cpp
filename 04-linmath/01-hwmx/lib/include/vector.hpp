@@ -67,17 +67,27 @@ public:
         m_past_capacity_ptr{m_buffer_ptr + default_capacity}, m_past_end_ptr{m_buffer_ptr} {}
 
   vector(size_type count, const value_type &value = value_type{}) requires std::copyable<value_type> {
-    reserve(count);
+    vector temp{};
+    temp.reserve(count);
+
     for (size_type i = 0; i < count; ++i) {
-      push_back(value);
+      temp.push_back(value);
     }
+
+    *this = std::move(temp);
   }
 
-  template <std::input_iterator it> vector(it start, it finish) { std::copy(start, finish, std::back_inserter(*this)); }
+  template <std::input_iterator it> vector(it start, it finish) {
+    vector temp{};
+    std::copy(start, finish, std::back_inserter(temp));
+    *this = temp;
+  }
 
   template <std::random_access_iterator it> vector(it start, it finish) {
-    reserve(std::distance(start, finish));
-    std::copy(start, finish, std::back_inserter(*this));
+    vector temp{};
+    temp.reserve(std::distance(start, finish));
+    std::copy(start, finish, std::back_inserter(temp));
+    *this = std::move(temp);
   }
 
   ~vector() {
@@ -150,13 +160,24 @@ public:
     if (count == sz) return;
 
     if (count < sz) {
-      do_for_n(sz - count, [&]() { pop_back(); });
+      for (size_type i = 0; i < sz - count; ++i) {
+        pop_back();
+      }
       return;
     }
 
     else {
       reserve(count);
-      do_for_n(count - sz, [&]() { pop_back(val); });
+      size_type i;
+      try {
+        for (i = 0; i < count - sz; ++i) {
+          push_back(val);
+        }
+      } catch (...) {
+        for (size_type j = 0; j < i; ++j) {
+          pop_back(); 
+        }
+      }
     }
   }
 

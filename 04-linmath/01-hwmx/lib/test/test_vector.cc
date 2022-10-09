@@ -10,10 +10,11 @@
 
 #include <gtest/gtest.h>
 #include <memory>
-#include <vector.hpp>
 #include <vector>
+#include "vector.hpp"
 
 using vector = typename throttle::containers::vector<int>;
+template class throttle::containers::vector<int>;
 
 TEST(test_vector, test_ctor) {
   vector a;
