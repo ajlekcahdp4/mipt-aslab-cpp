@@ -10,7 +10,6 @@
 
 #pragma once
 
-#include "algorithm.hpp"
 #include "contiguous_matrix.hpp"
 #include "equal.hpp"
 #include "utility.hpp"
@@ -22,9 +21,9 @@
 #include <iostream>
 #include <iterator>
 #include <limits>
+#include <optional>
 #include <stdexcept>
 #include <utility>
-#include <optional>
 
 #include <range/v3/action.hpp>
 #include <range/v3/algorithm.hpp>
@@ -98,11 +97,18 @@ private:
     using iterator = utility::contiguous_iterator<value_type>;
     using const_iterator = utility::const_contiguous_iterator<value_type>;
 
-    reference      operator[](size_type index) { return m_row[index]; }
-    iterator       begin() const { return iterator{m_row}; }
-    iterator       end() const { return iterator{m_past_row}; }
+    reference       operator[](size_type index) { return m_row[index]; }
+    const_reference operator[](size_type index) const { return m_row[index]; }
+
+    iterator begin() { return iterator{m_row}; }
+    iterator end() { return iterator{m_past_row}; }
+
+    const_iterator begin() const { return const_iterator{m_row}; }
+    const_iterator end() const { return const_iterator{m_past_row}; }
     const_iterator cbegin() const { return const_iterator{m_row}; }
     const_iterator cend() const { return const_iterator{m_past_row}; }
+
+    size_type size() const { return m_past_row - m_row; }
   };
 
   class const_proxy_row {
@@ -115,11 +121,13 @@ private:
     using iterator = utility::const_contiguous_iterator<value_type>;
     using const_iterator = iterator;
 
-    const_reference operator[](size_type index) { return m_row[index]; }
+    const_reference operator[](size_type index) const { return m_row[index]; }
     iterator        begin() const { return iterator{m_row}; }
     iterator        end() const { return iterator{m_past_row}; }
     const_iterator  cbegin() const { return const_iterator{m_row}; }
     const_iterator  cend() const { return const_iterator{m_past_row}; }
+
+    size_type size() const { return m_past_row - m_row; }
   };
 
 public:
@@ -133,8 +141,10 @@ public:
   bool equal(const matrix &other, const value_type &precision = default_precision<value_type>::m_prec) const {
     if ((rows() != other.rows()) || (cols() != other.cols())) return false;
     for (size_type i = 0; i < m_rows_vec.size(); i++) {
-      if (!std::equal((*this)[i].begin(), (*this)[i].end(), other[i].begin(),
-                      [&precision](auto first, auto second) { return is_roughly_equal(first, second, precision); }))
+      const auto first_row = (*this)[i];
+      const auto second_row = other[i];
+      if (!ranges::equal(first_row, second_row,
+                         [&precision](auto first, auto second) { return is_roughly_equal(first, second, precision); }))
         return false;
     }
     return true;
@@ -155,20 +165,18 @@ public:
   void swap_rows(size_type idx1, size_type idx2) { std::swap(m_rows_vec[idx1], m_rows_vec[idx2]); }
 
 public:
-  template <typename comp = std::less<value_type>>
-  std::pair<size_type, value_type> max_in_col_greater_eq(size_type col, size_type minimum_row, comp cmp = comp{}) {
+  std::pair<size_type, value_type> max_in_col_greater_eq(size_type col, size_type minimum_row) {
     size_type max_row_idx = minimum_row;
     auto      rows = this->rows();
+    auto      cmp = std::less<value_type>{};
+
     for (size_type row = minimum_row; row < rows; row++) {
       max_row_idx = (cmp(std::abs((*this)[max_row_idx][col]), std::abs((*this)[row][col])) ? row : max_row_idx);
     }
-    return std::pair<size_type, value_type>{max_row_idx, (*this)[max_row_idx][col]};
+    return std::make_pair(max_row_idx, (*this)[max_row_idx][col]);
   }
 
-  template <typename comp = std::less<value_type>>
-  std::pair<size_type, value_type> max_in_col(size_type col, comp cmp = comp{}) {
-    return max_in_col_greater_eq(col, 0, cmp);
-  }
+  std::pair<size_type, value_type> max_in_col(size_type col) { return max_in_col_greater_eq(col, 0); }
 
   std::optional<std::pair<size_type, value_type>> first_non_zero_in_col(size_type col, size_type start_row = 0) const {
     for (size_type m = start_row; m < rows(); ++m) {
@@ -179,13 +187,15 @@ public:
   }
 
 public:
-  int convert_to_row_echelon() requires std::is_floating_point_v<value_type> {
+  std::optional<int> convert_to_row_echelon() requires std::is_floating_point_v<value_type> {
     matrix &mat = *this;
     int     sign = 1;
 
     for (size_type i = 0; i < rows(); i++) {
       auto [pivot_row, pivot_elem] = max_in_col_greater_eq(i, i);
 
+      if (pivot_elem == value_type{}) return std::nullopt;
+      
       if (i != pivot_row) {
         swap_rows(i, pivot_row);
         sign *= -1;
@@ -193,16 +203,20 @@ public:
 
       for (size_type to_elim_row = 0; to_elim_row < rows(); to_elim_row++) {
         if (i == to_elim_row) continue;
-        auto coef = mat[to_elim_row][i] / pivot_elem;
-        std::transform(mat[to_elim_row].begin(), mat[to_elim_row].end(), mat[i].begin(), mat[to_elim_row].begin(),
-                       [coef](auto &&left, auto &&right) { return left - coef * right; });
+
+        auto first_row = mat[to_elim_row];
+        auto second_row = mat[i];
+
+        ranges::transform(
+            first_row, second_row, first_row.begin(),
+            [coef = mat[to_elim_row][i] / pivot_elem](value_type left, value_type right) { return left - coef * right; });
       }
     }
 
     return sign;
   }
 
-  value_type determinant() const requires std::is_integral_v<value_type> {
+  value_type determinant() const {
     if (!square()) throw std::runtime_error("Mismatched matrix size for determinant");
 
     value_type sign = 1;
@@ -235,13 +249,15 @@ public:
     if (!square()) throw std::runtime_error("Mismatched matrix size for determinant");
 
     matrix     tmp{*this};
-    value_type res = tmp.convert_to_row_echelon();
+    auto res = tmp.convert_to_row_echelon();
+    if (!res) return value_type{};
 
+    value_type val = res.value();
     for (size_type i = 0; i < rows(); i++) {
-      res *= tmp[i][i];
+      val *= tmp[i][i];
     }
 
-    return res;
+    return val;
   }
 
   matrix &operator*=(value_type rhs) {
@@ -259,8 +275,7 @@ public:
     for (size_type i = 0; i < rows(); ++i) {
       auto row_first = (*this)[i];
       auto row_second = other[i];
-      std::transform(row_first.begin(), row_first.end(), row_second.cbegin(), row_first.begin(),
-                     std::plus<value_type>{});
+      ranges::transform(row_first, row_second, row_first.begin(), std::plus<value_type>{});
     }
     return *this;
   }
@@ -270,8 +285,7 @@ public:
     for (size_type i = 0; i < rows(); ++i) {
       auto row_first = (*this)[i];
       auto row_second = other[i];
-      std::transform(row_first.begin(), row_first.end(), row_second.cbegin(), row_first.begin(),
-                     std::minus<value_type>{});
+      ranges::transform(row_first, row_second, row_first.begin(), std::minus<value_type>{});
     }
     return *this;
   }
@@ -284,7 +298,9 @@ public:
 
     for (size_type i = 0; i < rows(); i++) {
       for (size_type j = 0; j < t_rhs.rows(); j++) {
-        res[i][j] = algorithm::multiply_accumulate((*this)[i].cbegin(), (*this)[i].cend(), t_rhs[j].cbegin(), 0);
+        const auto range_first = (*this)[i], range_second = t_rhs[j];
+        res[i][j] = ranges::accumulate(
+            ranges::views::zip_with(std::multiplies<value_type>{}, range_first, range_second), value_type{});
       }
     }
 

@@ -10,7 +10,6 @@
 
 #pragma once
 
-#include "algorithm.hpp"
 #include "utility.hpp"
 #include "vector.hpp"
 
@@ -21,9 +20,7 @@
 #include <memory>
 #include <stdexcept>
 
-#include <range/v3/action.hpp>
-#include <range/v3/algorithm.hpp>
-#include <range/v3/view.hpp>
+#include <range/v3/all.hpp>
 
 namespace throttle {
 namespace linmath {
@@ -60,7 +57,7 @@ public:
 
   static contiguous_matrix unity(size_type size) {
     contiguous_matrix ret{size, size};
-    auto start = ret.begin();
+    auto              start = ret.begin();
 
     for (size_type i = 0; i < size; ++i, start += size + 1) {
       *start = 1;
@@ -80,11 +77,18 @@ private:
     using iterator = utility::contiguous_iterator<value_type>;
     using const_iterator = utility::const_contiguous_iterator<value_type>;
 
-    reference      operator[](size_type index) { return m_row[index]; }
-    iterator       begin() const { return iterator{m_row}; }
-    iterator       end() const { return iterator{m_past_row}; }
+    reference       operator[](size_type index) { return m_row[index]; }
+    const_reference operator[](size_type index) const { return m_row[index]; }
+
+    iterator begin() { return iterator{m_row}; }
+    iterator end() { return iterator{m_past_row}; }
+
+    const_iterator begin() const { return const_iterator{m_row}; }
+    const_iterator end() const { return const_iterator{m_past_row}; }
     const_iterator cbegin() const { return const_iterator{m_row}; }
     const_iterator cend() const { return const_iterator{m_past_row}; }
+
+    size_type size() const { return m_past_row - m_row; }
   };
 
   class const_proxy_row {
@@ -97,12 +101,17 @@ private:
     using iterator = utility::const_contiguous_iterator<value_type>;
     using const_iterator = iterator;
 
-    const_reference operator[](size_type index) { return m_row[index]; }
+    const_reference operator[](size_type index) const { return m_row[index]; }
     iterator        begin() const { return iterator{m_row}; }
     iterator        end() const { return iterator{m_past_row}; }
     const_iterator  cbegin() const { return const_iterator{m_row}; }
     const_iterator  cend() const { return const_iterator{m_past_row}; }
+
+    size_type size() const { return m_past_row - m_row; }
   };
+
+  static_assert(ranges::random_access_range<proxy_row>, "Proxy row is not a random access range");
+  static_assert(ranges::random_access_range<const_proxy_row>, "Const proxy row is not a random access range");
 
 public:
   proxy_row       operator[](size_type index) { return proxy_row{&m_buffer[index * m_cols], m_cols}; }
@@ -114,28 +123,24 @@ public:
 
   contiguous_matrix &operator+=(const contiguous_matrix &other) {
     if ((m_cols != other.m_cols) || (m_rows != other.m_rows)) throw std::runtime_error("Mismatched matrix sizes");
-    std::ranges::transform(m_buffer, other.m_buffer, m_buffer.begin(), std::plus{});
+    ranges::transform(m_buffer, other.m_buffer, m_buffer.begin(), std::plus<value_type>{});
     return *this;
   }
 
   contiguous_matrix &operator-=(const contiguous_matrix &other) {
     if ((m_cols != other.m_cols) || (m_rows != other.m_rows)) throw std::runtime_error("Mismatched matrix sizes");
-    std::ranges::transform(m_buffer, other.m_buffer, m_buffer.begin(), std::minus{});
+    ranges::transform(m_buffer, other.m_buffer, m_buffer.begin(), std::minus<value_type>{});
     return *this;
   }
 
   contiguous_matrix &operator*=(value_type rhs) {
-    for (auto &elem : m_buffer) {
-      elem *= rhs;
-    }
+    ranges::actions::transform(m_buffer, [rhs](auto &&val) { return val * rhs; });
     return *this;
   }
 
   contiguous_matrix &operator/=(value_type rhs) {
     if (rhs == 0) throw std::invalid_argument("Division by zero");
-    for (auto &elem : m_buffer) {
-      elem /= rhs;
-    }
+    ranges::actions::transform(m_buffer, [rhs](auto &&val) { return val / rhs; });
     return *this;
   }
 
@@ -143,9 +148,6 @@ public:
     return (m_rows == other.m_rows) && (m_cols == other.m_cols) &&
            (std::equal(m_buffer.begin(), m_buffer.end(), other.m_buffer.begin()));
   }
-
-private:
-  void transpose_impl() {}
 
 public:
   contiguous_matrix &transpose() {
@@ -178,7 +180,9 @@ public:
 
     for (size_type i = 0; i < m_rows; i++) {
       for (size_type j = 0; j < t_rhs.m_rows; j++) {
-        res[i][j] = algorithm::multiply_accumulate((*this)[i].cbegin(), (*this)[i].cend(), t_rhs[j].cbegin(), 0);
+        const auto range_first = (*this)[i], range_second = t_rhs[j];
+        res[i][j] = ranges::accumulate(
+            ranges::views::zip_with(std::multiplies<value_type>{}, range_first, range_second), value_type{});
       }
     }
 
@@ -192,12 +196,17 @@ public:
   using iterator = typename containers::vector<value_type>::iterator;
   using const_iterator = typename containers::vector<value_type>::const_iterator;
 
-  iterator begin() const { return m_buffer.begin(); }
-  iterator end() const { return m_buffer.end(); }
+  iterator       begin() { return m_buffer.begin(); }
+  iterator       end() { return m_buffer.end(); }
+  const_iterator begin() const { return m_buffer.cbegin(); }
+  const_iterator end() const { return m_buffer.cend(); }
   const_iterator cbegin() const { return m_buffer.cbegin(); }
   const_iterator cend() const { return m_buffer.cend(); }
 };
 
+static_assert(ranges::random_access_range<contiguous_matrix<float>>, "Contigous matrix is not a random access range");
+
+// clang-format off
 template <typename T> contiguous_matrix<T> operator*(const contiguous_matrix<T> &lhs, T rhs) { auto res = lhs; res *= rhs; return res; }
 template <typename T> contiguous_matrix<T> operator*(T lhs, const contiguous_matrix<T> &rhs) { auto res = rhs; res *= lhs; return res; }
 
@@ -209,8 +218,8 @@ template <typename T> contiguous_matrix<T> operator/(const contiguous_matrix<T> 
 
 template <typename T> bool operator==(const contiguous_matrix<T> &lhs, const contiguous_matrix<T> &rhs) { return lhs.equal(rhs); }
 template <typename T> bool operator!=(const contiguous_matrix<T> &lhs, const contiguous_matrix<T> &rhs) { return !(lhs.equal(rhs)); }
-
 template <typename T> contiguous_matrix<T> transpose(const contiguous_matrix<T> &mat) { auto res = mat; res.transpose(); return res; }
+// clang-format on
 
 } // namespace linmath
 } // namespace throttle

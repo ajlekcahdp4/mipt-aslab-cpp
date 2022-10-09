@@ -24,6 +24,14 @@ TEST(test_contiguous_matrix, test_sq_braces_1) {
   EXPECT_EQ(a[0][0], 1);
 }
 
+TEST(test_contiguous_matrix, test_arithmetic) {
+  const matrix a = matrix::unity(2);
+  const matrix b = {2, 2, {1, 2, 3, 4}};
+  EXPECT_EQ(a + b, matrix(2, 2, {2, 2, 3, 5}));
+  EXPECT_EQ(b - a, matrix(2, 2, {0, 2, 3, 3}));
+  EXPECT_EQ(a / 2.0f, matrix(2, 2, {0.5, 0, 0, 0.5}));
+}
+
 TEST(test_contiguous_matrix, test_mult_eq) {
   matrix a = matrix::unity(10);
   a *= 666;

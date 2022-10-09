@@ -169,17 +169,20 @@ private:
 public:
   void push_back(const value_type &val) requires std::copyable<value_type> {
     reserve_if_necessary();
-    new (m_past_end_ptr++) value_type{val};
+    new (m_past_end_ptr) value_type{val};
+    m_past_end_ptr++;
   }
 
   void push_back(value_type &&val) requires std::movable<value_type> {
     reserve_if_necessary();
-    new (m_past_end_ptr++) value_type{std::move(val)};
+    new (m_past_end_ptr) value_type{std::move(val)};
+    m_past_end_ptr++;
   }
 
   template <typename... Ts> void emplace_back(Ts &&...args) {
     reserve_if_necessary();
-    new (m_past_end_ptr++) value_type{(std::forward<Ts>(args))...};
+    new (m_past_end_ptr) value_type{(std::forward<Ts>(args))...};
+    m_past_end_ptr++;
   }
 
   void clear() { delete_elements(); }

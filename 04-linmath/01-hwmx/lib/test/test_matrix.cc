@@ -12,6 +12,7 @@
 
 #include <gtest/gtest.h>
 #include <vector>
+#include <iostream>
 
 using matrix = typename throttle::linmath::matrix<float>;
 

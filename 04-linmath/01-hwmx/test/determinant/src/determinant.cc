@@ -22,7 +22,7 @@ template <typename T> bool main_loop_determinant(unsigned n, bool measure = fals
   throttle::linmath::matrix<T> m{n, n};
 
   for (unsigned i = 0; i < n * n; ++i) {
-    long temp;
+    T temp;
     if (!(std::cin >> temp)) {
       std::cout << "Can't read " << i << "-th element";
       return false;
