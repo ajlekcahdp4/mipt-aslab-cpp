@@ -69,18 +69,24 @@ public:
   vector(size_type count, const value_type &value = value_type{}) requires std::copyable<value_type> {
     vector temp{};
     temp.reserve(count);
-
-    for (size_type i = 0; i < count; ++i) {
-      temp.push_back(value);
+    size_type i{};
+    try {
+      for (i = 0; i < count; ++i) {
+        temp.push_back(value);
+      }
+    } catch (...) {
+      for (size_type j = 0; j < i; ++j) {
+        temp.pop_back();
+      }
+      throw;
     }
-
     *this = std::move(temp);
   }
 
   template <std::input_iterator it> vector(it start, it finish) {
     vector temp{};
     std::copy(start, finish, std::back_inserter(temp));
-    *this = temp;
+    std::swap(*this, temp);
   }
 
   template <std::random_access_iterator it> vector(it start, it finish) {
@@ -177,6 +183,7 @@ public:
         for (size_type j = 0; j < i; ++j) {
           pop_back(); 
         }
+        throw;
       }
     }
   }
