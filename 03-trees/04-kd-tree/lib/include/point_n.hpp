@@ -20,8 +20,6 @@
 #include <range/v3/numeric.hpp>
 #include <range/v3/view.hpp>
 
-#
-
 namespace throttle {
 
 template <typename T, std::size_t N> struct point_n {
@@ -74,6 +72,12 @@ template <typename T, std::size_t N> T distance(const point_n<T, N> &lhs, const 
 template <typename T, std::size_t N, typename t_stream> t_stream &operator>>(t_stream &istream, point_n<T, N> &rhs) {
   std::copy_n(std::istream_iterator<T>{istream}, N, rhs.arr.begin());
   return istream;
+}
+
+template <typename T, std::size_t N> auto compute_closest(auto &&point_range, const point_n<T, N> &point) {
+  auto closest =
+      ranges::min_element(point_range, std::less{}, [point](auto &&elem) { return distance_sq(point, elem); });
+  return std::make_pair(distance_sq(*closest, point), *closest);
 }
 
 } // namespace throttle

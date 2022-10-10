@@ -107,11 +107,5 @@ template <typename T, std::size_t N> vec_n<T, N> operator/(const vec_n<T, N> &lh
   auto res = lhs; res /= rhs; return res; 
 }
 
-template <typename T, std::size_t N> auto compute_closest(auto &&point_range, const point_n<T, N> &point) {
-    auto closest =
-        ranges::min_element(point_range, std::less{}, [point](auto &&elem) { return distance_sq(point, elem); });
-    return std::make_pair(distance_sq(*closest, point), *closest);
-  }
-
 // clang-format on
 } // namespace throttle
