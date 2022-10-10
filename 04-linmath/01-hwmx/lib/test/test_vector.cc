@@ -8,10 +8,13 @@
  * ----------------------------------------------------------------------------
  */
 
+#include "vector.hpp"
 #include <gtest/gtest.h>
 #include <memory>
+#include <new>
 #include <vector>
-#include "vector.hpp"
+
+#include <range/v3/all.hpp>
 
 using vector = typename throttle::containers::vector<int>;
 template class throttle::containers::vector<int>;
@@ -83,7 +86,7 @@ TEST(test_vector, test_reserve_3) {
 
 TEST(test_vector, test_resize_1) {
   std::vector<int> range{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-  vector           a{range.begin(), range.end()};
+  vector a{range.begin(), range.end()};
   range.resize(5);
   vector b{range.begin(), range.end()};
   a.resize(5);
@@ -92,7 +95,7 @@ TEST(test_vector, test_resize_1) {
 
 TEST(test_vector, test_resize_2) {
   std::vector<int> range{1, 2, 3, 4, 5};
-  vector           a{range.begin(), range.end()};
+  vector a{range.begin(), range.end()};
   range.resize(8);
   vector b{range.begin(), range.end()};
   a.resize(8);
@@ -144,12 +147,90 @@ TEST(test_vector, test_iterator_4) {
   EXPECT_EQ(*std::prev(it, 5), 5);
 }
 
+TEST(test_vector, test_exception_reserve_resize) {
+  vector a;
+  ranges::copy(ranges::views::iota(0, 1000), ranges::back_inserter(a));
+
+  auto old_cap = a.capacity();
+
+  EXPECT_EQ(a.size(), 1000);
+  EXPECT_GE(old_cap, 1000);
+
+  EXPECT_THROW(a.reserve(1ul << 60), std::bad_alloc);
+  EXPECT_EQ(a.size(), 1000);
+  EXPECT_EQ(a.capacity(), old_cap);
+}
+
 TEST(test_vector, test_strings_1) {
   throttle::containers::vector<std::string> a{5, "Hello "};
   a.resize(10, "World!");
+
+  EXPECT_EQ(a.size(), 10);
+
+  for (const auto &v: a | ranges::views::slice(6, ranges::end)) {
+    EXPECT_EQ(v, "World!");
+  }
 }
 
 TEST(test_vector, test_strings_2) {
   throttle::containers::vector<std::string> a{5, "Hello "};
   a.resize(2);
+}
+
+TEST(test_vector, test_vec_vec) {
+  throttle::containers::vector<throttle::containers::vector<int>> vec_vec;
+
+  for (int i = 0; i < 100; ++i) {
+    vec_vec.emplace_back();
+    ranges::copy(ranges::views::iota(0, i), ranges::back_inserter(vec_vec.back()));
+  }
+
+  for (int i = 0; i < vec_vec.size(); ++i) {
+    EXPECT_TRUE(ranges::equal(vec_vec[i], ranges::views::iota(0, i)));
+  }
+}
+
+TEST(test_vector, test_vec_std_vec) {
+  throttle::containers::vector<std::vector<int>> vec_vec;
+
+  for (int i = 0; i < 100; ++i) {
+    vec_vec.emplace_back();
+    ranges::copy(ranges::views::iota(0, i), ranges::back_inserter(vec_vec.back()));
+  }
+
+  for (int i = 0; i < vec_vec.size(); ++i) {
+    EXPECT_TRUE(ranges::equal(vec_vec[i], ranges::views::iota(0, i)));
+  }
+}
+
+TEST(test_vector, test_vec_uptr_vec) {
+  throttle::containers::vector<std::unique_ptr<std::vector<int>>> vec_vec;
+
+  for (int i = 0; i < 500; ++i) {
+    vec_vec.emplace_back(std::make_unique<std::vector<int>>());
+    ranges::copy(ranges::views::iota(0, i), ranges::back_inserter(*vec_vec.back()));
+  }
+
+  for (int i = 0; i < vec_vec.size(); ++i) {
+    EXPECT_TRUE(ranges::equal(*vec_vec[i], ranges::views::iota(0, i)));
+  }
+}
+
+TEST(test_vector, range_constructor) {
+  auto iota_range = ranges::views::iota(0, 1000);
+  vector a{iota_range.begin(), iota_range.end()};
+
+  EXPECT_TRUE(ranges::equal(a, iota_range));
+}
+
+TEST(test_vector, vec_uptr) {
+  throttle::containers::vector<std::unique_ptr<int>> vec;
+
+  for (int i = 0; i < 100000; ++i) {
+    vec.push_back(std::make_unique<int>(i));
+  }
+
+  for (int i = 0; i < 100000; ++i) {
+    EXPECT_EQ(*vec.at(i), i);
+  }
 }

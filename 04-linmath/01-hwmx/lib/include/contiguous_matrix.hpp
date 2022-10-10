@@ -164,7 +164,7 @@ public:
     contiguous_matrix transposed{m_cols, m_rows};
     for (size_type i = 0; i < m_rows; i++) {
       for (size_type j = 0; j < m_cols; j++) {
-        transposed[j][i] = (*this)[i][j];
+        transposed[j][i] = std::move((*this)[i][j]);
       }
     }
 

@@ -152,9 +152,10 @@ public:
 
   matrix &transpose() {
     matrix transposed{cols(), rows()};
+    
     for (size_type i = 0; i < rows(); i++) {
       for (size_type j = 0; j < cols(); j++) {
-        transposed[j][i] = (*this)[i][j];
+        transposed[j][i] = std::move((*this)[i][j]);
       }
     }
 

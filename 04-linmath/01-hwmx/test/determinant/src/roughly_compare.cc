@@ -20,6 +20,8 @@
 #include <boost/program_options.hpp>
 #include <boost/program_options/option.hpp>
 namespace po = boost::program_options;
+#else
+#error "Can't build without boost::program_options"
 #endif
 
 bool contain_same(std::string name_a, std::string name_b) {
@@ -52,7 +54,6 @@ bool contain_same(std::string name_a, std::string name_b) {
 int main(int argc, char *argv[]) {
   std::string file_a, file_b;
 
-#ifdef BOOST_FOUND__
   po::options_description desc("Available options");
   desc.add_options()("help,h", "Print this help message")("input-file", po::value<std::vector<std::string>>(),
                                                           "File to be compared");
@@ -85,6 +86,4 @@ int main(int argc, char *argv[]) {
     std::cout << "Nothing to do\n";
     return 1;
   }
-
-#endif
 }

@@ -22,6 +22,8 @@
 #include <stdexcept>
 #include <type_traits>
 
+#include <range/v3/all.hpp>
+
 #include "utility.hpp"
 
 namespace throttle {
@@ -59,7 +61,7 @@ private:
   }
 
 public:
-  static size_type amortized_buffer_size(size_type x) { return 1 << (CHAR_BIT * sizeof(size_type) - utility::clz(x)); }
+  static size_type amortized_buffer_size(size_type x) { return size_type{1} << (CHAR_BIT * sizeof(size_type) - utility::clz(x)); }
 
 public:
   vector()
@@ -69,17 +71,7 @@ public:
   vector(size_type count, const value_type &value = value_type{}) requires std::copyable<value_type> {
     vector temp{};
     temp.reserve(count);
-    size_type i{};
-    try {
-      for (i = 0; i < count; ++i) {
-        temp.push_back(value);
-      }
-    } catch (...) {
-      for (size_type j = 0; j < i; ++j) {
-        temp.pop_back();
-      }
-      throw;
-    }
+    ranges::copy(ranges::views::repeat_n(value, count), ranges::back_inserter(temp));
     *this = std::move(temp);
   }
 
