@@ -70,8 +70,8 @@ int main(int argc, char *argv[]) {
   measure = vm.count("measure");
 #endif
 
-  unsigned n;
-  if (!(std::cin >> n) || (n == 0)) {
+  long long n;
+  if (!(std::cin >> n) || (n <= 0)) {
     std::cout << "Invalid matrix size\n";
     return 1;
   }
