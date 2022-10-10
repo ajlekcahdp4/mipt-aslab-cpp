@@ -24,6 +24,7 @@
 #include <optional>
 #include <stdexcept>
 #include <utility>
+#include <concepts>
 
 #include <range/v3/action.hpp>
 #include <range/v3/algorithm.hpp>
@@ -32,7 +33,13 @@
 namespace throttle {
 namespace linmath {
 
-template <typename T> class matrix {
+template <typename T>
+concept models_ordered_ring = requires (T a, T b) {
+  requires models_ring<T>;
+  requires std::totally_ordered<T>;
+};
+
+template <typename T> requires models_ordered_ring<T> class matrix {
   using value_type = T;
   using reference = T &;
   using const_reference = const T &;

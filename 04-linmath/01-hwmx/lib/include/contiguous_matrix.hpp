@@ -21,11 +21,26 @@
 #include <stdexcept>
 
 #include <range/v3/all.hpp>
+#include <type_traits>
+
+#include <concepts>
 
 namespace throttle {
 namespace linmath {
 
-template <typename T> class contiguous_matrix {
+template <typename T>
+concept models_ring = requires (T a, T b) {
+  T{};
+  T{0};
+  T{1};
+
+  {a + b} -> std::same_as<T>;
+  {a - b} -> std::same_as<T>;
+  {a * b} -> std::same_as<T>;
+  {a / b} -> std::same_as<T>;
+};
+
+template <typename T> requires models_ring<T> class contiguous_matrix {
 public:
   using value_type = T;
   using reference = T &;
