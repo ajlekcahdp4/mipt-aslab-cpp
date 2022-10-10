@@ -143,3 +143,13 @@ TEST(test_vector, test_iterator_4) {
   EXPECT_EQ(*std::prev(it, 1), 9);
   EXPECT_EQ(*std::prev(it, 5), 5);
 }
+
+TEST(test_vector, test_strings_1) {
+  throttle::containers::vector<std::string> a{5, "Hello "};
+  a.resize(10, "World!");
+}
+
+TEST(test_vector, test_strings_2) {
+  throttle::containers::vector<std::string> a{5, "Hello "};
+  a.resize(2);
+}
