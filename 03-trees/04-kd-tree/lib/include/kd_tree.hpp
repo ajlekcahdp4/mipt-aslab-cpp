@@ -48,7 +48,7 @@ private:
 
 public:
   static constexpr std::size_t dimension = t_point::dimension;
-  static constexpr size_type   max_leaf_capacity = 2;
+  static constexpr size_type   max_leaf_capacity = 8;
 
   kd_tree() = default;
 
