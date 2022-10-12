@@ -57,7 +57,7 @@ class kd_tree {
   using point_type = t_point;
 
 private:
-  using kd_tree_node = std::variant<std::monostate, value_type, std::vector<point_type>>;
+  using kd_tree_node = std::variant<std::monostate, point_type, std::vector<point_type>>;
 
   std::vector<point_type>   m_pending_insertion;
   std::vector<kd_tree_node> m_tree_structure;
@@ -65,7 +65,7 @@ private:
 
 public:
   static constexpr size_type dimension = t_point::dimension;
-  static constexpr size_type max_leaf_capacity = 32;
+  static constexpr size_type max_leaf_capacity = 64;
 
   kd_tree() = default;
 
@@ -102,9 +102,9 @@ private:
     auto sorted_range = ranges::to_vector(node_range);
     sorted_range |= ranges::actions::sort([axis](auto &&i, auto &&j) { return i[axis] < j[axis]; });
     auto left_range = sorted_range | ranges::views::slice(size_type{0}, median_index);
-    auto right_range = sorted_range | ranges::views::slice(median_index, ranges::end);
+    auto right_range = sorted_range | ranges::views::slice(median_index + 1, ranges::end);
 
-    get_or_create_node(curr_index) = sorted_range[median_index][axis];
+    get_or_create_node(curr_index) = sorted_range[median_index];
     construct(left_range, depth + 1, left_child(curr_index));
     construct(right_range, depth + 1, right_child(curr_index));
   }
@@ -125,7 +125,8 @@ private:
 
     size_type axis = depth % dimension;
 
-    auto split_val = std::get<value_type>(current_node);
+    auto split_node = std::get<point_type>(current_node);
+    auto split_val = split_node[axis];
     auto dist_sq = (split_val - query_point[axis]) * (split_val - query_point[axis]);
 
     auto first_node = (query_point[axis] < split_val ? left_child(curr_index) : right_child(curr_index));
@@ -134,6 +135,11 @@ private:
     auto [subtree_best_point, subtree_best_dist] =
         nearest_neighbour_impl(current_best, current_dist, query_point, depth + 1, first_node);
 
+    if (subtree_best_dist > distance_sq(split_node, query_point)) {
+      subtree_best_dist = distance_sq(split_node, query_point);
+      subtree_best_point = split_node;
+    }
+    
     if (subtree_best_dist >= dist_sq) {
       return nearest_neighbour_impl(subtree_best_point, subtree_best_dist, query_point, depth + 1, second_node);
     }
@@ -168,6 +174,7 @@ public:
 
     copy_all_to_pending();
     try {
+      m_tree_structure.reserve(m_pending_insertion.size() / max_leaf_capacity);
       construct(m_pending_insertion);
     } catch (...) {
       m_tree_structure.clear();

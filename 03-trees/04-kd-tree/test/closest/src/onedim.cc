@@ -71,13 +71,8 @@ int main(int argc, char *argv[]) {
     reqs.push_back(point);
   }
 
-  std::chrono::duration<double, std::milli> kdduration, lower_bound_duration;
-
-  auto start = std::chrono::high_resolution_clock::now();
-  ranges::sort(points, std::less<float>{}, [](auto &&val){return val[0]; });
-  auto finish = std::chrono::high_resolution_clock::now();
-
-  lower_bound_duration += (finish - start);
+  std::chrono::duration<double, std::milli> kdduration{}, lower_bound_duration{};
+  
   kdtree.nearest_neighbour(reqs[0]);
 
   bool match = true;
@@ -92,7 +87,7 @@ int main(int argc, char *argv[]) {
     auto projected_range = ranges::views::transform(points, [](auto &&val) { return val[0]; });
     auto closest_std = *closest(projected_range, q[0]);
     end_it = std::chrono::high_resolution_clock::now();
-    lower_bound_duration = (end_it - start_it);
+    lower_bound_duration += (end_it - start_it);
 
     if (closest_std != closest_kd) match = false;
 
