@@ -11,6 +11,7 @@
 #pragma once
 
 #include <cstddef>
+#include <iterator>
 #include <stdexcept>
 #include <utility>
 
@@ -26,13 +27,29 @@
 #include <vector>
 
 #include "point_n.hpp"
-#include "vec_n.hpp"
 
 namespace throttle {
 
+template <typename T>
+concept models_arithmetic = requires(T a, T b) {
+  { a + b } -> std::same_as<T>;
+  { a - b } -> std::same_as<T>;
+  { a * b } -> std::same_as<T>;
+  { a / b } -> std::same_as<T>;
+
+  requires std::totally_ordered<T>;
+};
+
+template <typename T>
+concept models_n_dim_point = requires {
+  { T::dimension } -> std::convertible_to<std::size_t>;
+  requires ranges::random_access_range<T>;
+  typename T::value_type;
+  requires models_arithmetic<typename T::value_type>;
+};
+
 template <typename t_point>
-requires std::is_base_of_v<point_n<typename t_point::value_type, t_point::dimension>, t_point> &&
-    std::is_nothrow_copy_assignable_v<t_point>
+requires models_n_dim_point<t_point> && std::is_nothrow_copy_assignable_v<t_point>
 class kd_tree {
   using size_type = std::size_t;
   using value_type = typename t_point::value_type;
@@ -47,32 +64,35 @@ private:
   size_type                 m_stored_count = 0;
 
 public:
-  static constexpr std::size_t dimension = t_point::dimension;
-  static constexpr size_type   max_leaf_capacity = 8;
+  static constexpr size_type dimension = t_point::dimension;
+  static constexpr size_type max_leaf_capacity = 32;
 
   kd_tree() = default;
 
-  void      insert(const point_type &point) { m_pending_insertion.push_back(point); }
+  void insert(const point_type &point) { m_pending_insertion.push_back(point); }
+  void insert(point_type &&point) { m_pending_insertion.push_back(point); }
+
   size_type size() const { return m_pending_insertion.size() + m_stored_count; }
-  bool empty() const { return (size() == 0); }
+  bool      empty() const { return (size() == 0); }
+
 private:
   static bool      is_root(size_type index) { return (index == 1); }
   static size_type left_child(size_type index) { return 2 * index; }
   static size_type right_child(size_type index) { return 2 * index + 1; }
   static size_type parent(size_type index) { return index / 2; }
 
-  kd_tree_node &node_at_index(size_type index) {
+  kd_tree_node &get_or_create_node(size_type index) {
     if (index >= m_tree_structure.size()) m_tree_structure.resize(index);
     return m_tree_structure.at(index - 1);
   }
 
-  const kd_tree_node &node_at_index(size_type index) const { return m_tree_structure.at(index - 1); }
+  const kd_tree_node &get_node(size_type index) const { return m_tree_structure.at(index - 1); }
 
   void construct(auto &&node_range, size_type depth = 0, size_type curr_index = 1) {
     auto size = ranges::size(node_range);
 
     if (size <= max_leaf_capacity) {
-      node_at_index(curr_index) = ranges::to_vector(node_range);
+      get_or_create_node(curr_index) = ranges::to_vector(node_range);
       return;
     }
 
@@ -84,7 +104,7 @@ private:
     auto left_range = sorted_range | ranges::views::slice(size_type{0}, median_index);
     auto right_range = sorted_range | ranges::views::slice(median_index, ranges::end);
 
-    node_at_index(curr_index) = sorted_range[median_index][axis];
+    get_or_create_node(curr_index) = sorted_range[median_index][axis];
     construct(left_range, depth + 1, left_child(curr_index));
     construct(right_range, depth + 1, right_child(curr_index));
   }
@@ -94,7 +114,7 @@ private:
                                                            std::optional<value_type> current_dist,
                                                            const point_type &query_point, size_type depth = 0,
                                                            size_type curr_index = 1) const {
-    const auto &current_node = node_at_index(curr_index);
+    const auto &current_node = get_node(curr_index);
 
     if (std::holds_alternative<std::vector<point_type>>(current_node)) {
       auto [best_distance, best_point] = compute_closest(std::get<std::vector<point_type>>(current_node), query_point);

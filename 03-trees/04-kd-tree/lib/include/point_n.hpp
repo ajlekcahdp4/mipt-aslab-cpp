@@ -23,8 +23,10 @@
 namespace throttle {
 
 template <typename T, std::size_t N> struct point_n {
+private:
   std::array<T, N> arr;
 
+public:
   using value_type = T;
 
   static constexpr std::size_t dimension = N;
@@ -33,44 +35,24 @@ template <typename T, std::size_t N> struct point_n {
   T       &operator[](std::size_t index) { return arr[index]; }
   const T &operator[](std::size_t index) const { return arr[index]; }
 
+  auto begin() { return arr.begin(); }
+  auto end() { return arr.end(); }
+  auto begin() const { return arr.begin(); }
+  auto end() const { return arr.end(); }
+  auto cbegin() const { return arr.cbegin(); }
+  auto cend() const { return arr.cend(); }
+
   bool operator==(const point_n &other) const { return ranges::equal(arr, other.arr); }
   bool operator!=(const point_n &other) const { return !(*this == other); }
 };
 
-} // namespace throttle
-
-#include "vec_n.hpp"
-
-namespace throttle {
-
-template <typename T, std::size_t N> vec_n<T, N> operator-(const point_n<T, N> &lhs, const point_n<T, N> &rhs) {
-  vec_n<T, N> result{};
-  ranges::transform(lhs.arr, rhs.arr, result.arr.begin(), std::minus<T>{});
-  return result;
-}
-
-template <typename T, std::size_t N> point_n<T, N> operator+(const point_n<T, N> &lhs, const vec_n<T, N> &rhs) {
-  vec_n<T, N> result{};
-  ranges::transform(lhs.arr, rhs.arr, result.arr.begin(), std::plus<T>{});
-  return result;
-}
-
-template <typename T, std::size_t N> point_n<T, N> operator+(const vec_n<T, N> &lhs, const point_n<T, N> &rhs) {
-  vec_n<T, N> result{};
-  ranges::transform(lhs.arr, rhs.arr, result.arr.begin(), std::plus<T>{});
-  return result;
-}
-
 template <typename T, std::size_t N> T distance_sq(const point_n<T, N> &lhs, const point_n<T, N> &rhs) {
-  return (lhs - rhs).length_sq();
-}
-
-template <typename T, std::size_t N> T distance(const point_n<T, N> &lhs, const point_n<T, N> &rhs) {
-  return (lhs - rhs).length();
+  auto dist_range = ranges::views::transform(lhs, rhs, std::minus<T>{});
+  return ranges::inner_product(dist_range, dist_range, T{0});
 }
 
 template <typename T, std::size_t N, typename t_stream> t_stream &operator>>(t_stream &istream, point_n<T, N> &rhs) {
-  std::copy_n(std::istream_iterator<T>{istream}, N, rhs.arr.begin());
+  std::copy_n(std::istream_iterator<T>{istream}, N, rhs.begin());
   return istream;
 }
 

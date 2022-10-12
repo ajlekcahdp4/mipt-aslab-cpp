@@ -28,6 +28,7 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
+  points.reserve(n);
   for (unsigned i = 0; i < n; ++i) {
     point4 point;
 
@@ -47,6 +48,8 @@ int main(int argc, char *argv[]) {
   }
 
   std::vector<point4> reqs;
+  reqs.reserve(m);
+
   for (unsigned i = 0; i < m; ++i) {
     point4 point;
     if (!(std::cin >> point)) {

@@ -1,14 +1,18 @@
-set(EXEC_SOURCES
+set(CL_SOURCES
   src/closest.cc
 )
 
-add_executable(closest ${EXEC_SOURCES})
-target_link_libraries(closest throttle range-v3::range-v3)
-if(Boost_FOUND)
-  target_link_libraries(closest Boost::program_options)
-endif()
+set(OD_SOURCES
+  src/onedim.cc
+)
 
-install(TARGETS closest DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin)
+add_executable(closest ${CL_SOURCES})
+target_link_libraries(closest throttle range-v3::range-v3)
+
+add_executable(onedim ${OD_SOURCES})
+target_link_libraries(onedim throttle range-v3::range-v3)
+
+install(TARGETS closest onedim DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 
 if(BASH_PROGRAM)
   add_test(NAME test.closest COMMAND ${BASH_PROGRAM} ${CMAKE_CURRENT_SOURCE_DIR}/test.sh "$<TARGET_FILE:closest>" ${CMAKE_CURRENT_SOURCE_DIR})

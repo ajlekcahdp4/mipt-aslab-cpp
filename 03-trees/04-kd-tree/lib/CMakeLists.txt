@@ -8,7 +8,6 @@ target_link_libraries(throttle INTERFACE range-v3::range-v3)
 
 set(THROTTLE_TEST
   test/main.cc
-  test/test_vec_n.cc
 )
 
 if (ENABLE_GTEST)
