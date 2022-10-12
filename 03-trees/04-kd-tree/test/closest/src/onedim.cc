@@ -72,7 +72,8 @@ int main(int argc, char *argv[]) {
   }
 
   std::chrono::duration<double, std::milli> kdduration{}, lower_bound_duration{};
-  
+  ranges::sort(points, std::less<float>{}, [](auto &&elem) {return elem[0]; });
+
   kdtree.nearest_neighbour(reqs[0]);
 
   bool match = true;
