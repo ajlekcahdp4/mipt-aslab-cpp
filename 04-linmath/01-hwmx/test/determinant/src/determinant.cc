@@ -76,15 +76,15 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  unsigned n;
+  int n;
   try {
-    n = boost::lexical_cast<unsigned>(n_str);
+    n = boost::lexical_cast<int>(n_str);
   } catch (boost::bad_lexical_cast &) {
     std::cout << "Invalid matrix size\n";
     return 1;
   }
 
-  if (n == 0) {
+  if (n <= 0) {
     std::cout << "Invalid matrix size\n";
     return 1;
   }
