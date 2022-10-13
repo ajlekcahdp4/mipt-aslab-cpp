@@ -16,13 +16,9 @@
 #include "utility.hpp"
 #include "equal.hpp"
 
-#ifdef BOOST_FOUND__
 #include <boost/program_options.hpp>
 #include <boost/program_options/option.hpp>
 namespace po = boost::program_options;
-#else
-#error "Can't build without boost::program_options"
-#endif
 
 bool contain_same(std::string name_a, std::string name_b) {
   std::ifstream file_a, file_b;

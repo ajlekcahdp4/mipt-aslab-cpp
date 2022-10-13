@@ -1,3 +1,4 @@
+#include <boost/lexical_cast/bad_lexical_cast.hpp>
 #include <chrono>
 #include <cmath>
 #include <iostream>
@@ -12,11 +13,11 @@
 #include <optional>
 #include <string>
 
-#ifdef BOOST_FOUND__
 #include <boost/program_options.hpp>
 #include <boost/program_options/option.hpp>
+#include <boost/lexical_cast.hpp>
+
 namespace po = boost::program_options;
-#endif
 
 template <typename T> bool main_loop_determinant(unsigned n, bool measure = false) {
   throttle::linmath::matrix<T> m{n, n};
@@ -51,8 +52,7 @@ template <typename T> bool main_loop_determinant(unsigned n, bool measure = fals
 int main(int argc, char *argv[]) {
   bool measure = false;
 
-#ifdef BOOST_FOUND__
-  std::string             opt;
+  std::string opt;
   po::options_description desc("Available options");
   desc.add_options()("help,h", "Print this help message")("measure,m", "Print perfomance metrics")(
       "type,t", po::value<std::string>(&opt)->default_value("double"),
@@ -68,15 +68,27 @@ int main(int argc, char *argv[]) {
   }
 
   measure = vm.count("measure");
-#endif
 
-  long long n;
-  if (!(std::cin >> n) || (n <= 0)) {
+  std::string n_str;
+
+  if (!(std::cin >> n_str)) {
     std::cout << "Invalid matrix size\n";
     return 1;
   }
 
-#ifdef BOOST_FOUND__
+  unsigned n;
+  try {
+    n = boost::lexical_cast<unsigned>(n_str);
+  } catch (boost::bad_lexical_cast &) {
+    std::cout << "Invalid matrix size\n";
+    return 1;
+  }
+
+  if (n == 0) {
+    std::cout << "Invalid matrix size\n";
+    return 1;
+  }
+
   if (opt == "int") {
     if (!main_loop_determinant<int>(n, measure)) return 1;
   } else if (opt == "long") {
@@ -86,8 +98,4 @@ int main(int argc, char *argv[]) {
   } else if (opt == "double") {
     if (!main_loop_determinant<double>(n, measure)) return 1;
   }
-
-#else
-  if (!main_loop_determinant<double>(n)) return 1;
-#endif
 }

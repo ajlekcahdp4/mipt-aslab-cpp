@@ -3,8 +3,6 @@ Calculation of the matrix determinant
 ## 1. How to build
 ### Linux
 ```sh
-git submodule init
-git submodule update
 cmake -S ./ -B build/ -DCMAKE_BUILD_TYPE=Release
 cd build/
 make -j12 install

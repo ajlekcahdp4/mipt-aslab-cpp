@@ -12,6 +12,7 @@
 
 #include "utility.hpp"
 #include "vector.hpp"
+#include "equal.hpp"
 
 #include <algorithm>
 #include <functional>
@@ -38,6 +39,8 @@ concept models_ring = requires (T a, T b) {
   {a - b} -> std::same_as<T>;
   {a * b} -> std::same_as<T>;
   {a / b} -> std::same_as<T>;
+
+  requires std::copyable<T>;
 };
 
 template <typename T> requires models_ring<T> class contiguous_matrix {
@@ -159,9 +162,16 @@ public:
     return *this;
   }
 
-  bool equal(const contiguous_matrix &other) const {
-    return (m_rows == other.m_rows) && (m_cols == other.m_cols) &&
-           (std::equal(m_buffer.begin(), m_buffer.end(), other.m_buffer.begin()));
+  bool equal(const contiguous_matrix &other, const value_type &precision = default_precision<value_type>::m_prec) const {
+    if ((rows() != other.rows()) || (cols() != other.cols())) return false;
+    for (size_type i = 0; i < rows(); i++) {
+      const auto first_row = (*this)[i];
+      const auto second_row = other[i];
+      if (!ranges::equal(first_row, second_row,
+                         [&precision](auto first, auto second) { return is_roughly_equal(first, second, precision); }))
+        return false;
+    }
+    return true;
   }
 
 public:

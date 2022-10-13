@@ -1,8 +1,8 @@
-set(QUERIES_SOURCES
+set(DET_SOURCES
   src/determinant.cc
 )
 
-add_executable(determinant ${QUERIES_SOURCES})
+add_executable(determinant ${DET_SOURCES})
 target_link_libraries(determinant throttle Boost::program_options)
 
 install(TARGETS determinant DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin)
@@ -12,8 +12,7 @@ set(COMP_SOURCES
 )
 
 add_executable(comp ${COMP_SOURCES})
-target_link_libraries(comp throttle)
-target_link_libraries(comp Boost::program_options)
+target_link_libraries(comp PRIVATE throttle Boost::program_options)
 install(TARGETS comp DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 
 if(BASH_PROGRAM)
