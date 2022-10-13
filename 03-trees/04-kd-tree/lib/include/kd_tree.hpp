@@ -34,7 +34,7 @@ template <typename T>
 concept models_arithmetic = requires(T a, T b) {
   { a + b } -> std::same_as<T>;
   { a - b } -> std::same_as<T>;
-  { a * b } -> std::same_as<T>;
+  { a *b } -> std::same_as<T>;
   { a / b } -> std::same_as<T>;
 
   requires std::totally_ordered<T>;
@@ -135,12 +135,11 @@ private:
     auto [subtree_best_point, subtree_best_dist] =
         nearest_neighbour_impl(current_best, current_dist, query_point, depth + 1, first_node);
 
-    if (subtree_best_dist > distance_sq(split_node, query_point)) {
-      subtree_best_dist = distance_sq(split_node, query_point);
-      subtree_best_point = split_node;
-    }
-    
     if (subtree_best_dist >= dist_sq) {
+      if (subtree_best_dist > distance_sq(split_node, query_point)) {
+        subtree_best_dist = distance_sq(split_node, query_point);
+        subtree_best_point = split_node;
+      }
       return nearest_neighbour_impl(subtree_best_point, subtree_best_dist, query_point, depth + 1, second_node);
     }
 
