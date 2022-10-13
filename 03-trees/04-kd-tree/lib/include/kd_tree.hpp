@@ -99,7 +99,7 @@ private:
     size_type axis = depth % dimension;
     auto      median_index = size / 2;
 
-    auto sorted_range = ranges::to_vector(node_range);
+    auto sorted_range = node_range;
     sorted_range |= ranges::actions::sort([axis](auto &&i, auto &&j) { return i[axis] < j[axis]; });
     auto left_range = sorted_range | ranges::views::slice(size_type{0}, median_index);
     auto right_range = sorted_range | ranges::views::slice(median_index + 1, ranges::end);
