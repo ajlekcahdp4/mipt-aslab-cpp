@@ -68,6 +68,42 @@ if (SANITIZE)
     add_link_options(-fsanitize=address -fno-omit-frame-pointer)
 endif()
 
-add_subdirectory(3rd-party/range-v3 EXCLUDE_FROM_ALL)
+include(FetchContent)
+
+find_package(range-v3)
+
+if (NOT range-v3_FOUND)
+  FetchContent_Declare(
+    range-v3
+    GIT_REPOSITORY https://github.com/ericniebler/range-v3
+    GIT_TAG master
+  )
+
+  if (NOT range-v3_POPULATED)
+    FetchContent_Populate(range-v3)
+    add_subdirectory(${range-v3_SOURCE_DIR} ${range-v3_BINARY_DIR} EXCLUDE_FROM_ALL)
+  endif()
+
+  FetchContent_MakeAvailable(range-v3)
+endif()
+
+set(BOOST_INCLUDE_LIBRARIES program_options lexical_cast)
+set(BOOST_ENABLE_CMAKE ON)
+
+find_package(Boost COMPONENTS program_options)
+
+if (NOT Boost_FOUND)
+  FetchContent_Declare(
+    Boost
+    GIT_REPOSITORY https://github.com/boostorg/boost.git
+    GIT_TAG master
+  )
+  
+  if (NOT Boost_POPULATED)
+    FetchContent_Populate(Boost)
+    add_subdirectory(${Boost_SOURCE_DIR} ${Boost_BINARY_DIR} EXCLUDE_FROM_ALL)
+  endif()
+endif()
+
 add_subdirectory(test)
 add_subdirectory(lib)

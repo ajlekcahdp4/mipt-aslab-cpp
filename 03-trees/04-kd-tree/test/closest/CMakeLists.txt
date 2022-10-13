@@ -7,7 +7,7 @@ set(OD_SOURCES
 )
 
 add_executable(closest ${CL_SOURCES})
-target_link_libraries(closest throttle range-v3::range-v3)
+target_link_libraries(closest throttle range-v3::range-v3 ${Boost_LIBRARIES})
 
 add_executable(onedim ${OD_SOURCES})
 target_link_libraries(onedim throttle range-v3::range-v3)

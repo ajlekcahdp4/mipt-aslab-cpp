@@ -41,15 +41,23 @@ concept models_arithmetic = requires(T a, T b) {
 };
 
 template <typename T>
-concept models_n_dim_point = requires {
+concept models_n_dim_point = requires (T a, std::size_t index) {
   { T::dimension } -> std::convertible_to<std::size_t>;
   requires ranges::random_access_range<T>;
   typename T::value_type;
   requires models_arithmetic<typename T::value_type>;
+  a[index]; // Subscriptable
+};
+
+template <typename T>
+concept can_fit_in_kd_tree = requires {
+  requires models_n_dim_point<T>;
+  requires std::is_nothrow_copy_assignable_v<T>;
+  requires T::dimension > 0;
 };
 
 template <typename t_point>
-requires models_n_dim_point<t_point> && std::is_nothrow_copy_assignable_v<t_point>
+requires can_fit_in_kd_tree<t_point>
 class kd_tree {
   using size_type = std::size_t;
   using value_type = typename t_point::value_type;
