@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.11)
-project(splay)
+project(resistor-network)
 
 option(INSOURCEBUILD OFF)
 
@@ -70,7 +70,7 @@ endif()
 
 include(FetchContent)
 
-set(BOOST_INCLUDE_LIBRARIES program_options lexical_cast)
+set(BOOST_INCLUDE_LIBRARIES program_options)
 set(BOOST_ENABLE_CMAKE ON)
 
 find_package(Boost COMPONENTS program_options)
