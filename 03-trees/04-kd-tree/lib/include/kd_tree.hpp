@@ -56,6 +56,9 @@ concept can_fit_in_kd_tree = requires {
   requires T::dimension > 0;
 };
 
+template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
+
 template <typename t_point>
 requires can_fit_in_kd_tree<t_point>
 class kd_tree {
@@ -160,9 +163,6 @@ public:
     reconstruct();
     return nearest_neighbour_impl(point_type{}, std::nullopt, point).first;
   }
-
-  template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-  template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
   void copy_all_to_pending() {
     // clang-format off
