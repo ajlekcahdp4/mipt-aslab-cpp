@@ -2,10 +2,11 @@
 KD-tree for N-dimensional points
 
 ## 1. How to build
+
+This kd-tree uses [range-v3](https://github.com/ericniebler/range-v3). If it's not found with find_package then it's fetched during configuration.
+
 ### Linux
 ```sh
-git submodule init
-git submodule update
 cmake -S ./ -B build/ -DCMAKE_BUILD_TYPE=Release
 cd build/
 make -j12 install
