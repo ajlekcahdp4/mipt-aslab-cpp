@@ -1,8 +1,5 @@
-#include <boost/lexical_cast/bad_lexical_cast.hpp>
 #include <chrono>
 #include <iostream>
-
-#include <boost/lexical_cast.hpp>
 
 #include "kd_tree.hpp"
 #include "point_n.hpp"
@@ -11,27 +8,24 @@
 #include <cstdlib>
 #include <range/v3/all.hpp>
 
+namespace {
+
 template <typename T, std::size_t N> struct indexed_point_n : public throttle::point_n<T, N> {
   unsigned index;
 };
 
 using point4 = indexed_point_n<float, 4>;
 
+}
+
+
 int main(int argc, char *argv[]) {
   std::vector<point4> points;
   throttle::kd_tree<point4> kdtree;
 
   int n;
-  std::string n_str;
-  if (!(std::cin >> n_str)) {
+  if (!(std::cin >> n)) {
     std::cout << "Can't read number of points\n";
-    return 1;
-  }
-
-  try {
-    n = boost::lexical_cast<int>(n_str);
-  } catch (boost::bad_lexical_cast &) {
-    std::cout << "Invalid number of points\n";
     return 1;
   }
 
@@ -54,16 +48,13 @@ int main(int argc, char *argv[]) {
   }
 
   int m;
-  std::string m_str;
-  if (!(std::cin >> m_str)) {
+  if (!(std::cin >> m)) {
     std::cout << "Can't read number of points\n";
     return 1;
   }
 
-  try {
-    m = boost::lexical_cast<int>(m_str);
-  } catch (boost::bad_lexical_cast &) {
-    std::cout << "Invalid number of points\n";
+  if (m < 0) {
+    std::cout << "Number of queries can't be less than 0\n";
     return 1;
   }
 

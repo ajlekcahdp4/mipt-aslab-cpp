@@ -4,16 +4,16 @@ project(kd-tree)
 option(INSOURCEBUILD OFF)
 
 if((${PROJECT_SOURCE_DIR} STREQUAL ${PROJECT_BINARY_DIR}) AND NOT ${INSOURCEBUILD})
-    message(FATAL_ERROR "In-source building disabled. Provide -DINSOURCEBUILD option if you are sure about it.")
+  message(FATAL_ERROR "In-source building disabled. Provide -DINSOURCEBUILD option if you are sure about it.")
 endif()
 
 set(CMAKE_CXX_STANDARD 20)
 
 # Possibly support windows and MSVC compiler
 if(MSVC)
-    add_compile_options(/W3)
+  add_compile_options(/W3)
 else()
-    add_compile_options(-Wall -Wextra)
+  add_compile_options(-Wall -Wextra)
 endif()
 
 find_package(GTest)
@@ -21,9 +21,9 @@ set(NOGTEST OFF CACHE BOOL "Disable GoogleTest")
 
 enable_testing()
 if(NOT NOGTEST AND GTEST_FOUND AND CMAKE_MINOR_VERSION GREATER_EQUAL 20)
-    set(ENABLE_GTEST ON)
+  set(ENABLE_GTEST ON)
 else()
-    message(WARNING "Google Test disabled")
+  message(WARNING "Google Test disabled")
 endif()
 
 set(NOLINT ON CACHE BOOL "Disable clang-tidy")
@@ -34,12 +34,12 @@ if(CLANG_TIDY_COMMAND)
 
 # Clang-tidy for linting
 set(CMAKE_CXX_CLANG_TIDY 
-    clang-tidy;
-    -checks=google-*,cppcoreguidelines-*
+  clang-tidy;
+  -checks=google-*,cppcoreguidelines-*
 )
 set(CMAKE_C_CLANG_TIDY 
-    clang-tidy;
-    -checks=google-*,cppcoreguidelines-*
+  clang-tidy;
+  -checks=google-*,cppcoreguidelines-*
 )
 
 else()
@@ -51,7 +51,6 @@ message(WARNING "-DNOLINT option provided, linter disabled")
 endif()
 
 set(DCMAKE_EXPORT_COMPILE_COMMANDS ON)
-
 find_program(BASH_PROGRAM bash)
 
 # Add flags for GNU sampling profiler gprof in Debug build and RelWithDebInfo
@@ -69,7 +68,6 @@ if (SANITIZE)
 endif()
 
 include(FetchContent)
-
 find_package(range-v3)
 
 if (NOT range-v3_FOUND)
@@ -85,24 +83,6 @@ if (NOT range-v3_FOUND)
   endif()
 
   FetchContent_MakeAvailable(range-v3)
-endif()
-
-set(BOOST_INCLUDE_LIBRARIES program_options lexical_cast)
-set(BOOST_ENABLE_CMAKE ON)
-
-find_package(Boost COMPONENTS program_options)
-
-if (NOT Boost_FOUND)
-  FetchContent_Declare(
-    Boost
-    GIT_REPOSITORY https://github.com/boostorg/boost.git
-    GIT_TAG master
-  )
-  
-  if (NOT Boost_POPULATED)
-    FetchContent_Populate(Boost)
-    add_subdirectory(${Boost_SOURCE_DIR} ${Boost_BINARY_DIR} EXCLUDE_FROM_ALL)
-  endif()
 endif()
 
 add_subdirectory(test)

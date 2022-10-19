@@ -7,6 +7,8 @@
 #include <cstdlib>
 #include <range/v3/all.hpp>
 
+namespace {
+
 template <typename T, std::size_t N> struct indexed_point_n : public throttle::point_n<T, N> { unsigned index; };
 
 using point1 = indexed_point_n<float, 1>;
@@ -22,6 +24,8 @@ auto closest(auto &&range, auto val) {
     return (std::abs(val - *cl) < std::abs(val - *std::prev(cl)) ? cl : std::prev(cl));
   }
 }
+
+} // namespace
 
 int main(int argc, char *argv[]) {
   std::vector<point1>       points;
@@ -72,7 +76,7 @@ int main(int argc, char *argv[]) {
   }
 
   std::chrono::duration<double, std::milli> kdduration{}, lower_bound_duration{};
-  ranges::sort(points, std::less<float>{}, [](auto &&elem) {return elem[0]; });
+  ranges::sort(points, std::less<float>{}, [](auto &&elem) { return elem[0]; });
 
   kdtree.nearest_neighbour(reqs[0]);
 
@@ -92,7 +96,8 @@ int main(int argc, char *argv[]) {
 
     if (closest_std != closest_kd) match = false;
 
-    std::cout << closest_kd << " - " << closest_std << " : "<< (closest_kd == closest_std ? "match" : "do not match") << "\n";
+    std::cout << closest_kd << " - " << closest_std << " : " << (closest_kd == closest_std ? "match" : "do not match")
+              << "\n";
   }
 
   std::cout << "kd-tree took " << kdduration.count() << " ms\n";
